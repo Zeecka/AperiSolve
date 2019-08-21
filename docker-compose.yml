@@ -1,0 +1,22 @@
+#
+# Aperi'Solve
+# @Zeecka
+#
+
+version: '3'
+services:
+    aperisolve:
+        build: ./build/flask
+        container_name: aperisolve
+        hostname: aperisolve
+        environment:
+            - APP_HOST=0.0.0.0
+            - APP_PORT=80
+            - APP_MAX_SIZE=16777216  # Maximum = 16 Mega per image
+            - APP_RM_FILE_TIME=5  # Keep Files for N minutes
+        network_mode: host
+        restart: always
+        volumes:
+            - ./data:/opt/aperisolve:ro
+            - ./data/uploads:/opt/aperisolve/uploads:rw
+        command: "python3 app.py"
