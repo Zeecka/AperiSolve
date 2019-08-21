@@ -10,7 +10,9 @@ __copyright__ = "WTFPL"
 
 """
 
+import os
 import re
+import shutil
 import imghdr
 import numpy as np
 from shlex import quote
@@ -84,9 +86,9 @@ def processZsteg(img, folder="./", allzsteg=False, zstegfiles=False):
         img_pil.save(f"{folder}{img}")
 
     if allzsteg:
-        zstegOut = cmdline("zsteg "+quote(folder+img)+" --all")
+        zstegOut = cmdline(f"zsteg {quote(folder+img)} --all")
     else:
-        zstegOut = cmdline("zsteg "+quote(folder+img))
+        zstegOut = cmdline(f"zsteg {quote(folder+img)}")
 
     chans = []  # Extract zsteg chans containing "file:"
     rzstegOut = re.split("\r|\n", zstegOut)
@@ -97,17 +99,18 @@ def processZsteg(img, folder="./", allzsteg=False, zstegfiles=False):
     if len(chans) and zstegfiles:  # If there is files
         # Extract files to tmp folder
         tmpfolder = "aperisolve_"+randString()
-        cmdline("mkdir "+quote(folder+tmpfolder))
-        cmdline("cp "+quote(folder+img)+" "+quote(folder+tmpfolder+"/"+img))
+        os.mkdir(folder+tmpfolder)
+        shutil.copyfile(folder+img, folder+tmpfolder+"/"+img)
         for c in chans:
-            cmdline("cd "+quote(folder+tmpfolder)+" && \
-                           zsteg "+quote(img)+" \
-                           -E "+quote(c)+" > "+quote(c))
+            cmdline(f"cd {quote(folder+tmpfolder)} && \
+                      zsteg {quote(img)} \
+                      -E {quote(c)} > {quote(c)}")
 
         # Zip output if exist and remove tmp folder
-        cmdline("rm "+quote(folder+tmpfolder+"/"+img))  # Clean
-        cmdline("cd "+quote(folder)+" && 7z a "+quote(tmpfolder+".7z") +
-                " "+quote(tmpfolder)+" && rm -rf "+quote(tmpfolder))  # 7Zip
+        os.remove(folder+tmpfolder+"/"+img)  # Clean
+        cmdline(f"cd {quote(folder)} && \
+                  7z a {quote(tmpfolder+'.7z')} {quote(tmpfolder)}")  # 7Zip
+        shutil.rmtree(folder+tmpfolder)
         return {"Output": zstegOut, "File": f"{folder}{tmpfolder}.7z"}
     return {"Output": zstegOut}
 
@@ -123,21 +126,22 @@ def processSteghide(img, folder="./", passwd=""):
 
     # Avoid race conditions on file upload: create tmp folder
     tmpfolder = "aperisolve_"+randString()
-    cmdline("mkdir "+quote(folder+tmpfolder))
-    cmdline("cp "+quote(folder+img)+" "+quote(folder+tmpfolder+"/"+img))
+    os.mkdir(folder+tmpfolder)
+    shutil.copyfile(folder+img, folder+tmpfolder+"/"+img)
 
     # Compute steghide
-    out = cmdline("cd "+quote(folder+tmpfolder)+" && \
-                   steghide extract -sf "+quote(img)+" \
-                   -p "+quote(passwd)+" 2>&1")
+    out = cmdline(f"cd {quote(folder+tmpfolder)} && \
+                   steghide extract -sf {quote(img)} \
+                   -p {quote(passwd)} 2>&1")
 
     # Zip output if exist and remove tmp folder
     if "extracted" in out:  # Create 7z file
-        cmdline("rm "+quote(folder+tmpfolder+"/"+img))  # Clean
-        cmdline("cd "+quote(folder)+" && 7z a "+quote(tmpfolder+".7z") +
-                " "+quote(tmpfolder)+" && rm -rf "+quote(tmpfolder))  # 7Zip
+        os.remove(folder+tmpfolder+"/"+img)  # Clean
+        cmdline(f"cd {quote(folder)} && \
+                  7z a {quote(tmpfolder+'.7z')} {quote(tmpfolder)}")  # 7Zip
+        shutil.rmtree(folder+tmpfolder)
         return {"Output": out, "File": f"{folder}{tmpfolder}.7z"}
     else:
-        cmdline("rm -rf "+quote(folder+tmpfolder))
+        shutil.rmtree(folder+tmpfolder)
         return {"Output": out}
 
