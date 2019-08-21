@@ -38,9 +38,10 @@ def main():
     """ Upload Page """
     return render_template('index.html')
 
-"""
+
 @app.errorhandler(Exception)
 def error_handler(e):
+    """ Error handler, mostly for wrong file """
     if "cannot identify" in str(e):  # Unknow image format
         # cannot identify image file 'uploads/xxx.jpg'
         a, *filename, b = str(e).split("'")  # Recover filename
@@ -48,7 +49,7 @@ def error_handler(e):
         os.remove(filename)  # Remove invalid file
         return jsonify({"Error": "Unknow file format."})
     return jsonify({"Error": str(e)})
-"""
+
 
 @app.route('/process', methods=['POST'])
 def process():
