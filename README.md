@@ -1,11 +1,11 @@
 # Aperi'Solve
-<center>![Aperi'Solve](examples/screenshot.png)</center>
-<br/>
-**Try it now: (https://aperisolve.fr) **
+<p align="center">![Aperi'Solve](examples/screenshot.png)</p>
+
+**Try it now: https://aperisolve.fr **
 
 # I . What is Aperi'Solve?
 Aperi'Solve is an platform which performs layer analysis on image. The platform also uses "*zsteg*", "*steghide*" and "*exiftool*" for deeper steganography analysis.
-<center>![Aperi'Solve](examples/video.gif)</center>
+<p align="center">![Aperi'Solve video](examples/video.gif)</p>
 
 # II . Why Aperi'Solve
 Aperi'Solve has been created in order to have an "easy to use" platform which performs common steganalysis tests such as LSB or `steghide`. The platform and Dockerfile are also a quick alternative for people who didn't manage to install `zsteg` (ruby gem) properly.
