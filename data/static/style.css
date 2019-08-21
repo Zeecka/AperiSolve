@@ -1,0 +1,380 @@
+/*
+ ------------------
+ -- Code couleur --
+ ------------------
+   Vert: #42f4c5
+ ------------------
+*/
+
+::-moz-selection {
+	background: rgba(66, 244, 197, 0.2);
+}
+
+::selection {
+	background: rgba(66, 244, 197, 0.2);
+}
+
+* {
+	font-family: 'Questrial', sans-serif;
+}
+
+html,
+body {
+	padding: 0;
+}
+
+html {
+	background: url("bg.jpg") no-repeat center center fixed;
+	background-size: cover;
+}
+
+body {
+	padding: 0 70px 70px 70px;
+}
+
+h1 {
+	color: white;
+	font-size: 40pt;
+	font-family: 'Righteous', cursive;
+	width: 100%;
+	text-align: center;
+	text-shadow: 0 0 5px rgba(0, 0, 0, 0.5);
+}
+
+#h1titre {
+	margin-bottom: 20px;
+}
+
+#homelink,
+#homelink:hover,
+#homelink:active,
+#homelink:focus,
+#homelink:visited {
+	padding: 0;
+	margin: 0;
+	text-decoration: none;
+	color: inherit;
+	font-family: inherit;
+}
+
+#hrtitre {
+	width: 70%;
+	border: 0;
+	border-bottom: 1px dashed white;
+	margin-bottom: 50px;
+}
+
+section {
+	background-color: rgba(255, 252, 237, 0.6);
+	margin: auto;
+	width: 800px;
+	-webkit-border-radius: 0 20px 0 20px;
+	border-radius: 0 20px 0 20px;
+	padding: 40px;
+	box-sizing: border-box;
+	box-shadow: 0 0 3px 3px rgba(0, 0, 0, 0.1);
+}
+
+section h2 {
+	margin-top: 0px;
+}
+
+#info hr {
+	width: 70%;
+	border: 0;
+	margin-top: 20px;
+	border-bottom: 2px dashed #42f4c5;
+	margin-bottom: 20px;
+}
+
+form h2 {
+	margin-top: 20px;
+}
+
+button,
+input[type="submit"],
+input[type="text"] {
+	transition: all .4s;
+	cursor: pointer;
+	border: 0;
+	outline: 0;
+	width: 225px;
+	padding: 14px 0;
+	background: #34495E;
+	color: #42f4c5;
+	height: 45px;
+}
+
+button:active,
+button:focus,
+input[type="submit"]:active,
+input[type="submit"]:focus,
+button::-moz-focus-inner,
+input[type="submit"]::-moz-focus-inner {
+	border: 0;
+	outline: 0;
+}
+
+button:hover,
+input[type="submit"]:hover {
+	background: #c7f9a2;
+	color: #34495E;
+	-webkit-box-shadow: inset 0 0 3px 1px rgba(0, 0, 0, 0.3);
+	box-shadow: inset 0 0 3px 1px rgba(0, 0, 0, 0.3);
+}
+
+#gotpasswd {
+	margin-top: 10px;
+	line-height: 46px;
+}
+
+input[type="text"] {
+	transition: inherit;
+	padding: 0 10px;
+	margin-left: 10px;
+	cursor: inherit;
+}
+
+#passwdsteghide {
+	z-index: 30;
+	display: none;
+	margin-left: 0;
+}
+
+#fileup {
+	display: none;
+}
+
+#filebut {
+	position: relative;
+	width: 100%;
+}
+
+#analyserbut {
+	margin-top: 25px;
+}
+
+#fileform {
+	position: relative;
+}
+
+#backgroundprogressbar {
+	display: none;
+	position: absolute;
+	height: 42px;
+	width: 100%;
+	top: 0;
+	left: 0;
+}
+
+#progressbar {
+	background-color: #bdf8a4;
+	background-image: linear-gradient(135deg, rgba(0, 0, 0, .15) 25%, transparent 25%, transparent 50%, rgba(0, 0, 0, .15) 50%, rgba(0, 0, 0, .15) 75%, transparent 75%, transparent);
+	background-size: 30px 30px;
+	animation: animate-stripes 3s linear infinite;
+	position: absolute;
+	height: 45px;
+	width: 0%;
+	top: 0;
+	left: 0;
+}
+
+@keyframes animate-stripes {
+	0% {
+		background-position: 0 0;
+	}
+	100% {
+		background-position: 60px 0;
+	}
+}
+
+#displayimg {
+	text-align: center;
+}
+
+#containerimg {
+	text-align: left;
+	word-break: break-all;
+}
+
+.h2scan {
+	font-family: 'Questrial', cursive;
+	margin-top: 20px;
+}
+
+.imgscandisplay {
+	max-width: calc(12% - 10px);
+	max-height: 200px;
+	margin: 5px;
+	transition: all .4s;
+	cursor: pointer;
+}
+
+.imgscandisplay:hover {
+	opacity: 0.6;
+	-webkit-box-shadow: 0 0 3px 3px rgba(0, 0, 0, 0.2);
+	box-shadow: 0 0 3px 3px rgba(0, 0, 0, 0.2);
+	border-radius: 15px;
+}
+
+input[type="checkbox"] {
+	display: none;
+}
+
+.checkbox {
+	cursor: pointer;
+	margin-top: 15px;
+	display: inline-block;
+}
+
+.casecheck {
+	width: 20px;
+	height: 20px;
+	margin-right: 10px;
+	display: inline-block;
+	vertical-align: middle;
+	background: #34495E;
+	border: 1px solid #42f4c5;
+	color: white;
+	font-size: 18px;
+	transition: all .4s;
+}
+
+.checkbox.active .casecheck {
+	background-image: url("check.png");
+	background-size: contain;
+	background-repeat: no-repeat;
+}
+
+.checkbox.active:hover .casecheck {
+	color: black;
+	background-image: url("check.png");
+	background-size: contain;
+	background-repeat: no-repeat;
+}
+
+.checkbox:hover .casecheck {
+	background: #c7f9a2;
+	border: 1px solid #34495E;
+}
+
+#displayimgfull {
+	position: fixed;
+	top: 0;
+	left: 0;
+	background: rgba(0, 0, 0, 0.7);
+	width: 100vw;
+	height: 100vh;
+}
+
+#displayimgfull img {
+	position: absolute;
+	top: 50%;
+	left: 50%;
+	transform: translate(-50%, -50%);
+	max-width: 80%;
+	max-height: 80%;
+}
+
+.butdwl {
+    margin-top: 20px;
+}
+
+.checkbox {
+    margin-right: 12px;
+}
+/* LOADING CIRCLE */
+
+#loadinggif {
+	max-width: 30px;
+	max-height: 30px;
+	display: inline-block;
+	vertical-align: middle;
+}
+
+@keyframes lds-rolling {
+	0% {
+		-webkit-transform: translate(-50%, -50%) rotate(0deg);
+		transform: translate(-50%, -50%) rotate(0deg);
+	}
+	100% {
+		-webkit-transform: translate(-50%, -50%) rotate(360deg);
+		transform: translate(-50%, -50%) rotate(360deg);
+	}
+}
+
+@-webkit-keyframes lds-rolling {
+	0% {
+		-webkit-transform: translate(-50%, -50%) rotate(0deg);
+		transform: translate(-50%, -50%) rotate(0deg);
+	}
+	100% {
+		-webkit-transform: translate(-50%, -50%) rotate(360deg);
+		transform: translate(-50%, -50%) rotate(360deg);
+	}
+}
+
+.lds-rolling {
+	display: inline-block;
+	position: relative;
+	margin-left: 24px;
+	margin-top: -2px;
+}
+
+.lds-rolling div,
+.lds-rolling div:after {
+	position: absolute;
+	width: 10px;
+	height: 10px;
+	border: 5px solid #42f4c5;
+	border-top-color: transparent;
+	border-radius: 50%;
+}
+
+.lds-rolling div {
+	-webkit-animation: lds-rolling 1s linear infinite;
+	animation: lds-rolling 1s linear infinite;
+}
+
+.lds-rolling div:after {
+	-webkit-transform: rotate(90deg);
+	transform: rotate(90deg);
+}
+
+.h2info {
+	color: black;
+	font-size: 30pt;
+	font-family: 'Questrial', cursive;
+	width: 100%;
+	text-align: center;
+	margin-top: 50px;
+}
+
+.h2info:first-child {
+	margin-top: 0;
+}
+
+div#dropzone {
+	position: fixed;
+	top: 0;
+	left: 0;
+	z-index: 9999999999;
+	width: 100%;
+	height: 100%;
+	background-color: rgba(0, 0, 0, 0.5);
+	transition: visibility 175ms, opacity 175ms;
+	display: table;
+	text-shadow: 1px 1px 2px #000;
+	color: #fff;
+	background: rgba(0, 0, 0, 0.45);
+	font-family: 'Righteous', cursive;
+}
+
+div#textnode {
+	font-family: 'Righteous', cursive;
+	display: table-cell;
+	text-align: center;
+	vertical-align: middle;
+	transition: font-size 175ms;
+}
+

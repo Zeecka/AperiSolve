@@ -1,0 +1,57 @@
+<!doctype html>
+<html lang="fr">
+    <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+        <meta charset="UTF-8">
+        <title>Aperi'Solve</title>
+        <!-- Meta -->
+        <meta name="Content-Language" content="en">
+        <meta name="Keywords" content="AperiSolve, Zeecka">
+        <meta name="Author" content="Alex GARRIDO">
+        <meta name="Revisit-After" content="1 day">
+        <meta name="Robots" content="all">
+        <meta name="Distribution" content="global">
+        <meta name="theme-color" content="#42f4c5">
+        <link href="https://fonts.googleapis.com/css?family=Questrial|Righteous" rel="stylesheet"> 
+        <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}" />
+        <link rel="shortcut icon" type="image/x-icon" href="{{ url_for('static', filename='watermelon.png') }}" />
+        <link rel="icon" type="image/png" href="{{ url_for('static', filename='watermelon.png') }}" />
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+        <script src="{{ url_for('static', filename='main.js') }}"></script>
+    </head>
+    <div style="visibility:hidden; opacity:0" id="dropzone"><div id="textnode">Drop anywhere!</div></div>
+    <body>
+        <h1 id="h1titre"><a href="/" id="homelink"><img src="{{ url_for('static', filename='watermelon.png') }}" style="vertical-align: middle; width: 95px; height: 95px; margin-right: 10px;"/> Aperi'Solve</a></h1>
+        <hr id="hrtitre"/>
+        <section>
+            <div id="info">
+            <h2>What is this ?</h2>
+            <p>Aperi'Solve is an online platform which performs layer analysis on image. The platform also uses <i>zsteg</i>, <i>steghide</i> and <i>exiftool</i> for deeper steganography analysis.
+            The platform supports the following images format: .png, .jpg, .gif, .bmp, .jpeg, .jfif, .jpe, .tiff...</p>
+            <!-- <hr/> -->
+            <form method="post" id="fileform" enctype="multipart/form-data">
+                <input type="file" name="fileup" id="fileup"/>
+                <div><!--
+                --><button type="button" id="filebut"><!--
+                    --><div id="txtbut">Select a file...</div><!--
+                --></button><!--
+                --><div id="backgroundprogressbar"></div><!--
+                --><div id="progressbar"></div><!--
+                --><div id="extractzsteg" class="checkbox"><div id="casezstegextract" class="casecheck"></div><!--
+                -->Extract all zsteg files (--extract)</div><!--
+                --><div id="checkzsteg" class="checkbox"><div id="casezsteg" class="casecheck"></div><!--
+                -->Test all options of zsteg (--all)</div><!--
+                --><div id="checkpasswd" class="checkbox"><div id="casepasswd" class="casecheck"></div><!--
+                -->I've got a password !</div><!--
+                --><div id="gotpasswd"><input type="text" id="passwdsteghide" name="passwdsteghide" placeholder="password..."/></div><!--
+                --></div><!--
+                --><input type="hidden" id="zstegfiles" name="zstegfiles" value="0"/><!--
+                --><input type="hidden" id="allzsteg" name="allzsteg" value="0"/><!--
+                --><input type="submit" value="Analyse" name="submit" id="analyserbut"/>
+            </form>
+            </div><!--
+            --><div id="displayimg"><div id="containerimg"></div></div>
+        </section>
+    </body>
+</html>
