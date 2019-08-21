@@ -30,7 +30,7 @@ def cmdline(cmd, sh=True):
         stdout=PIPE,
         shell=sh
     )
-    return process.communicate()[0].decode("utf-8")
+    return process.communicate()[0].decode("ISO-8859-1")
 
 
 def rmExt(f):
