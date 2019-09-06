@@ -1,4 +1,6 @@
 # Aperi'Solve
+[![Rawsec's CyberSecurity Inventory](https://inventory.rawsec.ml/img/badges/Rawsec-inventoried-FF5050_flat.svg)](https://inventory.rawsec.ml/tools.html#Aperi'Solve)
+[![Website shields.io](https://img.shields.io/website-up-down-green-red/https/aperisolve.fr.svg)](https://aperisolve.fr/)
 <p align="center"><a href="https://aperisolve.fr"><img src="examples/screenshot.png"/></a></p>
 <b>Try it now: https://aperisolve.fr</b>
 
@@ -87,3 +89,9 @@ Then, run:
 ```bash
 python3 app.py
 ```
+
+# TODO
+- Implement strings
+- Implement binwalk
+- Implement foremost
+- ...
