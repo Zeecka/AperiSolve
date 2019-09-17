@@ -145,3 +145,8 @@ def processSteghide(img, folder="./", passwd=""):
         shutil.rmtree(folder+tmpfolder)
         return {"Output": out}
 
+
+def processStrings(img):
+    """ Compute strings on img """
+    return cmdline("strings "+quote(img))
+

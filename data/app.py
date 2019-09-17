@@ -96,10 +96,12 @@ def process():
             steghideoutput = {"Output":
                               "Steghide doesn't work without password."}
 
+        stringsimg = stega.processStrings(newpathfile)  # Generate Strings
         exifoutput = stega.processExif(newpathfile)  # Generate Images
 
         return jsonify({"Success": newfilename,
                         "Images": images,
+                        "Strings": stringsimg,
                         "Zsteg": zstegoutput,
                         "Exiftool": exifoutput,
                         "Steghide": steghideoutput})

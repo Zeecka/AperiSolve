@@ -219,6 +219,15 @@ $(document).ready(function() {
             "class='sbloc'>" + 
             fmExif(formatCmd(escapeHtml(data["Exiftool"]))) + "</div>");
 
+            //
+            // Strings display:
+            //
+
+            $('#containerimg').append("<h2 class='h2info'>Strings</h2>");
+            $('#containerimg').append("<div id='sbloc_strings' " +
+            "class='sbloc'><textarea id='txtareastr'>" + 
+            escapeHtml(data["Strings"]) + "</textarea></div>");
+
             $("section").delay(500).slideDown();
             
             // Download buttons
