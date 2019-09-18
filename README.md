@@ -22,6 +22,9 @@ The platform allow you to:
 - **Download `zsteg` files** such as mp3 encoded on LSB
 - **Download `steghide` files** using a defined password
 - **Visualise `exiftool` informations** such as geolocation or author
+- **Visualise `binwalk` informations**
+- **Download `binwalk` files** such as zip in png headers
+- **Visualise `strings` output**
 
 # IV . Application
 The Aperi'Solve platform is a *Flask* (python 3.7) application. The source code is located into the `/data` folder. The platform has been split as follows:
@@ -91,7 +94,7 @@ python3 app.py
 ```
 
 # TODO
-- Implement strings
-- Implement binwalk
-- Implement foremost
+- Implement Foremost ?
+- Implement PNGcheck ?
+- Implement stegoVeritas ?
 - ...
