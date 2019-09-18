@@ -220,6 +220,24 @@ $(document).ready(function() {
             fmExif(formatCmd(escapeHtml(data["Exiftool"]))) + "</div>");
 
             //
+            // Binwalk display:
+            //
+
+            $('#containerimg').append("<h2 class='h2info'>Binwalk</h2>");
+            $('#containerimg').append("<div id='sbloc_strings' " +
+            "class='sbloc'>" + 
+            formatCmd(escapeHtml(data["Binwalk"]["Output"])) + "</div>");
+
+            if ("File" in data["Binwalk"]) {
+                $('#containerimg').append("<button class='butdwl' data-src='" + 
+                data["Binwalk"]["File"] + 
+                "' type='button'>Download files !</button>");
+            }
+
+
+            $("section").delay(500).slideDown();
+
+            //
             // Strings display:
             //
 

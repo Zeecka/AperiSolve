@@ -1,5 +1,10 @@
 FROM alpine:3.10
 
+#
+# Binwalk
+#
+
+RUN apk add binwalk --update-cache --repository http://dl-cdn.alpinelinux.org/alpine/edge/testing/ --allow-untrusted
 
 #
 # ZSteg

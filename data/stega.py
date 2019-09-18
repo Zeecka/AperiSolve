@@ -150,3 +150,29 @@ def processStrings(img):
     """ Compute strings on img """
     return cmdline("strings "+quote(img))
 
+
+def processBinwalk(img, folder="./"):
+    """ Compute Binwalk on @img image.
+    Return text output and 7z file containing extracted files. """
+
+    # Avoid race conditions on file upload: create tmp folder
+    tmpfolder = "aperisolve_"+randString()
+    os.mkdir(folder+tmpfolder)
+    shutil.copyfile(folder+img, folder+tmpfolder+"/"+img)
+
+    # Compute steghide
+    out = cmdline(f"cd {quote(folder+tmpfolder)} && \
+                   binwalk --dd='.*' {quote(img)} 2>&1")
+
+    # Zip output if exist and remove tmp folder
+    if "0x" in out:  # Create 7z file
+        os.remove(folder+tmpfolder+"/"+img)  # Clean
+        cmdline(f"cd {quote(folder)} && \
+                  7z a {quote(tmpfolder+'.7z')} {quote(tmpfolder)}")  # 7Zip
+        shutil.rmtree(folder+tmpfolder)
+        return {"Output": out, "File": f"{folder}{tmpfolder}.7z"}
+    else:
+        shutil.rmtree(folder+tmpfolder)
+        return {"Output": out}
+
+
