@@ -6,7 +6,7 @@
 
 # I . What is Aperi'Solve?
 Aperi'Solve is an platform which performs layer analysis on image.<br/>
-The platform also uses "*zsteg*", "*steghide*" and "*exiftool*" for deeper steganography analysis.
+The platform also uses "*zsteg*", "*steghide*", "*exiftool*", "*binwalk*" and "*strings*" for deeper steganography analysis.
 <p align="center"><a href="https://aperisolve.fr"><img src="examples/video.gif"/></a></p>
 
 # II . Why Aperi'Solve

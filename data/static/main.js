@@ -120,6 +120,18 @@ $(document).ready(function() {
         return data
     }
 
+    function fmBinwalk(data) {
+        data = data.replace(/<br>(-*)<br>/g,'<br>');
+        console.dir(data);
+        data = data.replace(/<br>([^ ]+) *([^ ]*) *([^\<]*)/g, '<tr><td>$1</td><td>$2</td><td>$3</td></tr>');
+        console.dir(data);
+        data = "<table>" + data + "</table>";
+        data = data.replace(/<br>/g, "");
+        console.dir(data);
+        //console.dir(data);
+        return data
+    }
+
     function askforfile(data) {
         if ("Error" in data) {
             $("#txtbut").html(escapeHtml(data["Error"]));
@@ -226,7 +238,8 @@ $(document).ready(function() {
             $('#containerimg').append("<h2 class='h2info'>Binwalk</h2>");
             $('#containerimg').append("<div id='sbloc_strings' " +
             "class='sbloc'>" + 
-            formatCmd(escapeHtml(data["Binwalk"]["Output"])) + "</div>");
+            fmBinwalk(formatCmd(escapeHtml(data["Binwalk"]["Output"]))) + 
+            "</div>");
 
             if ("File" in data["Binwalk"]) {
                 $('#containerimg').append("<button class='butdwl' data-src='" + 

@@ -30,6 +30,9 @@ html {
 
 body {
 	padding: 0 70px 70px 70px;
+    position: relative;
+    box-sizing: border-box;
+    min-height: calc(100vh - 50px);
 }
 
 h1 {
@@ -387,5 +390,30 @@ div#textnode {
     resize: none;
     padding: 0 10px;
     box-sizing: border-box;
+}
+
+#bottom_right{
+    position: absolute;
+    right: 20px;
+    bottom: 20px;
+}
+
+table{
+    border-collapse: collapse;
+    width: 100%;
+}
+
+table tr:nth-child(1){
+    background: rgba(0,0,0,0.5);
+    color: white;
+}
+
+table tr:nth-child(2n){
+    background: rgba(255,255,255,0.5);
+}
+
+td{
+    padding: 5px 15px;
+    border: 1px solid black;
 }
 

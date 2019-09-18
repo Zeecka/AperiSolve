@@ -18,6 +18,7 @@
         <link rel="icon" type="image/png" href="{{ url_for('static', filename='watermelon.png') }}" />
         <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
         <script src="{{ url_for('static', filename='main.js') }}"></script>
+        <script async defer src="https://buttons.github.io/buttons.js"></script>
     </head>
     <div style="visibility:hidden; opacity:0" id="dropzone"><div id="textnode">Drop anywhere!</div></div>
     <body>
@@ -26,8 +27,9 @@
         <section>
             <div id="info">
             <h2>What is this ?</h2>
-            <p>Aperi'Solve is an online platform which performs layer analysis on image. The platform also uses <i>zsteg</i>, <i>steghide</i> and <i>exiftool</i> for deeper steganography analysis.
+            <p>Aperi'Solve is an online platform which performs layer analysis on image. The platform also uses <i>zsteg</i>, <i>steghide</i>, <i>exiftool</i>, <i>binwalk</i> and <i>strings</i> for deeper steganography analysis.
             The platform supports the following images format: .png, .jpg, .gif, .bmp, .jpeg, .jfif, .jpe, .tiff...</p>
+            <!-- Place this tag where you want the button to render. -->
             <!-- <hr/> -->
             <form method="post" id="fileform" enctype="multipart/form-data">
                 <input type="file" name="fileup" id="fileup"/>
@@ -52,5 +54,8 @@
             </div><!--
             --><div id="displayimg"><div id="containerimg"></div></div>
         </section>
+        <div id="bottom_right">
+            <a class="github-button" href="https://github.com/Zeecka/AperiSolve" data-size="large" aria-label="View on GitHub">View on GitHub</a>
+        </div>
     </body>
 </html>
