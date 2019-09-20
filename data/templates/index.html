@@ -19,6 +19,7 @@
         <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
         <script src="{{ url_for('static', filename='main.js') }}"></script>
         <script async defer src="https://buttons.github.io/buttons.js"></script>
+        <script async src="https://platform.twitter.com/widgets.js" charset="utf-8"></script>
     </head>
     <div style="visibility:hidden; opacity:0" id="dropzone"><div id="textnode">Drop anywhere!</div></div>
     <body>
@@ -52,9 +53,17 @@
                 --><input type="submit" value="Analyse" name="submit" id="analyserbut"/>
             </form>
             </div><!--
-            --><div id="displayimg"><div id="containerimg"></div></div>
+            --><div id="displayimg"><div id="containerimg"><!--
+                --><div id="out_imgs"><h2 class='h2info'>View</h2><span></span><div></div></div><!--
+                --><div id="out_zsteg"><h2 class='h2info'>Zsteg</h2><span></span><div></div></div><!--
+                --><div id="out_steghide"><h2 class='h2info'>Steghide</h2><span></span><div></div></div><!--
+                --><div id="out_exifs"><h2 class='h2info'>Exiftool</h2><span></span><div></div></div><!--
+                --><div id="out_binwalk"><h2 class='h2info'>Binwalk</h2><span></span><div></div></div><!--
+                --><div id="out_strings"><h2 class='h2info'>Strings</h2><span></span><div></div></div><!--
+            --></div></div>
         </section>
         <div id="bottom_right">
+            <center><a href="https://twitter.com/Zeecka_" class="twitter-follow-button" data-show-count="false">Follow @Zeecka_</a></center>
             <a class="github-button" href="https://github.com/Zeecka/AperiSolve" data-size="large" aria-label="View on GitHub">View on GitHub</a>
         </div>
     </body>

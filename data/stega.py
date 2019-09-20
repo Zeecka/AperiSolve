@@ -115,11 +115,6 @@ def processZsteg(img, folder="./", allzsteg=False, zstegfiles=False):
     return {"Output": zstegOut}
 
 
-def processExif(img):
-    """ Compute exiftool for a given image `img`. """
-    return cmdline("exiftool -E -a -u -g1 "+quote(img))
-
-
 def processSteghide(img, folder="./", passwd=""):
     """ Compute Steghide with @passwd as password on @img image.
     Return text output and 7z file containing extracted files. """
@@ -146,11 +141,6 @@ def processSteghide(img, folder="./", passwd=""):
         return {"Output": out}
 
 
-def processStrings(img):
-    """ Compute strings on img """
-    return cmdline("strings "+quote(img))
-
-
 def processBinwalk(img, folder="./"):
     """ Compute Binwalk on @img image.
     Return text output and 7z file containing extracted files. """
@@ -175,4 +165,13 @@ def processBinwalk(img, folder="./"):
         shutil.rmtree(folder+tmpfolder)
         return {"Output": out}
 
+
+def processStrings(img, folder="./"):
+    """ Compute strings on img """
+    return cmdline("strings "+quote(folder+img))
+
+
+def processExif(img, folder="./"):
+    """ Compute exiftool for a given image `img`. """
+    return cmdline("exiftool -E -a -u -g1 "+quote(folder+img))
 

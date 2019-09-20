@@ -39,17 +39,21 @@ $(document).ready(function() {
         }
     }
 
+    ////////////////
+    // Checkboxes //
+    ////////////////
+
     $("#checkzsteg").click(function() {
         $(this).toggleClass("active");
-        $("#allzsteg").attr("value", 
-                            (1 + parseInt($("#allzsteg").attr("value"))) % 2);
+        $("#allzsteg").attr("value",
+            (1 + parseInt($("#allzsteg").attr("value"))) % 2);
     });
     $("#extractzsteg").click(function() {
         $(this).toggleClass("active");
-        $("#zstegfiles").attr("value", 
-                            (1 + parseInt($("#zstegfiles").attr("value"))) % 2);
+        $("#zstegfiles").attr("value",
+            (1 + parseInt($("#zstegfiles").attr("value"))) % 2);
     });
-    
+
     $("#checkpasswd").click(function() {
         $(this).toggleClass("active");
         if ($(this).hasClass("active")) {
@@ -58,11 +62,11 @@ $(document).ready(function() {
             $("#passwdsteghide").fadeOut(300);
         }
     });
-    
+
     $("#filebut").click(function() {
         $("#fileup").click();
     });
-    
+
     $("#fileup").change(function(event) {
         $("#txtbut").text(this.value.replace(/^.*[\\\/]/, ''));
     });
@@ -71,36 +75,39 @@ $(document).ready(function() {
         e.preventDefault();
         $("#backgroundprogressbar").show();
         $("#analyserbut").hide();
-        $("#txtbut").html('File processing...<div id="loadinggif" ' +
-                          'class="lds-rolling"><div></div></div>');
+        $("#txtbut").html('File processing...<div class="loadinggif '
+        + 'lds-rolling"><div></div></div>');
+        $("#containerimg span").html('Waiting...<div class="loadinggif '
+        + 'lds-rolling blackwait"><div></div></div>');
         $("#filebut").css("cursor", "auto");
 
         /*
-            Post to /process
+            Post to /upload
             @fileup : Uploaded image (file)
-            @allzsteg : Active --all option for zsteg (bool 1/0)
-            @zstegfiles : Active --extract option for zsteg (bool 1/0)
-            @passwdsteghide : Password for steghide
         */
         var formData = new FormData($("form").get(0));
         $.ajax({
             type: 'POST',
-            url: '/process',
+            url: '/upload',
             data: formData,
             dataType: 'json',
             processData: false,
             contentType: false,
             complete: function(data) {
-                askforfile(data.responseJSON);  // Return json file
+                askforfile(data.responseJSON); // Return json file
             }
         });
     });
 
+    ///////////////////////////////
+    // Format output and Regex   //
+    ///////////////////////////////
+
     function formatCmd(data) {
         data = data.replace('\r\n', '\r');
         data = data.split('\r');
-        data = data.filter(x => x != '');  // remove empty string
-        data = data.filter(x => x.slice(-3) != '.. ');  // remove empty string 
+        data = data.filter(x => x != ''); // remove empty string
+        data = data.filter(x => x.slice(-3) != '.. '); // remove empty string 
         data = data.join('<br>');
         data = data.split('\n');
         data = data.join('<br>');
@@ -121,16 +128,17 @@ $(document).ready(function() {
     }
 
     function fmBinwalk(data) {
-        data = data.replace(/<br>(-*)<br>/g,'<br>');
-        console.dir(data);
-        data = data.replace(/<br>([^ ]+) *([^ ]*) *([^\<]*)/g, '<tr><td>$1</td><td>$2</td><td>$3</td></tr>');
-        console.dir(data);
+        data = data.replace(/<br>(-*)<br>/g, '<br>');
+        data = data.replace(/<br>([^ ]+) *([^ ]*) *([^\<]*)/g,
+            '<tr><td>$1</td><td>$2</td><td>$3</td></tr>');
         data = "<table>" + data + "</table>";
         data = data.replace(/<br>/g, "");
-        console.dir(data);
-        //console.dir(data);
         return data
     }
+
+    //////////////////
+    // Main handler //
+    //////////////////
 
     function askforfile(data) {
         if ("Error" in data) {
@@ -140,133 +148,250 @@ $(document).ready(function() {
         dragdropok = false;
         $("section").slideUp("fast", function() {
             $("#info").hide();
+            $("#displayimg").show();
             $("section").css({
                 "background-color": "transparent",
                 "box-shadow": "inherit",
                 "width": "100%"
             });
 
-
             //
             // Images display:
             //
 
+            $.post("/process", {
+                filename: data["File"]
+            }, function(data) {
 
-            $('#containerimg').append("<h2 class='h2info'>View</h2>");
-            if ("Alpha" in data["Images"]) { // Reorder key
-                arr = ["Supperimposed", "Red", "Green", "Blue", "Alpha"];
-            } else {
-                arr = ["Supperimposed", "Red", "Green", "Blue"];
-            }
-            $.each(arr, function() {
-                $('#containerimg').append('<h2 class="h2scan" style="color:' + 
-                                           this + '">' + this + '</h2>');
-                $.each(data["Images"][this], function() {
-                    $('#containerimg').append('<img class="imgscandisplay" ' +
-                                              'src="uploads/' + this + '" />');
+                if ("Error" in data) {
+                    $('#out_imgs > div').append('<div>' + data["Error"] + '</div>');
+                    $('#out_imgs span').slideUp(300, function(){
+                        $('#out_imgs > div').slideDown();
+                    });
+                    return;
+                }
+                if ("Alpha" in data["Images"]) { // Reorder key
+                    arr = ["Supperimposed", "Red", "Green", "Blue", "Alpha"];
+                } else {
+                    arr = ["Supperimposed", "Red", "Green", "Blue"];
+                }
+                $.each(arr, function() {
+                    $('#out_imgs > div').append('<h2 class="h2scan" style="color:' +
+                        this + '">' + this + '</h2>');
+                    $.each(data["Images"][this], function() {
+                        $('#out_imgs > div').append('<img class="imgscandisplay" ' +
+                            'src="uploads/' + this + '" />');
+                    });
                 });
-            });
 
-            $(".imgscandisplay").click(function() {
-                $(".imgscandisplay").removeClass("active");
-                $(this).addClass("active");
-                newappend = '<div id="displayimgfull"><a href="' + 
-                            $(this).attr("src") + '" download><img src="' + 
-                            $(this).attr("src") + '" /></a></div>';
-                $(newappend).hide().appendTo("body").fadeIn(300);
+                $(".imgscandisplay").click(function() {
+                    $(".imgscandisplay").removeClass("active");
+                    $(this).addClass("active");
+                    newappend = '<div id="displayimgfull"><a href="' +
+                        $(this).attr("src") + '" download><img src="' +
+                        $(this).attr("src") + '" /></a></div>';
+                    $(newappend).hide().appendTo("body").fadeIn(300);
 
-                $(document).keyup(function(e) {
-                    if (e.keyCode == 27) {  // [Escape]
-                        $(".imgscandisplay").removeClass("active");
+                    $(document).keyup(function(e) {
+                        if (e.keyCode == 27) { // [Escape]
+                            $(".imgscandisplay").removeClass("active");
+                            $("#displayimgfull").fadeOut(300, function() {
+                                $(this).remove();
+                            });
+                        }
+
+                    });
+                    $("#displayimgfull").click(function() {
                         $("#displayimgfull").fadeOut(300, function() {
                             $(this).remove();
                         });
-                    }
-
+                    }).children().click(function(e) {});
                 });
-                $("#displayimgfull").click(function() {
-                    $("#displayimgfull").fadeOut(300, function() {
-                        $(this).remove();
-                    });
-                }).children().click(function(e) {});
-            });
-
+                
+                $('#out_imgs span').slideUp(300, function(){
+                    $('#out_imgs > div').slideDown();
+                });
+                
+            }, "json");
 
             //
             // Zsteg display:
             //
 
-            $('#containerimg').append("<h2 class='h2info'>Zsteg</h2>");
-            $('#containerimg').append("<div id='sbloc_zsteg' class='sbloc'>" + 
-            fmZsteg(formatCmd(escapeHtml(data["Zsteg"]["Output"]))) + "</div>");
+            $.post("/zsteg", {
+                    filename: data["File"],
+                    zstegfiles: $("#zstegfiles").val(),
+                    allzsteg: $("#allzsteg").val()
+                },
+                function(data) {
+
+                    if ("Error" in data || "Error" in data["Zsteg"]) {
+                        if ("Error" in data){
+                            $('#out_zsteg > div').append("<div id='sbloc_zsteg' class='sbloc'>" +
+                            fmZsteg(formatCmd(escapeHtml(data["Error"]))) + "</div>");
+                            $('#out_zsteg span').slideUp(300, function(){
+                                $('#out_zsteg > div').slideDown();
+                            });
+                            return;
+                        }
+                        $('#out_zsteg > div').append("<div id='sbloc_zsteg' class='sbloc'>" +
+                        fmZsteg(formatCmd(escapeHtml(data["Zsteg"]["Error"]))) + "</div>");
+                        $('#out_zsteg span').slideUp(300, function(){
+                            $('#out_zsteg > div').slideDown();
+                        });
+                        return;
+                    }
+                    $('#out_zsteg > div').append("<div id='sbloc_zsteg' class='sbloc'>" +
+                        fmZsteg(formatCmd(escapeHtml(data["Zsteg"]["Output"]))) + "</div>");
 
 
-            if ("File" in data["Zsteg"]) {
-                $('#containerimg').append("<button class='butdwl' data-src='" + 
-                data["Zsteg"]["File"] + 
-                "' type='button'>Download files !</button>");
-            }
+                    if ("File" in data["Zsteg"]) {
+                        $('#out_zsteg > div').append("<button class='butdwl' data-src='" +
+                            data["Zsteg"]["File"] +
+                            "' type='button'>Download files !</button>");
+                    }
+                    
+                    $('#out_zsteg span').slideUp(300, function(){
+                        $('#out_zsteg > div').slideDown();
+                    });
+                }, "json");
+
 
             //
             // Steghide display:
             //
 
-            $('#containerimg').append("<h2 class='h2info'>Steghide</h2>");
-            $('#containerimg').append("<div id='sbloc_steghide' "+
-            "class='sbloc'>" + 
-            formatCmd(escapeHtml(data["Steghide"]["Output"])) + "</div>");
-            
-            if ("File" in data["Steghide"]) {
-                $('#containerimg').append("<button class='butdwl' data-src='" + 
-                data["Steghide"]["File"] + 
-                "' type='button'>Download files !</button>");
-            }
+            $.post("/steghide", {
+                filename: data["File"],
+                passwdsteghide: $("#passwdsteghide").val()
+            }, function(data) {
+                if ("Error" in data || "Error" in data["Steghide"]) {
+                    if ("Error" in data){
+                        $('#out_steghide > div').append("<div id='sbloc_steghide' " +
+                        "class='sbloc'>" +
+                        formatCmd(escapeHtml(data["Error"])) + 
+                        "</div>");
+                        $('#out_steghide span').slideUp(300, function(){
+                            $('#out_steghide > div').slideDown();
+                        });
+                        return;
+                    }
+                    $('#out_steghide > div').append("<div id='sbloc_steghide' " +
+                    "class='sbloc'>" +
+                    formatCmd(escapeHtml(data["Steghide"]["Error"])) + 
+                    "</div>");
+                    $('#out_steghide span').slideUp(300, function(){
+                        $('#out_steghide > div').slideDown();
+                    });
+                    return;
+                }
+                $('#out_steghide > div').append("<div id='sbloc_steghide' " +
+                    "class='sbloc'>" +
+                    formatCmd(escapeHtml(data["Steghide"]["Output"])) + "</div>");
+
+                if ("File" in data["Steghide"]) {
+                    $('#out_steghide > div').append("<button class='butdwl' data-src='" +
+                        data["Steghide"]["File"] +
+                        "' type='button'>Download files !</button>");
+                }
+
+                $('#out_steghide span').slideUp(300, function(){
+                    $('#out_steghide > div').slideDown();
+                });
+            }, "json");
 
             //
-            // Exiftools display:
+            // Exiftool display:
             //
 
-            $('#containerimg').append("<h2 class='h2info'>Exiftool</h2>");
-            $('#containerimg').append("<div id='sbloc_exiftool' " +
-            "class='sbloc'>" + 
-            fmExif(formatCmd(escapeHtml(data["Exiftool"]))) + "</div>");
+
+            $.post("/exiftool", {
+                filename: data["File"]
+            }, function(data) {
+                if ("Error" in data) {
+                    $('#out_exifs > div').append("<div id='sbloc_exiftool' " +
+                    "class='sbloc'>" +
+                    formatCmd(escapeHtml(data["Error"])) + "</div>");
+                    $('#out_exifs span').slideUp(300, function(){
+                        $('#out_exifs > div').slideDown();
+                    });
+                    return;
+                }
+                $('#out_exifs > div').append("<div id='sbloc_exiftool' " +
+                    "class='sbloc'>" +
+                    fmExif(formatCmd(escapeHtml(data["Exiftool"]))) + "</div>");
+
+                $('#out_exifs span').slideUp(300, function(){
+                    $('#out_exifs > div').slideDown();
+                });
+            }, "json");
 
             //
             // Binwalk display:
             //
 
-            $('#containerimg').append("<h2 class='h2info'>Binwalk</h2>");
-            $('#containerimg').append("<div id='sbloc_strings' " +
-            "class='sbloc'>" + 
-            fmBinwalk(formatCmd(escapeHtml(data["Binwalk"]["Output"]))) + 
-            "</div>");
+            $.post("/binwalk", {
+                filename: data["File"]
+            }, function(data) {
+                if ("Error" in data) {
+                    $('#out_binwalk > div').append("<div id='sbloc_strings' " +
+                    "class='sbloc'>" +
+                    formatCmd(escapeHtml(data["Error"])) + "</div>");
+                    $('#out_binwalk span').slideUp(300, function(){
+                        $('#out_binwalk > div').slideDown();
+                    });
+                    return;
+                }
+                $('#out_binwalk > div').append("<div id='sbloc_strings' " +
+                    "class='sbloc'>" +
+                    fmBinwalk(formatCmd(escapeHtml(data["Binwalk"]["Output"]))) +
+                    "</div>");
 
-            if ("File" in data["Binwalk"]) {
-                $('#containerimg').append("<button class='butdwl' data-src='" + 
-                data["Binwalk"]["File"] + 
-                "' type='button'>Download files !</button>");
-            }
+                if ("File" in data["Binwalk"]) {
+                    $('#out_binwalk > div').append("<button class='butdwl' data-src='" +
+                        data["Binwalk"]["File"] +
+                        "' type='button'>Download files !</button>");
+                }
+                $('#out_binwalk span').slideUp(300, function(){
+                    $('#out_binwalk > div').slideDown();
+                });
+            }, "json");
 
-
-            $("section").delay(500).slideDown();
 
             //
             // Strings display:
             //
 
-            $('#containerimg').append("<h2 class='h2info'>Strings</h2>");
-            $('#containerimg').append("<div id='sbloc_strings' " +
-            "class='sbloc'><textarea id='txtareastr'>" + 
-            escapeHtml(data["Strings"]) + "</textarea></div>");
+            $.post("/strings", {
+                filename: data["File"]
+            }, function(data) {
+                if ("Error" in data) {
+                    $('#out_strings > div').append("<div id='sbloc_strings' " +
+                    "class='sbloc'>" +
+                    formatCmd(escapeHtml(data["Error"])) + "</div>");
+                    $('#out_strings span').slideUp(300, function(){
+                        $('#out_strings > div').slideDown();
+                    });
+                    return;
+                }
+                $('#out_strings > div').append("<div id='sbloc_strings' " +
+                    "class='sbloc'><textarea class='txtareastr'>" +
+                    escapeHtml(data["Strings"]) + "</textarea></div>");
 
-            $("section").delay(500).slideDown();
-            
-            // Download buttons
-            
+                $("section").delay(500).slideDown();
+
+                // Download buttons
+
+                $('#out_strings span').slideUp(300, function(){
+                    $('#out_strings > div').slideDown();
+                });
+            }, "json");
+
             $(".butdwl").click(function() {
                 window.open($(this).data("src"), "_blank");
             });
-            
+            $("#containerimg").slideDown();
+            $("section").slideDown();
         });
     }
 
@@ -290,9 +415,9 @@ $(document).ready(function() {
                 }
                 $oldimg.removeClass("active");
                 $newimg.addClass("active");
-                $("#displayimgfull").html('<a href="' + $newimg.attr("src") + 
-                '" download><img src="' + $newimg.attr("src") + 
-                '" /></a></div>');
+                $("#displayimgfull").html('<a href="' + $newimg.attr("src") +
+                    '" download><img src="' + $newimg.attr("src") +
+                    '" /></a></div>');
             }
             if (e.keyCode == 39) { // [Reft]
                 e.preventDefault();
@@ -306,40 +431,39 @@ $(document).ready(function() {
                 }
                 $oldimg.removeClass("active");
                 $newimg.addClass("active");
-                $("#displayimgfull").html('<a href="' + $newimg.attr("src") + 
-                '" download><img src="' + $newimg.attr("src") + 
-                '" /></a></div>');
+                $("#displayimgfull").html('<a href="' + $newimg.attr("src") +
+                    '" download><img src="' + $newimg.attr("src") +
+                    '" /></a></div>');
             }
             if (e.keyCode == 38) { // [Up]
                 e.preventDefault();
                 $oldimg = $(".imgscandisplay.active");
-                $val = 1 + mod((($oldimg.index() - 1) - 9), 
-                (($oldimg.parent().children(".imgscandisplay").length / 8) * 9))
+                $val = 1 + mod((($oldimg.index() - 1) - 9),
+                    (($oldimg.parent().children(".imgscandisplay").length / 8) * 9))
                 $newimg = $oldimg.parent().children().eq($val);
                 $oldimg.removeClass("active");
                 $newimg.addClass("active");
-                $("#displayimgfull").html('<a href="' + $newimg.attr("src") + 
-                '" download><img src="' + $newimg.attr("src") + 
-                '" /></a></div>');
+                $("#displayimgfull").html('<a href="' + $newimg.attr("src") +
+                    '" download><img src="' + $newimg.attr("src") +
+                    '" /></a></div>');
             }
             if (e.keyCode == 40) { // [Down]
                 e.preventDefault();
                 $oldimg = $(".imgscandisplay.active");
-                $val = 1 + ((($oldimg.index() - 1) + 9) % 
-                (($oldimg.parent().children(".imgscandisplay").length / 8) * 9))
+                $val = 1 + ((($oldimg.index() - 1) + 9) %
+                    (($oldimg.parent().children(".imgscandisplay").length / 8) * 9))
                 $newimg = $oldimg.parent().children().eq($val);
                 $oldimg.removeClass("active");
                 $newimg.addClass("active");
-                $("#displayimgfull").html('<a href="' + $newimg.attr("src") + 
-                '" download><img src="' + $newimg.attr("src") + 
-                '" /></a></div>');
+                $("#displayimgfull").html('<a href="' + $newimg.attr("src") +
+                    '" download><img src="' + $newimg.attr("src") +
+                    '" /></a></div>');
             }
         }
     });
     window.addEventListener("keydown", function(e) {
         // [Space] and Arrow keys
-        if ($(".imgscandisplay.active").length && 
-            [32, 37, 38, 39, 40].indexOf(e.keyCode) > -1) {
+        if ($(".imgscandisplay.active").length && [32, 37, 38, 39, 40].indexOf(e.keyCode) > -1) {
             e.preventDefault();
         }
     }, false);
@@ -393,7 +517,7 @@ $(document).ready(function() {
             let fileInput = document.querySelector('#fileup');
             fileInput.files = e.dataTransfer.files;
             document.querySelector("#txtbut").innerHTML = escapeHtml(
-            e.dataTransfer.files[0].name);
+                e.dataTransfer.files[0].name);
         }
     });
 });
