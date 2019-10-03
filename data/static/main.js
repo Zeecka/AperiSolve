@@ -250,7 +250,11 @@ $(document).ready(function() {
                             data["Zsteg"]["File"] +
                             "' type='button'>Download files !</button>");
                     }
-                    
+
+                    $(".butdwl").click(function() {
+                        window.open($(this).data("src"), "_blank");
+                    });
+
                     $('#out_zsteg span').slideUp(300, function(){
                         $('#out_zsteg > div').slideDown();
                     });
@@ -294,6 +298,11 @@ $(document).ready(function() {
                         data["Steghide"]["File"] +
                         "' type='button'>Download files !</button>");
                 }
+
+
+                $(".butdwl").click(function() {
+                    window.open($(this).data("src"), "_blank");
+                });
 
                 $('#out_steghide span').slideUp(300, function(){
                     $('#out_steghide > div').slideDown();
@@ -352,6 +361,12 @@ $(document).ready(function() {
                         data["Binwalk"]["File"] +
                         "' type='button'>Download files !</button>");
                 }
+                
+                
+                $(".butdwl").click(function() {
+                    window.open($(this).data("src"), "_blank");
+                });
+
                 $('#out_binwalk span').slideUp(300, function(){
                     $('#out_binwalk > div').slideDown();
                 });
@@ -387,9 +402,6 @@ $(document).ready(function() {
                 });
             }, "json");
 
-            $(".butdwl").click(function() {
-                window.open($(this).data("src"), "_blank");
-            });
             $("#containerimg").slideDown();
             $("section").slideDown();
         });
