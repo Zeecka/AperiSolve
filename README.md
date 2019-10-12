@@ -36,7 +36,7 @@ The Aperi'Solve platform is a *Flask* (python 3.7) application. The source code 
 - */uploads* : Uploaded images and working directory for steganography tools
 
 # V . Installation with Docker
-A Dockerfile, if provided in `/build/flask` and a `docker-compose.yml`, is available at root directory.
+A Dockerfile is provided in `/build/flask` and a `docker-compose.yml`, is available at root directory.
 
 1. Download the repository:
 ```bash
