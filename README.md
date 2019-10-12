@@ -5,7 +5,7 @@
 <b>Try it now: https://aperisolve.fr</b>
 
 # I . What is Aperi'Solve?
-Aperi'Solve is an platform which performs layer analysis on image.<br/>
+Aperi'Solve is a platform which performs layer analysis on image.<br/>
 The platform also uses "*zsteg*", "*steghide*", "*exiftool*", "*binwalk*" and "*strings*" for deeper steganography analysis.
 <p align="center"><a href="https://aperisolve.fr"><img src="examples/video.gif"/></a></p>
 
@@ -13,7 +13,7 @@ The platform also uses "*zsteg*", "*steghide*", "*exiftool*", "*binwalk*" and "*
 Aperi'Solve has been created in order to have an "easy to use" platform which performs common steganalysis tests such as LSB or `steghide`. The platform and Dockerfile are also a quick alternative for people who didn't manage to install `zsteg` (ruby gem) properly.
 
 # III . Features
-Aperi'Solve is based on Python3 with Flask and PIL module, the platform currently support the following images format: `.png`, `.jpg`, `.gif`, `.bmp`, `.jpeg`, `.jfif`, `.jpe`, `.tiff`.
+Aperi'Solve is based on Python3 with Flask and PIL module, the platform currently supports the following images format: `.png`, `.jpg`, `.gif`, `.bmp`, `.jpeg`, `.jfif`, `.jpe`, `.tiff`.
 
 The platform allow you to:
 - **Visualise each bit layer** of each channel for a given image (ie. LSB of Red channel).
@@ -28,15 +28,15 @@ The platform allow you to:
 
 # IV . Application
 The Aperi'Solve platform is a *Flask* (python 3.7) application. The source code is located into the `/data` folder. The platform has been split as follows:
-- *app.py* : Contain web routes and main application variables
-- *stega.py* : Contain steganography functions. Layer decomposition is performed with numpy.
-- *appfunct.py* : Contain functions used in both *app.py* and *stega.py*.
+- *app.py* : Contains web routes and main application variables
+- *stega.py* : Contains steganography functions. Layer decomposition is performed with numpy.
+- *appfunct.py* : Contains functions used in both *app.py* and *stega.py*.
 - */templates* : index.html (html view)
 - */static* : Images, JavaScript and CSS
 - */uploads* : Uploaded images and working directory for steganography tools
 
 # V . Installation with Docker
-A Dockerfile if provided in `/build/flask` and a `docker-compose.yml` is available at root directory.
+A Dockerfile, if provided in `/build/flask` and a `docker-compose.yml`, is available at root directory.
 
 1. Download the repository:
 ```bash
