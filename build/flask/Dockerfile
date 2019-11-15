@@ -1,12 +1,6 @@
 FROM alpine:3.10
 
 #
-# Binwalk
-#
-
-RUN apk add binwalk --update-cache --repository http://dl-cdn.alpinelinux.org/alpine/edge/testing/ --allow-untrusted
-
-#
 # ZSteg
 #
 
@@ -59,6 +53,12 @@ RUN echo "**** install Python ****" && \
 
 RUN apk add --no-cache gcc musl-dev jpeg-dev zlib-dev
 
+#
+# Binwalk
+#
+
+RUN apk add git
+RUN cd /tmp && git clone https://github.com/ReFirmLabs/binwalk.git && cd binwalk && python3 setup.py install
 
 
 WORKDIR /opt/aperisolve
