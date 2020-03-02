@@ -17,21 +17,11 @@ import stega
 
 app = Flask(__name__)
 
-APP_PORT = 80
-APP_RM_FILE_TIME = 10  # Keep images for N minutes maximum
-app.config['MAX_CONTENT_LENGTH'] = 16 * 1024 * 1024  # 16 Mega per image maxi
+APP_PORT = int(os.getenv('APP_PORT', 80))
+APP_RM_FILE_TIME = int(os.getenv('APP_RM_FILE_TIME', 10))  # Keep images for N minutes maximum
+app.config['MAX_CONTENT_LENGTH'] = int(os.getenv('APP_MAX_SIZE', 16 * 1024 * 1024))  # 16 Mega per image maxi
 # Supported image types
 imgExts = ["jpeg", "png", "bmp", "gif", "tiff", "jpg", "jfif", "jpe", "tif"]
-
-# Set constant from ENV
-
-if "APP_MAX_SIZE" in os.environ:
-    app.config['MAX_CONTENT_LENGTH'] = int(os.environ['APP_MAX_SIZE'])
-if "APP_RM_FILE_TIME" in os.environ:
-    APP_RM_FILE_TIME = int(os.environ['APP_RM_FILE_TIME'])
-if "APP_PORT" in os.environ:
-    APP_PORT = int(os.environ['APP_PORT'])
-
 
 @app.route('/')
 def main():
