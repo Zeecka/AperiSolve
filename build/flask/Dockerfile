@@ -1,4 +1,5 @@
 FROM alpine:3.10
+ARG EXIFTOOL_VERSION=11.93
 
 #
 # ZSteg
@@ -24,16 +25,16 @@ RUN apk add steghide --update-cache --repository http://dl-cdn.alpinelinux.org/a
 # ExifTool
 #
 
-RUN apk add --no-cache perl make
+RUN apk add --no-cache perl make openssl wget
 RUN cd /tmp \
-    && wget http://www.sno.phy.queensu.ca/~phil/exiftool/Image-ExifTool-11.53.tar.gz \
-    && tar -zxvf Image-ExifTool-11.53.tar.gz \
-    && cd Image-ExifTool-11.53 \
+    && wget https://exiftool.org/Image-ExifTool-${EXIFTOOL_VERSION}.tar.gz \
+    && tar -zxvf Image-ExifTool-${EXIFTOOL_VERSION}.tar.gz \
+    && cd Image-ExifTool-${EXIFTOOL_VERSION} \
     && perl Makefile.PL \
     && make test \
     && make install \
     && cd .. \
-    && rm -rf Image-ExifTool-11.53
+    && rm -rf Image-ExifTool-${EXIFTOOL_VERSION}
 
 
 #
