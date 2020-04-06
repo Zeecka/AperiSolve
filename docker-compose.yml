@@ -6,6 +6,7 @@ version: '3'
 services:
     aperisolve:
         build: ./build/flask
+        image: zeecka/aperisolve:latest
         container_name: aperisolve
         hostname: aperisolve
         environment:
