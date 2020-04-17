@@ -118,7 +118,7 @@ input[type="text"] {
     cursor: pointer;
     border: 0;
     outline: 0;
-    width: 225px;
+    width: 100%;
     padding: 14px 0;
     background: #34495E;
     color: #42f4c5;
@@ -147,6 +147,8 @@ input[type="submit"]:hover {
 #gotpasswd {
     margin-top: 10px;
     line-height: 46px;
+    width: 50%;
+    display: inline-block;
 }
 
 input[type="text"] {
@@ -154,6 +156,7 @@ input[type="text"] {
     padding: 0 10px;
     margin-left: 10px;
     cursor: inherit;
+    box-sizing: border-box;
 }
 
 #passwdsteg {
@@ -243,11 +246,6 @@ input[type="checkbox"] {
     display: none;
 }
 
-.checkbox {
-    cursor: pointer;
-    margin-top: 15px;
-    display: inline-block;
-}
 .sbloc{
     background-color: rgba(0,0,0,0.5);
     padding: 15px;
@@ -307,7 +305,11 @@ input[type="checkbox"] {
 }
 
 .checkbox {
-    margin-right: 12px;
+    cursor: pointer;
+    margin-top: 15px;
+    display: inline-block;
+    width: 50%;
+    line-height: 50px;
 }
 
 /* LOADING CIRCLE */
