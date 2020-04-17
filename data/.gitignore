@@ -1,6 +1,10 @@
 # exclude everything
 uploads/*
+__pycache__
+__pycache__/*
 
 # exception to the rule
 !uploads/.gitkeep 
+
+
 

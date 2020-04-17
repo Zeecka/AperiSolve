@@ -5,17 +5,16 @@
    Vert: #42f4c5
  ------------------
 */
-
 ::-moz-selection {
-    background: rgba(66, 244, 197, 0.2);
+    background: rgba(66, 244, 197, 0.3);
 }
 
 ::selection {
-    background: rgba(66, 244, 197, 0.2);
+    background: rgba(66, 244, 197, 0.3);
 }
 
 * {
-    font-family: 'Questrial', sans-serif;
+    font-family: 'Noto Sans TC', sans-serif;
 }
 
 html,
@@ -24,8 +23,26 @@ body {
 }
 
 html {
-    background: url("bg.jpg") no-repeat center center fixed;
-    background-size: cover;
+}
+
+.background-container {
+    position: fixed;
+    left: 0;
+    right: 0;
+    top: 0;
+    bottom: 0;
+    z-index: -1;
+}
+
+noindex:-o-prefocus, .background-container {
+    display: none;
+}
+
+/* Hide background in old Opera because of lags */
+.content {
+    background: rgba(0, 0, 0, 0.5);
+    position: relative;
+    padding: 40px 0;
 }
 
 body {
@@ -106,6 +123,7 @@ input[type="text"] {
     background: #34495E;
     color: #42f4c5;
     height: 45px;
+    line-height: 10px;
 }
 
 button:active,
@@ -186,6 +204,7 @@ input[type="text"] {
     0% {
         background-position: 0 0;
     }
+
     100% {
         background-position: 60px 0;
     }
@@ -201,7 +220,7 @@ input[type="text"] {
 }
 
 .h2scan {
-    font-family: 'Questrial', cursive;
+    font-family: 'Noto Sans TC', cursive;
     margin-top: 20px;
 }
 
@@ -229,7 +248,11 @@ input[type="checkbox"] {
     margin-top: 15px;
     display: inline-block;
 }
-
+.sbloc{
+    background-color: rgba(0,0,0,0.5);
+    padding: 15px;
+    color: white;
+}
 .casecheck {
     width: 20px;
     height: 20px;
@@ -286,8 +309,8 @@ input[type="checkbox"] {
 .checkbox {
     margin-right: 12px;
 }
-/* LOADING CIRCLE */
 
+/* LOADING CIRCLE */
 .loadinggif {
     max-width: 30px;
     max-height: 30px;
@@ -300,6 +323,7 @@ input[type="checkbox"] {
         -webkit-transform: translate(-50%, -50%) rotate(0deg);
         transform: translate(-50%, -50%) rotate(0deg);
     }
+
     100% {
         -webkit-transform: translate(-50%, -50%) rotate(360deg);
         transform: translate(-50%, -50%) rotate(360deg);
@@ -311,6 +335,7 @@ input[type="checkbox"] {
         -webkit-transform: translate(-50%, -50%) rotate(0deg);
         transform: translate(-50%, -50%) rotate(0deg);
     }
+
     100% {
         -webkit-transform: translate(-50%, -50%) rotate(360deg);
         transform: translate(-50%, -50%) rotate(360deg);
@@ -333,11 +358,13 @@ input[type="checkbox"] {
     border-top-color: transparent;
     border-radius: 50%;
 }
+
 .blackwait div:after,
-.blackwait div{
+.blackwait div {
     border: 5px solid black;
     border-top-color: transparent;
 }
+
 .lds-rolling div {
     -webkit-animation: lds-rolling 1s linear infinite;
     animation: lds-rolling 1s linear infinite;
@@ -351,7 +378,7 @@ input[type="checkbox"] {
 .h2info {
     color: black;
     font-size: 30pt;
-    font-family: 'Questrial', cursive;
+    font-family: 'Noto Sans TC', cursive;
     width: 100%;
     text-align: center;
     margin-top: 50px;
@@ -385,10 +412,11 @@ div#textnode {
     transition: font-size 175ms;
 }
 
-.txtareastr{
+.txtareastr {
     width: 100%;
     height: 300px;
-    background: rgba(0,0,0,0.05);
+    background: rgba(0, 0, 0, 0.5);
+    color:white;
     border: 0;
     border-radius: 5px;
     resize: none;
@@ -396,38 +424,44 @@ div#textnode {
     box-sizing: border-box;
 }
 
-#bottom_right{
+#bottom_right {
     position: absolute;
     right: 20px;
     bottom: 20px;
 }
 
-#displayimg{
+#displayimg {
+    display: none;
+}
+#containerimg>div{
+    margin-bottom: 40px;
+}
+#containerimg>div>div {
     display: none;
 }
 
-#containerimg > div > div{
-    display: none;
-}
-
-#out_imgs{
+#out_imgs {
     margin-bottom: 15px;
 }
-table{
+
+table {
     border-collapse: collapse;
     width: 100%;
 }
 
-table tr:nth-child(1){
-    background: rgba(0,0,0,0.5);
+
+table tr:nth-child(2n) {
+    background: rgba(255, 255, 255, 0.5);
+}
+table tr:nth-child(2n+1) {
+    background: rgba(0, 0, 0, 0.2);
+}
+table tr:nth-child(1) {
+    background: rgba(0, 0, 0, 0.5);
     color: white;
 }
 
-table tr:nth-child(2n){
-    background: rgba(255,255,255,0.5);
-}
-
-td{
+td {
     padding: 5px 15px;
     border: 1px solid black;
 }

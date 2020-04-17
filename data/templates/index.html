@@ -12,11 +12,12 @@
         <meta name="Robots" content="all">
         <meta name="Distribution" content="global">
         <meta name="theme-color" content="#42f4c5">
-        <link href="https://fonts.googleapis.com/css?family=Questrial|Righteous" rel="stylesheet">
+        <link href="https://fonts.googleapis.com/css?family=Noto+Sans+TC|Righteous" rel="stylesheet">
         <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}" />
         <link rel="shortcut icon" type="image/x-icon" href="{{ url_for('static', filename='watermelon.png') }}" />
         <link rel="icon" type="image/png" href="{{ url_for('static', filename='watermelon.png') }}" />
         <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+        <script src="{{ url_for('static', filename='fss.min.js') }}"></script>
         <script src="{{ url_for('static', filename='main.js') }}"></script>
         <script async defer src="https://buttons.github.io/buttons.js"></script>
         <script async src="https://platform.twitter.com/widgets.js" charset="utf-8"></script>
@@ -24,7 +25,7 @@
     <div style="visibility:hidden; opacity:0" id="dropzone"><div id="textnode">Drop anywhere!</div></div>
     <body>
         <h1 id="h1titre"><a href="/" id="homelink"><img src="{{ url_for('static', filename='watermelon.png') }}" style="vertical-align: middle; width: 95px; height: 95px; margin-right: 10px;"/> Aperi'Solve</a></h1>
-        <hr id="hrtitre"/>
+        <br/>
         <section>
             <div id="info">
             <h2>What is this ?</h2>
@@ -67,6 +68,9 @@
         <div id="bottom_right">
             <center><a href="https://twitter.com/Zeecka_" class="twitter-follow-button" data-show-count="false">Follow @Zeecka_</a></center>
             <a class="github-button" href="https://github.com/Zeecka/AperiSolve" data-size="large" aria-label="View on GitHub">View on GitHub</a>
+        </div>
+        <div id="background-container" class="background-container">
+            <div id="background-output" class="background-output"></div>
         </div>
     </body>
 </html>

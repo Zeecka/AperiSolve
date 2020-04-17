@@ -1,5 +1,7 @@
 $(document).ready(function() {
 
+
+
     dragdropok = true;
 
     function mod(n, m) {
@@ -124,6 +126,10 @@ $(document).ready(function() {
     function fmZsteg(data) {
         data = "<br>" + data;
         data = data.replace(/(<br>.*?\:)/g, '<b>$1</b>');
+        if (data.indexOf("<b><br>") == 0){  // remove first line break
+            data = data.slice(7);
+            data = "<b>"+data;
+        }
         return data
     }
 
@@ -361,7 +367,6 @@ $(document).ready(function() {
             // Exiftool display:
             //
 
-
             $.post("/exiftool", {
                 filename: data["File"]
             }, function(data) {
@@ -400,7 +405,7 @@ $(document).ready(function() {
                     return;
                 }
                 $('#out_binwalk > div').append("<div id='sbloc_binwalk' " +
-                    "class='sbloc'>" +
+                    ">" +
                     fmBinwalk(formatCmd(escapeHtml(data["Binwalk"]["Output"]))) +
                     "</div>");
 
@@ -427,19 +432,6 @@ $(document).ready(function() {
             $.post("/foremost", {
                 filename: data["File"]
             }, function(data) {
-                if ("Error" in data) {
-                    $('#out_foremost > div').append("<div id='sbloc_foremost' " +
-                    "class='sbloc'>" +
-                    formatCmd(escapeHtml(data["Error"])) + "</div>");
-                    $('#out_foremost span').slideUp(300, function(){
-                        $('#out_foremost > div').slideDown();
-                    });
-                    return;
-                }
-                $('#out_foremost > div').append("<div id='sbloc_foremost' " +
-                    "class='sbloc'>"+escapeHtml(data["Foremost"]["Output"]) +
-                    "</div>");
-
                 if ("File" in data["Foremost"]) {
                     $('#out_foremost > div').append("<button class='butdwl' data-src='" +
                         data["Foremost"]["File"] +
@@ -473,9 +465,8 @@ $(document).ready(function() {
                     });
                     return;
                 }
-                $('#out_strings > div').append("<div id='sbloc_strings' " +
-                    "class='sbloc'><textarea class='txtareastr'>" +
-                    escapeHtml(data["Strings"]) + "</textarea></div>");
+                $('#out_strings > div').append("<textarea class='txtareastr'>" +
+                    escapeHtml(data["Strings"]) + "</textarea>");
 
                 $("section").delay(500).slideDown();
 
