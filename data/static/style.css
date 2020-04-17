@@ -60,7 +60,9 @@ h1 {
     text-align: center;
     text-shadow: 0 0 10px rgba(0, 0, 0, 0.8);
 }
-
+a:active,a:focus,a:link{
+    outline: 0;
+}
 #h1titre {
     margin-bottom: 20px;
 }
