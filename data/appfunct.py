@@ -12,7 +12,6 @@ __copyright__ = "WTFPL"
 
 from subprocess import PIPE, Popen
 import random
-import sys
 import os
 import string
 
@@ -43,4 +42,3 @@ def rmExt(f):
 def getExt(f):
     """ Get extention from @f file if exist. """
     return os.path.splitext(f)[1].lower().lstrip(".")
-

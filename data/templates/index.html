@@ -12,7 +12,7 @@
         <meta name="Robots" content="all">
         <meta name="Distribution" content="global">
         <meta name="theme-color" content="#42f4c5">
-        <link href="https://fonts.googleapis.com/css?family=Questrial|Righteous" rel="stylesheet"> 
+        <link href="https://fonts.googleapis.com/css?family=Questrial|Righteous" rel="stylesheet">
         <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}" />
         <link rel="shortcut icon" type="image/x-icon" href="{{ url_for('static', filename='watermelon.png') }}" />
         <link rel="icon" type="image/png" href="{{ url_for('static', filename='watermelon.png') }}" />
@@ -46,7 +46,7 @@
                 -->Test all options of zsteg (--all)</div><!--
                 --><div id="checkpasswd" class="checkbox"><div id="casepasswd" class="casecheck"></div><!--
                 -->I've got a password !</div><!--
-                --><div id="gotpasswd"><input type="text" id="passwdsteghide" name="passwdsteghide" placeholder="password..."/></div><!--
+                --><div id="gotpasswd"><input type="text" id="passwdsteg" name="passwdsteg" value="" placeholder="password..."/></div><!--
                 --></div><!--
                 --><input type="hidden" id="zstegfiles" name="zstegfiles" value="0"/><!--
                 --><input type="hidden" id="allzsteg" name="allzsteg" value="0"/><!--
@@ -57,8 +57,10 @@
                 --><div id="out_imgs"><h2 class='h2info'>View</h2><span></span><div></div></div><!--
                 --><div id="out_zsteg"><h2 class='h2info'>Zsteg</h2><span></span><div></div></div><!--
                 --><div id="out_steghide"><h2 class='h2info'>Steghide</h2><span></span><div></div></div><!--
+                --><div id="out_outguess"><h2 class='h2info'>Outguess</h2><span></span><div></div></div><!--
                 --><div id="out_exifs"><h2 class='h2info'>Exiftool</h2><span></span><div></div></div><!--
                 --><div id="out_binwalk"><h2 class='h2info'>Binwalk</h2><span></span><div></div></div><!--
+                --><div id="out_foremost"><h2 class='h2info'>Foremost</h2><span></span><div></div></div><!--
                 --><div id="out_strings"><h2 class='h2info'>Strings</h2><span></span><div></div></div><!--
             --></div></div>
         </section>

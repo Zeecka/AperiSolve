@@ -1,13 +1,18 @@
 # Aperi'Solve
+
+[![Website](https://img.shields.io/website?url=https%3A%2F%2Faperisolve.fr)](https://aperisolve.fr/)
+![Docker Cloud Automated build](https://img.shields.io/docker/cloud/automated/zeecka/aperisolve)
+![Docker Cloud Build Status](https://img.shields.io/docker/cloud/build/zeecka/aperisolve)
 [![Rawsec's CyberSecurity Inventory](https://inventory.rawsec.ml/img/badges/Rawsec-inventoried-FF5050_flat.svg)](https://inventory.rawsec.ml/tools.html#Aperi'Solve)
-[![Website shields.io](https://img.shields.io/website-up-down-green-red/https/aperisolve.fr.svg)](https://aperisolve.fr/)
-<p align="center"><a href="https://aperisolve.fr"><img src="examples/screenshot.png"/></a></p>
+
+<p align="center"><a href="https://aperisolve.fr"><img src="https://raw.githubusercontent.com/Zeecka/AperiSolve/master/examples/screenshot.png"/></a></p>
+
 <b>Try it now: https://aperisolve.fr</b>
 
 # I . What is Aperi'Solve?
 Aperi'Solve is a platform which performs layer analysis on image.<br/>
 The platform also uses "*zsteg*", "*steghide*", "*exiftool*", "*binwalk*" and "*strings*" for deeper steganography analysis.
-<p align="center"><a href="https://aperisolve.fr"><img src="examples/video.gif"/></a></p>
+<p align="center"><a href="https://aperisolve.fr"><img src="https://raw.githubusercontent.com/Zeecka/AperiSolve/master/examples/video.gif"/></a></p>
 
 # II . Why Aperi'Solve
 Aperi'Solve has been created in order to have an "easy to use" platform which performs common steganalysis tests such as LSB or `steghide`. The platform and Dockerfile are also a quick alternative for people who didn't manage to install `zsteg` (ruby gem) properly.
@@ -35,26 +40,24 @@ The Aperi'Solve platform is a *Flask* (python 3.7) application. The source code 
 - */static* : Images, JavaScript and CSS
 - */uploads* : Uploaded images and working directory for steganography tools
 
-# V . Installation with Docker
-A Dockerfile is provided in `/build/flask` and a `docker-compose.yml` is available at root directory.
+# V . Run with Docker
 
-1. Download the repository:
+## Docker Run
+
+Simply run the following command:
 ```bash
-git clone https://github.com/Zeecka/AperiSolve.git
+docker run -p 80:80 zeecka/aperisolve
 ```
 
-2. Configure docker-compose.yml **if needed** (ie. change `APP_PORT=80` to `APP_PORT=8888` if port `80` is already used).
+Then check your browser at [http://localhost/](http://localhost).
 
-3. Pull, Build, Run:
+If you already use port 80, feel free to run Aperi'Solve on an other port (ie. 1337):
 ```bash
-docker-compose pull
-docker-compose build
-docker-compose up
+docker run -p 1337:80 zeecka/aperisolve
 ```
+Then check your browser at [http://localhost:1337/](http://localhost:1337/).
 
-4. Access to the web platform and enjoy ! (usually `http://localhost/`)
-
-# VI . Manual Installation (not recommanded)
+# VI . Manual Installation
 
 As said in the beginning of this file, some of theses tools such as zsteg and exiftool may not be easy to install. Aperi'Solve has been created to package installation in docker container / provide a web access to the platform. If you still want to install the dependencies by yourself, here are the requirements:
 
@@ -90,11 +93,15 @@ apt install p7zip
 
 Then, run:
 ```bash
+cd data
 python3 app.py
 ```
 
 # TODO
+
 - Implement Foremost ?
+- Implement Outguess ?
+- Implement "out of the box" png check (increase size of png)
 - Implement PNGcheck ?
 - Implement stegoVeritas ?
 - ...

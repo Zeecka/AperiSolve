@@ -138,7 +138,7 @@ input[type="text"] {
     cursor: inherit;
 }
 
-#passwdsteghide {
+#passwdsteg {
     z-index: 30;
     display: none;
     margin-left: 0;
@@ -431,4 +431,3 @@ td{
     padding: 5px 15px;
     border: 1px solid black;
 }
-

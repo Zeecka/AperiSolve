@@ -57,9 +57,9 @@ $(document).ready(function() {
     $("#checkpasswd").click(function() {
         $(this).toggleClass("active");
         if ($(this).hasClass("active")) {
-            $("#passwdsteghide").fadeIn(300);
+            $("#passwdsteg").fadeIn(300);
         } else {
-            $("#passwdsteghide").fadeOut(300);
+            $("#passwdsteg").fadeOut(300);
         }
     });
 
@@ -107,7 +107,7 @@ $(document).ready(function() {
         data = data.replace('\r\n', '\r');
         data = data.split('\r');
         data = data.filter(x => x != ''); // remove empty string
-        data = data.filter(x => x.slice(-3) != '.. '); // remove empty string 
+        data = data.filter(x => x.slice(-3) != '.. '); // remove empty string
         data = data.join('<br>');
         data = data.split('\n');
         data = data.join('<br>');
@@ -207,11 +207,11 @@ $(document).ready(function() {
                         });
                     }).children().click(function(e) {});
                 });
-                
+
                 $('#out_imgs span').slideUp(300, function(){
                     $('#out_imgs > div').slideDown();
                 });
-                
+
             }, "json");
 
             //
@@ -251,7 +251,7 @@ $(document).ready(function() {
                             "' type='button'>Download files !</button>");
                     }
 
-                    $(".butdwl").click(function() {
+                    $("#out_zsteg .butdwl").click(function() {
                         window.open($(this).data("src"), "_blank");
                     });
 
@@ -267,13 +267,13 @@ $(document).ready(function() {
 
             $.post("/steghide", {
                 filename: data["File"],
-                passwdsteghide: $("#passwdsteghide").val()
+                passwdsteg: $("#passwdsteg").val()
             }, function(data) {
                 if ("Error" in data || "Error" in data["Steghide"]) {
                     if ("Error" in data){
                         $('#out_steghide > div').append("<div id='sbloc_steghide' " +
                         "class='sbloc'>" +
-                        formatCmd(escapeHtml(data["Error"])) + 
+                        formatCmd(escapeHtml(data["Error"])) +
                         "</div>");
                         $('#out_steghide span').slideUp(300, function(){
                             $('#out_steghide > div').slideDown();
@@ -282,7 +282,7 @@ $(document).ready(function() {
                     }
                     $('#out_steghide > div').append("<div id='sbloc_steghide' " +
                     "class='sbloc'>" +
-                    formatCmd(escapeHtml(data["Steghide"]["Error"])) + 
+                    formatCmd(escapeHtml(data["Steghide"]["Error"])) +
                     "</div>");
                     $('#out_steghide span').slideUp(300, function(){
                         $('#out_steghide > div').slideDown();
@@ -300,12 +300,60 @@ $(document).ready(function() {
                 }
 
 
-                $(".butdwl").click(function() {
+                $("#out_steghide .butdwl").click(function() {
                     window.open($(this).data("src"), "_blank");
                 });
 
                 $('#out_steghide span').slideUp(300, function(){
                     $('#out_steghide > div').slideDown();
+                });
+            }, "json");
+
+            //
+            // Outguess display:
+            //
+
+            $.post("/outguess", {
+                filename: data["File"],
+                passwdsteg: $("#passwdsteg").val()
+            }, function(data) {
+                if ("Error" in data || "Error" in data["Outguess"]) {
+                    if ("Error" in data){
+                        $('#out_outguess > div').append("<div id='sbloc_outguess' " +
+                        "class='sbloc'>" +
+                        formatCmd(escapeHtml(data["Error"])) +
+                        "</div>");
+                        $('#out_outguess span').slideUp(300, function(){
+                            $('#out_outguess > div').slideDown();
+                        });
+                        return;
+                    }
+                    $('#out_outguess > div').append("<div id='sbloc_outguess' " +
+                    "class='sbloc'>" +
+                    formatCmd(escapeHtml(data["Outguess"]["Error"])) +
+                    "</div>");
+                    $('#out_outguess span').slideUp(300, function(){
+                        $('#out_outguess > div').slideDown();
+                    });
+                    return;
+                }
+                $('#out_outguess > div').append("<div id='sbloc_outguess' " +
+                    "class='sbloc'>" +
+                    formatCmd(escapeHtml(data["Outguess"]["Output"])) + "</div>");
+
+                if ("File" in data["Outguess"]) {
+                    $('#out_outguess > div').append("<button class='butdwl' data-src='" +
+                        data["Outguess"]["File"] +
+                        "' type='button'>Download files !</button>");
+                }
+
+
+                $("#out_outguess .butdwl").click(function() {
+                    window.open($(this).data("src"), "_blank");
+                });
+
+                $('#out_outguess span').slideUp(300, function(){
+                    $('#out_outguess > div').slideDown();
                 });
             }, "json");
 
@@ -343,7 +391,7 @@ $(document).ready(function() {
                 filename: data["File"]
             }, function(data) {
                 if ("Error" in data) {
-                    $('#out_binwalk > div').append("<div id='sbloc_strings' " +
+                    $('#out_binwalk > div').append("<div id='sbloc_binwalk' " +
                     "class='sbloc'>" +
                     formatCmd(escapeHtml(data["Error"])) + "</div>");
                     $('#out_binwalk span').slideUp(300, function(){
@@ -351,7 +399,7 @@ $(document).ready(function() {
                     });
                     return;
                 }
-                $('#out_binwalk > div').append("<div id='sbloc_strings' " +
+                $('#out_binwalk > div').append("<div id='sbloc_binwalk' " +
                     "class='sbloc'>" +
                     fmBinwalk(formatCmd(escapeHtml(data["Binwalk"]["Output"]))) +
                     "</div>");
@@ -361,14 +409,50 @@ $(document).ready(function() {
                         data["Binwalk"]["File"] +
                         "' type='button'>Download files !</button>");
                 }
-                
-                
-                $(".butdwl").click(function() {
+
+
+                $("#out_binwalk .butdwl").click(function() {
                     window.open($(this).data("src"), "_blank");
                 });
 
                 $('#out_binwalk span').slideUp(300, function(){
                     $('#out_binwalk > div').slideDown();
+                });
+            }, "json");
+
+            //
+            // Foremost display:
+            //
+
+            $.post("/foremost", {
+                filename: data["File"]
+            }, function(data) {
+                if ("Error" in data) {
+                    $('#out_foremost > div').append("<div id='sbloc_foremost' " +
+                    "class='sbloc'>" +
+                    formatCmd(escapeHtml(data["Error"])) + "</div>");
+                    $('#out_foremost span').slideUp(300, function(){
+                        $('#out_foremost > div').slideDown();
+                    });
+                    return;
+                }
+                $('#out_foremost > div').append("<div id='sbloc_foremost' " +
+                    "class='sbloc'>"+escapeHtml(data["Foremost"]["Output"]) +
+                    "</div>");
+
+                if ("File" in data["Foremost"]) {
+                    $('#out_foremost > div').append("<button class='butdwl' data-src='" +
+                        data["Foremost"]["File"] +
+                        "' type='button'>Download files !</button>");
+                }
+
+
+                $("#out_foremost .butdwl").click(function() {
+                    window.open($(this).data("src"), "_blank");
+                });
+
+                $('#out_foremost span').slideUp(300, function(){
+                    $('#out_foremost > div').slideDown();
                 });
             }, "json");
 
@@ -481,7 +565,7 @@ $(document).ready(function() {
     }, false);
 
     ////////////////////////////////////////////////////////////////////
-    // Drag & Drop support, thx internet 
+    // Drag & Drop support, thx internet
     // @bryc https://stackoverflow.com/questions/28226021/
     // Entire page as a dropzone for drag and drop
     ////////////////////////////////////////////////////////////////////

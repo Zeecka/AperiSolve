@@ -12,16 +12,18 @@ __copyright__ = "WTFPL"
 
 import os
 from flask import Flask, render_template, request, jsonify, send_from_directory
-from appfunct import *
+from appfunct import getExt, cmdline
 import stega
 
 app = Flask(__name__)
 
 APP_PORT = int(os.getenv('APP_PORT', 80))
-APP_RM_FILE_TIME = int(os.getenv('APP_RM_FILE_TIME', 10))  # Keep images for N minutes maximum
-app.config['MAX_CONTENT_LENGTH'] = int(os.getenv('APP_MAX_SIZE', 16 * 1024 * 1024))  # 16 Mega per image maxi
+APP_RM_FILE_TIME = int(os.getenv('APP_RM_FILE_TIME', 10))  # Keep images for ?m
+app.config['MAX_CONTENT_LENGTH'] = int(
+    os.getenv('APP_MAX_SIZE', 16 * 1024 * 1024))  # 16 Mega per image maxi
 # Supported image types
 imgExts = ["jpeg", "png", "bmp", "gif", "tiff", "jpg", "jfif", "jpe", "tif"]
+
 
 @app.route('/')
 def main():
@@ -58,7 +60,7 @@ def uploadImage():
         if ext not in imgExts:
             return jsonify({"Error": "Invalid extension: "+str(ext)})
 
-        newfilename = f.filename #randString()+"."+ext
+        newfilename = f.filename  # randString()+"."+ext
         newpathfile = f"uploads/{newfilename}"
         f.save(newpathfile)  # Save file with new name
 
@@ -140,11 +142,32 @@ def binwalk():
     return jsonify({"Error": "No filename submitted."})
 
 
+@app.route('/foremost', methods=['POST'])
+def foremost():
+    """ Process foremost analysis.
+    @filename : Uploaded image (filename)
+    Return JSON array with:
+    Binwalk : binwalk output
+    Error: Error if file doesnt exist
+    """
+    if "filename" in request.form:
+        f = request.form["filename"]  # already uploaded file
+        pathfile = f"uploads/{f}"
+
+        if not os.path.isfile(pathfile):
+            return jsonify({"Error": "File doesn't exist."})
+
+        foremostoutput = stega.processForemost(f, "uploads/")
+
+        return jsonify({"Foremost": foremostoutput})
+    return jsonify({"Error": "No filename submitted."})
+
+
 @app.route('/steghide', methods=['POST'])
 def steghide():
     """ Process steghide analysis.
     @filename : Uploaded image (filename)
-    @passwdsteghide : Steghide passwd
+    @passwdsteg : Steghide passwd
     Return JSON array with:
     Steghide : Steghide output
     Error: Error if file doesnt exist / password is wrong
@@ -156,14 +179,37 @@ def steghide():
         if not os.path.isfile(pathfile):
             return jsonify({"Error": "File doesn't exist."})
 
-        if len(request.form["passwdsteghide"]):
+        if len(request.form["passwdsteg"]):
             steghideoutput = stega.processSteghide(
-                f, "uploads/", request.form["passwdsteghide"])
+                f, "uploads/", request.form["passwdsteg"])
         else:
             steghideoutput = {"Error":
                               "Steghide doesn't work without password."}
 
         return jsonify({"Steghide": steghideoutput})
+    return jsonify({"Error": "No filename submitted."})
+
+
+@app.route('/outguess', methods=['POST'])
+def outguess():
+    """ Process outguess analysis.
+    @filename : Uploaded image (filename)
+    @passwdsteg : Outguess passwd
+    Return JSON array with:
+    Steghide : Outguess output
+    Error: Error if file doesnt exist / password is wrong
+    """
+    if "filename" in request.form:
+        f = request.form["filename"]  # already uploaded file
+        pathfile = f"uploads/{f}"
+
+        if not os.path.isfile(pathfile):
+            return jsonify({"Error": "File doesn't exist."})
+
+        outguessoutput = stega.processOutguess(
+            f, "uploads/", request.form["passwdsteg"])
+
+        return jsonify({"Outguess": outguessoutput})
     return jsonify({"Error": "No filename submitted."})
 
 
@@ -216,11 +262,11 @@ def uploads(path):
     """
 
     # First remove old files
-    cmdline(f"find uploads/ -mmin +{APP_RM_FILE_TIME} " +
-             "-type f -exec rm -fv {} \;")
+    cmdline(f"find uploads/ -mmin +{APP_RM_FILE_TIME} "
+            r"-type f  \( -iname \"*\" ! -iname \".gitkeep\" \) "
+            r"-exec rm -fv {} \;")
     return send_from_directory('uploads', path)
 
 
 if __name__ == '__main__':
     app.run(debug=True, host='0.0.0.0', port=APP_PORT)
-

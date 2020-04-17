@@ -1,8 +1,2 @@
-#!/bin/bash
-docker-compose pull
-docker-compose build
-docker-compose push
-docker-compose up -d
-
-screen -dmS aperisolve docker-compose logs -f
-
+#!/bin/sh
+screen -dmS aperisolve docker run -p 80:80 zeecka/aperisolve
