@@ -73,6 +73,7 @@ RUN echo "**** install Foremost ****" \
 #
 # Aperi'Solve
 #
+ADD https://api.github.com/repos/Zeecka/AperiSolve/git/refs/heads/master version.json
 RUN echo "**** install Aperi'Solve ****" \
 && cd /opt \
 && git clone https://github.com/Zeecka/AperiSolve.git \
