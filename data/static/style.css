@@ -6,11 +6,11 @@
  ------------------
 */
 ::-moz-selection {
-    background: rgba(66, 244, 197, 0.3);
+    background: rgba(255, 90, 92, 0.5);
 }
 
 ::selection {
-    background: rgba(66, 244, 197, 0.3);
+    background: rgba(255, 90, 92, 0.5);
 }
 
 * {
