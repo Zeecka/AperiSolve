@@ -86,7 +86,7 @@ def process():
         if not os.path.isfile(pathfile):
             return jsonify({"Error": "File doesn't exist."})
 
-        images = stega.processImage(f, "{DIR_PATH}/uploads/")  # Generate Images
+        images = stega.processImage(f, f"{DIR_PATH}/uploads/")  # Generate Images
 
         return jsonify({"Images": images})
     return jsonify({"Error": "No filename submitted."})
@@ -115,7 +115,7 @@ def zsteg():
         if "zstegfiles" in request.form:
             zstegfiles = bool(int(request.form["zstegfiles"]))
 
-        zstegoutput = stega.processZsteg(f, "{DIR_PATH}/uploads/", allzsteg,
+        zstegoutput = stega.processZsteg(f, f"{DIR_PATH}/uploads/", allzsteg,
                                          zstegfiles)
 
         return jsonify({"Zsteg": zstegoutput})
@@ -137,7 +137,7 @@ def binwalk():
         if not os.path.isfile(pathfile):
             return jsonify({"Error": "File doesn't exist."})
 
-        binwalkoutput = stega.processBinwalk(f, "{DIR_PATH}/uploads/")
+        binwalkoutput = stega.processBinwalk(f, f"{DIR_PATH}/uploads/")
 
         return jsonify({"Binwalk": binwalkoutput})
     return jsonify({"Error": "No filename submitted."})
@@ -158,7 +158,7 @@ def foremost():
         if not os.path.isfile(pathfile):
             return jsonify({"Error": "File doesn't exist."})
 
-        foremostoutput = stega.processForemost(f, "{DIR_PATH}/uploads/")
+        foremostoutput = stega.processForemost(f, f"{DIR_PATH}/uploads/")
 
         return jsonify({"Foremost": foremostoutput})
     return jsonify({"Error": "No filename submitted."})
@@ -182,7 +182,7 @@ def steghide():
 
         if len(request.form["passwdsteg"]):
             steghideoutput = stega.processSteghide(
-                f, "{DIR_PATH}/uploads/", request.form["passwdsteg"])
+                f, f"{DIR_PATH}/uploads/", request.form["passwdsteg"])
         else:
             steghideoutput = {"Error":
                               "Steghide doesn't work without password."}
@@ -208,7 +208,7 @@ def outguess():
             return jsonify({"Error": "File doesn't exist."})
 
         outguessoutput = stega.processOutguess(
-            f, "{DIR_PATH}/uploads/", request.form["passwdsteg"])
+            f, f"{DIR_PATH}/uploads/", request.form["passwdsteg"])
 
         return jsonify({"Outguess": outguessoutput})
     return jsonify({"Error": "No filename submitted."})
@@ -229,7 +229,7 @@ def exiftool():
         if not os.path.isfile(pathfile):
             return jsonify({"Error": "File doesn't exist."})
 
-        exiftooloutput = stega.processExif(f, "{DIR_PATH}/uploads/")
+        exiftooloutput = stega.processExif(f, f"{DIR_PATH}/uploads/")
 
         return jsonify({"Exiftool": exiftooloutput})
     return jsonify({"Error": "No filename submitted."})
@@ -250,7 +250,7 @@ def strings():
         if not os.path.isfile(pathfile):
             return jsonify({"Error": "File doesn't exist."})
 
-        stringsimg = stega.processStrings(f, "{DIR_PATH}/uploads/")
+        stringsimg = stega.processStrings(f, f"{DIR_PATH}/uploads/")
 
         return jsonify({"Strings": stringsimg})
     return jsonify({"Error": "No filename submitted."})
