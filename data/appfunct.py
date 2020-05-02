@@ -1,13 +1,12 @@
 #!/usr/bin/python3
 # -*- encoding: utf-8 -*-
 
-"""
-Aperi'Solve - Flask application
+"""Aperi'Solve - Flask application.
+
 Aperi'Solve is a web steganography plateform.
 
 __author__ = "@Zeecka"
 __copyright__ = "WTFPL"
-
 """
 
 from subprocess import PIPE, Popen

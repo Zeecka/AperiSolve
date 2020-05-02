@@ -1,8 +1,8 @@
 #!/usr/bin/python3
 # -*- encoding: utf-8 -*-
 
-"""
-Aperi'Solve - Flask application
+"""Aperi'Solve - Flask application.
+
 Aperi'Solve is a web steganography plateform.
 
 __author__ = "@Zeecka"
@@ -16,6 +16,7 @@ from appfunct import getExt, cmdline
 import stega
 
 app = Flask(__name__)
+DIR_PATH = os.path.dirname(os.path.realpath(__file__))
 
 APP_PORT = int(os.getenv('APP_PORT', 80))
 APP_RM_FILE_TIME = int(os.getenv('APP_RM_FILE_TIME', 10))  # Keep images for ?m
@@ -61,7 +62,7 @@ def uploadImage():
             return jsonify({"Error": "Invalid extension: "+str(ext)})
 
         newfilename = f.filename  # randString()+"."+ext
-        newpathfile = f"uploads/{newfilename}"
+        newpathfile = f"{DIR_PATH}/uploads/{newfilename}"
         f.save(newpathfile)  # Save file with new name
 
         return jsonify({"File": newfilename})
@@ -80,12 +81,12 @@ def process():
     """
     if "filename" in request.form:
         f = request.form["filename"]  # already uploaded file
-        pathfile = f"uploads/{f}"
+        pathfile = f"{DIR_PATH}/uploads/{f}"
 
         if not os.path.isfile(pathfile):
             return jsonify({"Error": "File doesn't exist."})
 
-        images = stega.processImage(f, "uploads/")  # Generate Images
+        images = stega.processImage(f, "{DIR_PATH}/uploads/")  # Generate Images
 
         return jsonify({"Images": images})
     return jsonify({"Error": "No filename submitted."})
@@ -103,7 +104,7 @@ def zsteg():
     """
     if "filename" in request.form:
         f = request.form["filename"]  # already uploaded file
-        pathfile = f"uploads/{f}"
+        pathfile = f"{DIR_PATH}/uploads/{f}"
 
         if not os.path.isfile(pathfile):
             return jsonify({"Error": "File doesn't exist."})
@@ -114,7 +115,7 @@ def zsteg():
         if "zstegfiles" in request.form:
             zstegfiles = bool(int(request.form["zstegfiles"]))
 
-        zstegoutput = stega.processZsteg(f, "uploads/", allzsteg,
+        zstegoutput = stega.processZsteg(f, "{DIR_PATH}/uploads/", allzsteg,
                                          zstegfiles)
 
         return jsonify({"Zsteg": zstegoutput})
@@ -131,12 +132,12 @@ def binwalk():
     """
     if "filename" in request.form:
         f = request.form["filename"]  # already uploaded file
-        pathfile = f"uploads/{f}"
+        pathfile = f"{DIR_PATH}/uploads/{f}"
 
         if not os.path.isfile(pathfile):
             return jsonify({"Error": "File doesn't exist."})
 
-        binwalkoutput = stega.processBinwalk(f, "uploads/")
+        binwalkoutput = stega.processBinwalk(f, "{DIR_PATH}/uploads/")
 
         return jsonify({"Binwalk": binwalkoutput})
     return jsonify({"Error": "No filename submitted."})
@@ -152,12 +153,12 @@ def foremost():
     """
     if "filename" in request.form:
         f = request.form["filename"]  # already uploaded file
-        pathfile = f"uploads/{f}"
+        pathfile = f"{DIR_PATH}/uploads/{f}"
 
         if not os.path.isfile(pathfile):
             return jsonify({"Error": "File doesn't exist."})
 
-        foremostoutput = stega.processForemost(f, "uploads/")
+        foremostoutput = stega.processForemost(f, "{DIR_PATH}/uploads/")
 
         return jsonify({"Foremost": foremostoutput})
     return jsonify({"Error": "No filename submitted."})
@@ -174,14 +175,14 @@ def steghide():
     """
     if "filename" in request.form:
         f = request.form["filename"]  # already uploaded file
-        pathfile = f"uploads/{f}"
+        pathfile = f"{DIR_PATH}/uploads/{f}"
 
         if not os.path.isfile(pathfile):
             return jsonify({"Error": "File doesn't exist."})
 
         if len(request.form["passwdsteg"]):
             steghideoutput = stega.processSteghide(
-                f, "uploads/", request.form["passwdsteg"])
+                f, "{DIR_PATH}/uploads/", request.form["passwdsteg"])
         else:
             steghideoutput = {"Error":
                               "Steghide doesn't work without password."}
@@ -201,13 +202,13 @@ def outguess():
     """
     if "filename" in request.form:
         f = request.form["filename"]  # already uploaded file
-        pathfile = f"uploads/{f}"
+        pathfile = f"{DIR_PATH}/uploads/{f}"
 
         if not os.path.isfile(pathfile):
             return jsonify({"Error": "File doesn't exist."})
 
         outguessoutput = stega.processOutguess(
-            f, "uploads/", request.form["passwdsteg"])
+            f, "{DIR_PATH}/uploads/", request.form["passwdsteg"])
 
         return jsonify({"Outguess": outguessoutput})
     return jsonify({"Error": "No filename submitted."})
@@ -223,12 +224,12 @@ def exiftool():
     """
     if "filename" in request.form:
         f = request.form["filename"]  # already uploaded file
-        pathfile = f"uploads/{f}"
+        pathfile = f"{DIR_PATH}/uploads/{f}"
 
         if not os.path.isfile(pathfile):
             return jsonify({"Error": "File doesn't exist."})
 
-        exiftooloutput = stega.processExif(f, "uploads/")
+        exiftooloutput = stega.processExif(f, "{DIR_PATH}/uploads/")
 
         return jsonify({"Exiftool": exiftooloutput})
     return jsonify({"Error": "No filename submitted."})
@@ -244,12 +245,12 @@ def strings():
     """
     if "filename" in request.form:
         f = request.form["filename"]  # already uploaded file
-        pathfile = f"uploads/{f}"
+        pathfile = f"{DIR_PATH}/uploads/{f}"
 
         if not os.path.isfile(pathfile):
             return jsonify({"Error": "File doesn't exist."})
 
-        stringsimg = stega.processStrings(f, "uploads/")
+        stringsimg = stega.processStrings(f, "{DIR_PATH}/uploads/")
 
         return jsonify({"Strings": stringsimg})
     return jsonify({"Error": "No filename submitted."})
@@ -262,7 +263,7 @@ def uploads(path):
     """
 
     # First remove old files
-    cmdline(f"find uploads/ -mmin +{APP_RM_FILE_TIME} "
+    cmdline(f"find {DIR_PATH}/uploads/ -mmin +{APP_RM_FILE_TIME} "
             r"-type f  \( -iname \"*\" ! -iname \".gitkeep\" \) "
             r"-exec rm -fv {} \;")
     return send_from_directory('uploads', path)
