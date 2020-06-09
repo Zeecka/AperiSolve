@@ -81,5 +81,5 @@ RUN git clone -b master https://github.com/Zeecka/AperiSolve.git \
 && pip install --no-cache-dir -r requirements.txt
 
 
-WORKDIR /opt/AperiSolve/data
-CMD [ "python", "./app.py" ]
+WORKDIR /opt/AperiSolve
+CMD [ "python", "./run.py" ]
