@@ -21,4 +21,4 @@ __all__ = [
 ]
 
 if __name__ == "__main__":
-    appli.run()
+    appli.run(debug=False, host='0.0.0.0', port=80)
