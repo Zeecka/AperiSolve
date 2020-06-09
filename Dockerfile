@@ -73,10 +73,9 @@ RUN echo "**** install Foremost ****" \
 #
 # Aperi'Solve
 #
-RUN echo "**** install Aperi'Solve ****" \
-&& cd /opt
+RUN echo "**** install Aperi'Solve ****"
 ADD https://api.github.com/repos/Zeecka/AperiSolve/git/refs/heads/master version.json
-RUN git clone -b master https://github.com/Zeecka/AperiSolve.git \
+RUN cd /opt && git clone -b master https://github.com/Zeecka/AperiSolve.git \
 && cd AperiSolve/data \
 && pip install --no-cache-dir -r requirements.txt
 
