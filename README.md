@@ -10,7 +10,6 @@
 # I . What is Aperi'Solve?
 Aperi'Solve is a platform which performs layer analysis on image.<br/>
 The platform also uses "*zsteg*", "*steghide*", "*outguess*", "*exiftool*", "*binwalk*", "*foremost*" and "*strings*" for deeper steganography analysis.
-<p align="center"><a href="https://aperisolve.fr"><img src="https://raw.githubusercontent.com/Zeecka/AperiSolve/master/examples/video.gif"/></a></p>
 
 # II . Why Aperi'Solve
 Aperi'Solve has been created in order to have an "easy to use" platform which performs common steganalysis tests such as LSB or `steghide`. The platform is also a quick alternative for people who didn't manage to install `zsteg` (ruby gem) properly.
@@ -49,6 +48,7 @@ Then check your browser at [http://localhost:5000/](http://localhost:5000).
 
 # TODO
 
+- Add video on README
 - Statistics on homepage
 - Contact on homepage (@Zeecka_)
 - Link script for local BF with steghide
