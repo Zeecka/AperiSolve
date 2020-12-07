@@ -49,14 +49,10 @@ Then check your browser at [http://localhost:5000/](http://localhost:5000).
 
 # TODO
 
-- Stats sur la home page
-- Contact sur la home page
-- Route "admin" pour voir les images uploadées
-- Production: disable les error
-- Upload github
-- Close les issues
-- Script BF local steghide
-- Notion de "probable passwd" si des passwd ont fonctionnés pour steghide / outguess ?
+- Statistics on homepage
+- Contact on homepage (@Zeecka_)
+- Link script for local BF with steghide
+- "Probable flag" with regex
 - Implement "out of the box" png check (increase size of png) ?
 - Implement PNGcheck ?
 - Implement stegoVeritas ?
