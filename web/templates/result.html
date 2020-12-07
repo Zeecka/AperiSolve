@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+    <meta charset="utf-8">
+    <meta name="description" content="">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Aperi'Solve</title>
+    <!-- Meta -->
+    <meta name="Content-Language" content="en">
+    <meta name="Keywords" content="AperiSolve, Apérisolve, Aperi'Solve, Apéri'Solve, Zeecka">
+    <meta name="Author" content="Zeecka">
+    <meta name="Robots" content="all">
+    <meta name="theme-color" content="#42f4c5">
+    <link rel="shortcut icon" type="image/x-icon" href="/static/watermelon.png" />
+    <link rel="icon" type="image/png" href="/static/watermelon.png" />
+    <link rel="preconnect" href="https://fonts.gstatic.com">
+    <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <link href="static/normalize.css" rel="stylesheet">
+    <link href="static/style.css" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/particles.js/2.0.0/particles.min.js"></script>
+  </head>
+<body>
+  <input id="md5" type="hidden" value="{{ md5 }}"/>
+  <div id="parentmain">
+
+    <div class="min_width">
+      <h1>Informations</h1>
+    </div>
+    <div id="result_top" class="result">
+      <div class="min_width"><!--
+        --><div id="result_main_img"><img id="main_img" src="/static/images/load.svg" class="imgscandisplay" /></div><!--
+        --><div id="result_main_desc">
+          <div><span class="cgreen cap">[+] Name(s) : </span><span id="config_name"></span></div>
+          <div><span class="cgreen cap">[+] Size : </span><span id="config_size"></span></div>
+          <div><span class="cgreen cap">[+] First upload  : </span><span id="config_date_first"></span></div>
+          <div><span class="cgreen cap">[+] Last upload  : </span><span id="config_date_last"></span></div>
+          <div><span class="cgreen cap">[+] Upload count  : </span><span id="config_count"></span></div>
+          <div><span class="cgreen cap">[+] Common password(s) : </span><span id="config_pwds"></span></div>
+          
+              <!-- add previous names -->
+              <!-- add previous used passwords -->
+        </div><!--
+      --></div>
+    </div>
+    <div class="min_width">
+      <h1>View</h1>
+    </div>
+    <div class="result">
+      <div class="min_width">
+        <div class="viewsteg">
+          <h2 class="yellow">[+] Supperimposed</h2>
+          <div><div id="rgb_load" class='loader'><img src="/static/images/load.svg" /></div>
+            <div><img id="img_rgb_1" class="imgscandisplay" /></div><!--
+            --><div><img id="img_rgb_2" class="imgscandisplay" /></div><!--
+            --><div><img id="img_rgb_3" class="imgscandisplay" /></div><!--
+            --><div><img id="img_rgb_4" class="imgscandisplay" /></div><br/><!--
+            --><div><img id="img_rgb_5" class="imgscandisplay" /></div><!--
+            --><div><img id="img_rgb_6" class="imgscandisplay" /></div><!--
+            --><div><img id="img_rgb_7" class="imgscandisplay" /></div><!--
+            --><div><img id="img_rgb_8" class="imgscandisplay" /></div><!--
+          --></div>
+          <h2 class="red">[+] Red</h2>
+          <div><div id="r_load" class='loader'><img src="/static/images/load.svg" /></div>
+            <div><img id="img_r_1" class="imgscandisplay" /></div><!--
+            --><div><img id="img_r_2" class="imgscandisplay" /></div><!--
+            --><div><img id="img_r_3" class="imgscandisplay" /></div><!--
+            --><div><img id="img_r_4" class="imgscandisplay" /></div><br/><!--
+            --><div><img id="img_r_5" class="imgscandisplay" /></div><!--
+            --><div><img id="img_r_6" class="imgscandisplay" /></div><!--
+            --><div><img id="img_r_7" class="imgscandisplay" /></div><!--
+            --><div><img id="img_r_8" class="imgscandisplay" /></div><!--
+          --></div>
+          <h2 class="green">[+] Green</h2>
+          <div><div id="g_load" class='loader'><img src="/static/images/load.svg" /></div>
+            <div><img id="img_g_1" class="imgscandisplay" /></div><!--
+            --><div><img id="img_g_2" class="imgscandisplay" /></div><!--
+            --><div><img id="img_g_3" class="imgscandisplay" /></div><!--
+            --><div><img id="img_g_4" class="imgscandisplay" /></div><br/><!--
+            --><div><img id="img_g_5" class="imgscandisplay" /></div><!--
+            --><div><img id="img_g_6" class="imgscandisplay" /></div><!--
+            --><div><img id="img_g_7" class="imgscandisplay" /></div><!--
+            --><div><img id="img_g_8" class="imgscandisplay" /></div><!--
+          --></div>
+          <h2 class="blue">[+] Blue</h2>
+          <div><div id="b_load" class='loader'><img src="/static/images/load.svg" /></div>
+            <div><img id="img_b_1" class="imgscandisplay" /></div><!--
+            --><div><img id="img_b_2" class="imgscandisplay" /></div><!--
+            --><div><img id="img_b_3" class="imgscandisplay" /></div><!--
+            --><div><img id="img_b_4" class="imgscandisplay" /></div><br/><!--
+            --><div><img id="img_b_5" class="imgscandisplay" /></div><!--
+            --><div><img id="img_b_6" class="imgscandisplay" /></div><!--
+            --><div><img id="img_b_7" class="imgscandisplay" /></div><!--
+            --><div><img id="img_b_8" class="imgscandisplay" /></div><!--
+          --></div>
+          <h2 id="alpha" class="white">[+] Alpha</h2>
+          <div><div id="a_load" class='loader'><img src="/static/images/load.svg" /></div>
+            <div><img id="img_a_1" class="imgscandisplay" /></div><!--
+            --><div><img id="img_a_2" class="imgscandisplay" /></div><!--
+            --><div><img id="img_a_3" class="imgscandisplay" /></div><!--
+            --><div><img id="img_a_4" class="imgscandisplay" /></div><br/><!--
+            --><div><img id="img_a_5" class="imgscandisplay" /></div><!--
+            --><div><img id="img_a_6" class="imgscandisplay" /></div><!--
+            --><div><img id="img_a_7" class="imgscandisplay" /></div><!--
+            --><div><img id="img_a_8" class="imgscandisplay" /></div><!--
+          --></div>
+        </div>
+      </div>
+    </div>
+    <div class="min_width">
+      <h1>Zsteg</h1>
+    </div>
+    <div id="result_top" class="result">
+      <div id="result_zsteg" class="min_width"><div id="zsteg_load" class='loader'><img src="/static/images/load.svg" /></div></div>
+    </div>
+    <div class="min_width">
+      <h1>Steghide</h1>
+    </div>
+    <div id="result_top" class="result" style='margin-bottom: 20px;'>
+      <div id="result_steghide" class="min_width"><div id="b_load" class='loader'><img src="/static/images/load.svg" /></div></div>
+    </div>
+    <div class="min_width">
+      <button id="btn_steghide" class="btn disable">Download files</button>
+    </div>
+    <div class="min_width">
+      <h1>Outguess</h1>
+    </div>
+    <div id="result_top" class="result" style='margin-bottom: 20px;'>
+      <div id="result_outguess" class="min_width"><div id="b_load" class='loader'><img src="/static/images/load.svg" /></div></div>
+    </div>
+    <div class="min_width">
+      <button id="btn_outguess" class="btn disable">Download files</button>
+    </div>
+    <div class="min_width">
+      <h1>ExifTool</h1>
+    </div>
+    <div id="result_top" class="result_table">
+      <div class="min_width">
+        <div id="result_exiftool"><div id="b_load" class='loader'><img src="/static/images/load.svg" /></div></div>
+      </div>
+    </div>
+    <div class="min_width">
+      <h1>Binwalk</h1>
+    </div>
+    
+    <div id="result_top" class="result_table">
+      <div class="min_width">
+        <div id="binwalk_table"><div id="b_load" class='loader'><img src="/static/images/load.svg" /></div></div><br/>
+        <button id="result_binwalk" class="btn disable">Download files</button>
+      </div>
+    </div>
+    <div class="min_width">
+      <h1>Foremost</h1>
+    </div>
+    <div id="result_top" class="result_table">
+      <div class="min_width">
+        <button id="result_foremost" class="btn disable">Download files</button>
+      </div>
+    </div>
+    <div class="min_width">
+      <h1>Strings</h1>
+    </div>
+    <div id="result_top" class="result">
+      <textarea id="result_strings" class="min_width" disabled>
+      </textarea>
+    </div>
+  </div>
+  <div id="particles-js"></div>
+  <script>particlesJS.load('particles-js', 'static/particles.json', function () { });</script>
+</body>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+<script src="static/script_load.js"></script>
+
+</html>
