@@ -16,7 +16,7 @@ def get_top_images(n=10):
     count = {}
     for img in stats["images"]:
         count[img] = stats["images"][img]["count"]
-    top = {k: v for k, v in sorted(count.items(), key=lambda item: item[1])[::-1]}
+    top = {k: v for k, v in sorted(count.items(), key=lambda item: item[1])[::-1][:n]}
     return top
 
 while True:
