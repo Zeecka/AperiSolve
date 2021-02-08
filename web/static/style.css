@@ -73,6 +73,7 @@ img{
     box-shadow: rgba(0, 0, 0, 0.2) 0px 0px 0px 0px, rgba(0, 0, 0, 0.14) 0px 0px 0px 0px, rgba(0, 0, 0, 0.12) 0px 0px 0px 0px;
     box-sizing: border-box;
     padding: 24px 48px;
+    margin-bottom: 15px;
 }
 
 /* Uploader */
@@ -423,6 +424,19 @@ textarea{
   width: 100% !important;
   text-align: center !important;
 }
+#social{
+  text-align: right;
+  position: fixed;
+  right: 15px;
+  bottom: 15px;
+}
+.github-button{
+}
+.twitter-follow-button, .github-button{
+  display: block;
+  font-size: 0px;
+  margin-top: 5px;
+}
 @media (max-width: 650px) {
   #optionsform > div{
     margin-bottom: 5px;
@@ -438,5 +452,8 @@ textarea{
   }
   #result_main_img, #result_main_desc{
     width: 100% !important;
+  }
+  #social{
+    display: none;
   }
 }
