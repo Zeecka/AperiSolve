@@ -50,7 +50,7 @@ Then check your browser at [http://localhost:5000/](http://localhost:5000).
 
 - Add video on README
 - Statistics on homepage
-- Contact on homepage (@Zeecka_)
+- Contact on homepage ([@zeecka_](https://twitter.com/Zeecka_))
 - Link script for local BF with steghide
 - "Probable flag" with regex
 - Implement "out of the box" png check (increase size of png) ?
