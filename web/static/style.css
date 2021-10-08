@@ -268,7 +268,7 @@ input[type="text"]{
   max-width: 1024px;
   width: 100%;
   margin: auto;
-  display: inline-block;
+  /*display: inline-block;*/
 }
 .result .min_width{
   padding: 20px;
