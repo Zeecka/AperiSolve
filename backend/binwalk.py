@@ -38,7 +38,7 @@ class Binwalk(Thread):
         else: # Else compute
             image = self.config["image"]
             c_input = f"{self.folder}/{image}"  # image.png
-            output = cmd_exec(f"binwalk -e . -C {self.folder}/binwalk --dd='.*' {c_input} 2>&1")
+            output = cmd_exec(f"binwalk -e . -C {self.folder}/binwalk --dd='.*' {c_input} --run-as=root 2>&1")
             cmd_exec(f"7z a {self.folder}/binwalk.7z {self.folder}/binwalk/*/*")
             cmd_exec(f"rm -r {self.folder}/binwalk")
             with open(f"{self.folder}/binwalk.txt", "w") as f:
