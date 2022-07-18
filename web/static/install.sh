@@ -9,7 +9,7 @@ EXPECTED_ARGS=1
 
 if [ \$# -eq \$EXPECTED_ARGS ]
 then
-    P=$(realpath \$1) # Get File Path Browser
+    P=\$(realpath \$1) # Get File Path Browser
     REPHASH=\$(curl -s -F file=@\$P \$HOST/upload | jq .File | tr -d '"') # Upload and get hash
     xdg-open \$HOST/\$REPHASH  # Open Browser
 else
