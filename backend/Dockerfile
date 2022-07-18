@@ -2,14 +2,12 @@ FROM alpine:3.12
 
 ARG EXIFTOOL_VERSION=12.43
 
-
 RUN apk update \
 && apk add build-base gcc musl-dev make openssl git wget jpeg-dev zlib-dev p7zip ruby ruby-etc perl \
 && apk add --virtual .build-dependencies ruby-dev
 
-
 #
-# Flask
+# Python
 #
 RUN echo "**** install Python ****" \
 && apk add python3-dev \

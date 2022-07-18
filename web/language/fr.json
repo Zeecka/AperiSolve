@@ -1,0 +1,127 @@
+{
+    "lang": "fr",
+    "clipboard": "Copié dans le presse-papiers !",
+    "index": {
+        "what": "Qu'est-ce que c'est ?",
+        "description": "Aperi'Solve est une plateforme en ligne d'analyse d'image. Cette plateforme utilise notamment zsteg, steghide, outguess, exiftool, binwalk, foremost et strings pour une stéganalyse approfondie. La plateforme supporte les formats d'image suivants : .png, .jpg, .gif, .bmp, .jpeg, .jfif, .jpe, .tiff...",
+        "selectfile": "Sélectionner un fichier ou glisser ici",
+        "selectimage": "Sélectionner une image",
+        "submit": "Envoyer",
+        "enable": "Activer",
+        "disable": "Désactiver",
+        "gotpass": "J'ai un mot de passe !",
+        "password": "mot de passe",
+        "zsteg": {
+            "extract": "Extraire les fichiers zsteg ?",
+            "options": "Tester toutes les options zsteg ?"
+        }
+    },
+    "result": {
+        "informations": "Informations",
+        "stats": {
+            "names": "Nom(s) : ",
+            "size": "Taille : ",
+            "firstupl": "Premier upload : ",
+            "lastupl": "Dernier upload : ",
+            "uplcount": "Nombre d'upload: ",
+            "commonpwds": "Mots de passe communs: "
+        },
+        "view": "Vue",
+        "layers": {
+            "superimposed": "Superposées",
+            "red": "Rouge",
+            "green": "Vert",
+            "blue": "Bleu",
+            "alpha": "Transparent"
+        },
+        "dowloadfiles": "Télécharger les fichiers"
+    },
+    "cheatsheet" : {
+        "h_disclaimer": "Disclaimer",
+        "disclaimer": {
+            "message": "Cette cheatsheet a pour vocation d'orienter les joueurs de CTF dans leurs recherches. Cette dernière n'est pas représentative des techniques modernes de stéganographie / stéganalyse, et son contenu ne permet pas la création de challenges intéressants 😉."
+        },
+        "h_meta": "Vérifier le type de fichier / les métadonnées",
+        "meta": {
+            "unknownext": "Vérifier sur internet l'extension du fichier si celle-ci vous est inconnue. Renseignez-vous également sur son format de fichier.",
+            "file": "Utiliser la commande <span class='highlight'>file</span> pour vérifier que l'extension correspond au type de fichier. Cette dernière est basée sur les <a href='https://en.wikipedia.org/wiki/List_of_file_signatures' target='_blank' class='highlight'>Magic Bytes</a> composant le début du fichier, et peut donc renvoyer des faux positifs.",
+            "unknownfile": "En cas d'extension et fichier inconnu, inspecter la structure hexadécimale du fichier avec un éditeur comme <a href='https://hexed.it/' target='_blank' class='highlight'>hexed.it</a> afin d'identifier la structure de fichier.",
+            "exiftool": "Afficher les métadonnées du fichier avec la commande <span class='highlight'>exiftool</span>."
+
+        },
+        "h_fstruct": "Modifier la structure de fichier",
+        "struct": {
+            "chunk": "Modifier la structure du fichier avec un éditeur hexadécimal comme <a href='https://hexed.it/' target='_blank' class='highlight'>hexed.it</a>. Les chunks PNG peuvent être facilement modifiés à l'aide de <a href='http://entropymine.com/jason/tweakpng/' target='_blank' class='highlight'>TweakPNG</a> (Windows ou Wine).",
+            "crc": "Vérifier les sommes de contrôles du fichier. Il s'agit généralement de CRC32, certains outils comme <a href='http://www.libpng.org/pub/png/apps/pngcheck.html' target='_blank' class='highlight'>PngCheck</a> ou <a href='https://github.com/sherlly/PCRT' target='_blank' class='highlight'>PCRT</a> permettent de vérifier et corriger ces sommes de contrôles.",
+            "size": "Pour de nombre type de fichiers (PNG, WAV, ...) la taille du média est contenue dans les entêtes. Cette taille peut alors être réduite afin de n'afficher qu'une partie du média (début d'une image, début d'un son, ...)."
+        },
+        "h_rawdata": "Donnéees brutes",
+        "rawdata": {
+            "audacity": "Il est possible d'importer un fichier Raw dans <a href='https://www.audacityteam.org/download/' target='_blank' class='highlight'>Audacity</a> afin de l'écouter comme bande sonore (Fichier > Importer > Données brutes).",
+            "gimp": "De même, l'outil <a href='https://www.gimp.org/downloads/' target='_blank' class='highlight'>GIMP</a> permet l'import d'image depuis des données brutes (Fichier > Ouvrir).",
+            "binvis": "L'outil <a href='http://binvis.io/' target='_blank' class='highlight'>BinVis.io</a> permet de visualiser graphiquement des fichiers binaires et peut donner des indications quant au type de fichier.",
+            "strings": "La commande <span class='highlight'>strings</span> permet d'afficher les chaines de caractères présentes dans un fichier."
+        },
+        "h_image": "Image",
+        "image": {
+            "compare": "La robustesse de la stéganographie repose sur l'algorithme utilisé ainsi que la connaissance du cover medium. Une cherche du média original permet d'effectuer une comparaison et d'identifier les altérations effectuées. Une recherche inversée sur <a href='https://images.google.com/' target='_blank' class='highlight'>Google Image</a> ou <a href='https://yandex.com/images/' target='_blank' class='highlight'>Yandex Images</a> peut permettre de retrouver le média original (attention à bien vérifier que la taille et le type de fichier correspondent).",
+            "stegsolve_compare": "L'outil <a href='http://www.caesum.com/handbook/Stegsolve.jar' target='_blank' class='highlight'>Stegsolve</a> permet d'effectuer des opérations sur 2 images, et donc d'identifier les différences entre un cover medium et un stegano medium à l'aide de l'opération XOR.",
+            "zsteg_layer": "L'outil <a href='https://github.com/zed-0xff/zsteg' target='_blank' class='highlight'>Zsteg</a> permet d'extraire des messages et binaires encodés sur différents layers, comme par exemple les 2 LSB verts.",
+            "pxpython": "Parfois, l'analyse des couches de bits sur l'outil <a href='http://www.caesum.com/handbook/Stegsolve.jar' target='_blank' class='highlight'>Stegsolve</a> (ou Aperi'Solve) permet de mettre en évidence des zones précises altérées. Le scripting peut alors être nécessaire pour extraire des zones précises. Le code python suivant permet de récupérer une image sous la forme de liste de pixels: [(100,120,43), (230, 124, 110), ...]",
+            "steghide": "Les stegano mediums peuvent se baser sur un algorithme utilisant une clé de chiffrement. C'est le cas notamment pour <a href='http://steghide.sourceforge.net/' target='_blank' class='highlight'>Steghide</a> et <a href='https://github.com/resurrecting-open-source-projects/outguess' target='_blank' class='highlight'>OutGuess</a>. Le mot de passe peut s'avérer être le nom du fichier, une chaine de caractères contenue dans le fichier (<span class='highlight'>strings</span> & <span class='highlight'>exiftool</span>), ou encore l'objet représenté par l'image. Dans certains cas, le mot de passe n'est pas trouvable et un bruteforce doit être réalisé. L'outil <a href='https://github.com/Paradoxis/StegCracker' target='_blank' class='highlight'>StegCracker</a> et <a href='https://github.com/R4yGM/stegbrute' target='_blank' class='highlight'>Stegbrute</a> permet le bruteforce de secrets cachés avec <a href='http://steghide.sourceforge.net/' target='_blank' class='highlight'>Steghide</a>."
+        },
+        "h_png": "PNG (Portable Network Graphics)",
+        "png": {
+            "tools": "Les outils <a href='http://steghide.sourceforge.net/' target='_blank' class='highlight'>Steghide</a> et <a href='https://github.com/resurrecting-open-source-projects/outguess' target='_blank' class='highlight'>OutGuess</a> ne fonctionnent pas pour les fichiers PNG. En revanche, ce type de fichier permet une sauvegarde sans compression, et donc de cacher des messages sur les LSB. L'outil <a href='https://github.com/zed-0xff/zsteg' target='_blank' class='highlight'>Zsteg</a> présenté plus haut et disponible sur Aperi'Solve permet l'extraction de secrets sur les fichiers PNG.",
+            "apng": "PNG propose une extension <a href='https://en.wikipedia.org/wiki/APNG' target='_blank' class='highlight'>« APNG »</a> permettant d'avoir une animation d'images comme pour les fichiers GIF. Il est possible que la visualisation du PNG ne reflète pas l'entièreté de son contenu (par exemple, avec une frame d'une durée nulle, ou une première frame très longue). L'outil <a href='https://ezgif.com/apng-maker' target='_blank' class='highlight'>APNG Maker</a> permet de visualiser les différentes frames d'un fichier APNG. Un message peut également être codé sur les durées de chaque frame.",
+            "tweak": "L'outil <a href='http://entropymine.com/jason/tweakpng/' target='_blank' class='highlight'>TweakPNG</a> présenté plus tôt permet d'effectuer plusieurs types d'opérations comme recalculer les sommes de contrôles, réordonner les chunks PNG, augmenter la taille visible du PNG ou encore modifier un entête."
+        },
+        "h_jpeg": "JPEG (Joint Photographic Experts Group)",
+        "jpeg": {
+            "tools": "L'outil <a href='https://github.com/zed-0xff/zsteg' target='_blank' class='highlight'>Zsteg</a> ne fonctionne pas sur les fichiers JPEG (jpg, jpeg, ...) car ces derniers comportent forcément un algorithme de compression réduisant la qualité de l'image et altérant les LSB. En revanche, les outils <a href='http://steghide.sourceforge.net/' target='_blank' class='highlight'>Steghide</a> et <a href='https://github.com/resurrecting-open-source-projects/outguess' target='_blank' class='highlight'>OutGuess</a> présentés plus hauts sont compatibles avec ce format de fichier."
+        },
+        "h_gif": "GIF (Graphics Interchange Format)",
+        "gif":{
+            "tools": "Les GIF sont généralement des images animées dont le format est généralement peu supporté par les outils de stéganalyse. De plus, le format d'image propose généralement une palette de couleurs ne dépassant pas 256 couleurs, contre 16 millions pour PNG (hors transparence). L'outil <a href='https://ezgif.com/maker' target='_blank' class='highlight'>GIF Maker</a> permet cependant de manipuler des fichiers GIF facilement.",
+            "hiddenframe": "Les GIF peuvent embarquer des images (frames) avec une durée nulle. Ces dernières ne seront alors pas visualisables sans une décomposition.",
+            "timeframe": "Un message codé peut être embarqué sur la durée des frames (morse, ascii, binaire, ...).",
+            "extract": "<a href='https://ffmpeg.org/' target='_blank' class='highlight'>Ffmpeg</a> peut être utilisé pour extraire les frames d'un GIF. L'exhaustivité des frames extraites ne peut pas être garantie."
+        },
+        "h_audio": "Audio",
+        "audio":{
+            "spectre": "La technique la plus commune concernant les fichiers audio repose sur le spectre audio. En effet, il est possible d'écrire un message visible sur le spectre audio avec des outils comme <a href='https://www.abc.se/~re/Coagula/Coagula.html' target='_blank' class='highlight'>Coagula</a>. Ensuite, ce spectre peut être analysé à l'aide d'outils d'analyse spectrale comme <a href='https://www.sonicvisualiser.org/' target='_blank' class='highlight'>Sonic Visualiser</a>, <a href='https://www.audacityteam.org/' target='_blank' class='highlight'>Audacity</a> ou l'outil en ligne <a href='https://www.dcode.fr/spectral-analysis' target='_blank' class='highlight'>dcode</a>.",
+            "audacityhelp": "Un clic droit sur l'échelle pour effectuer un zoom arrière et afficher l'ensemble du spectre, ou passer en mode logarithme, peut être nécessaire.",
+            "spectrehigh": "Les fréquences inaudibles peuvent être utilisées pour cacher un message. Une analyse spectrale au delas de 20KHz et en dessous de 20Hz est conseillée, un message encodé en morse ou binaire peut y être cachée.",
+            "specialencode": "Les sons sont de simples signaux de télécommunications pouvant être utilisés à d'autres fins. Des méthodes d'encodage spéciales peuvent être utilisées, c'est le cas notamment du <a href='https://fr.wikipedia.org/wiki/Code_DTMF' target='_blank' class='highlight'>Code DTMF</a> utilisé anciennement en téléphonie ou <a href='https://en.wikipedia.org/wiki/Slow-scan_television' target='_blank' class='highlight'>SSTV</a> utilisé en télévision pour le transfert d'image. Ces signaux sont encodés sur des fréquences audibles mais leurs interprétations nécessitent des décodeurs spéciaux. On optera alors pour un <a href='http://dialabc.com/sound/detect/' target='_blank' class='highlight'>décodeur DTMF</a> pour la première technique, et un décodeur SSTV comme <a href='https://doc.ubuntu-fr.org/qsstv' target='_blank' class='highlight'>QSSTV</a> pour la deuxième.",
+            "size": "Tout comme les fichiers PNG, certains fichiers audio embarquent leurs tailles théoriques dans leurs entêtes. C'est le cas notamment des <a href='https://fr.wikipedia.org/wiki/Waveform_Audio_File_Format#En-t%C3%AAte_de_fichier_WAV' target='_blank' class='highlight'>fichiers WAV</a> dont le bloc DataSize peut être diminué ou augmenté à l'aide d'un éditeur hexadécimal.",
+            "lsb": "La technique du LSB peut être utilisée sur certains fichiers audio. Il convient alors d'extraire les LSB des données audio; l'outil <a href='https://github.com/ragibson/Steganography#WavSteg' target='_blank' class='highlight'>WavSteg</a> permet d'effectuer cette manipulation sur des fichiers WAV.",
+            "tools": "Les outils <a href='http://steghide.sourceforge.net/' target='_blank' class='highlight'>Steghide</a> et <a href='http://jpinsoft.net/deepsound/overview.aspx' target='_blank' class='highlight'>DeepSound</a> sont communément utilisés en CTF pour cacher des messages. Ces derniers peuvent prendre une clé en paramètre, il faudra donc deviner cette clé à partir des informations disponibles (média, nom du fichier, nom du challenge...) ou en utilisant une wordlist."
+        },
+        "h_polyglot": "Fichiers Polyglottes",
+        "polyglot": {
+            "definition": "Il s'agit d'un type de fichier est valide pour des formats de fichier différents. Par exemple un fichier image qui peut donc être visualisé et qui est aussi un fichier jar (que l’on peut exécuter). Il existe plusieurs types de fichiers polyglottes :",
+            "poly_simple": "Polyglotte « simple » : Il s'agit d'une simple concaténation de fichiers;",
+            "poly_parasite":"Polyglotte « parasite » : Il s'agit d'un fichier qui contient un autre type de fichier;",
+            "poly_mix": "Polyglotte « mille-feuilles » : Les couches sont alternées en contrôlant la structure interne du fichier;",
+            "poly_chimere": "Polyglotte « chimère » : Le fichier comporte un corps (données) et plusieurs têtes. Vu que plusieurs formats utilisent le même algorithme pour stocker les données, tel que Deflate de Zlib, le même bloc de données est utilisé par des entêtes différents. (par exemple, les pixels d’une image).  Plusieurs entêtes sont présents pour que cette image soit visible via plusieurs formats (jpg, png, ..), au sein du même fichier;",
+            "poly_schyzo": "Fichiers « schizophrènes » : Il s'agit d'un seul type de fichier, mais son contenu est interprété différemment en fonction de l’outil qui exécute ou qui accède à ce fichier. Il s'agit généralement de fichiers PDF (interprétation ou non du Javascript) ou Images (comme la technique du <a href='https://carlmastrangelo.com/blog/gamma-steganography' target='_blank' class='highlight'>Gamma</a>);",
+            "poly_angecryption": "Angecryption : Le résultat d’un chiffrement ou d’un déchiffrement d’un fichier donne un autre fichier valide de même type ou de types différents :",
+            "info": "Les fichiers docx, jar, apk, pptx, odf... sont des archives valides et peuvent être décompréssés. Il faut vérifier alors si le fichier en question peut être ouvert avec un autre outil que celui associé à son extension. La commande <span class='highlight'>file</span> ne permet pas d'identifier les fichiers polyglottes."
+        },
+        "h_text": "Encoding et langages ésotériques",
+        "text": {
+            "ascii": "Le texte ASCII peut être codé en binaire par blocs de <span class='highlight'>8 bits</span>, il est alors facilement identifiable car chaque bloc correspondant à une lettre commence par un 0. Il est possible de supprimer ce 0, les blocs ne font alors plus que <span class='highlight'>7 bits</span>. Le texte peut également être codé sur un entier de type <span class='highlight'>long</span> (parfois dans une base différente de la base 10), par exemple la chaine de caractère « Hello world! » encodée sur un type long en base 10 peut être décodée avec le code python 2 suivant:",
+            "cyberchef": "Des outils comme <a href='https://gchq.github.io/CyberChef/' target='_blank' class='highlight'>CyberChef</a> (et l'option « magic ») peuvent permettre de détecter l'encodage utilisé et décoder le message caché. Parfois, un changement de charset peut être nécessaire (substitution monoalphabétique, ou changement de base).",
+            "esoteric": "Les langages exotiques ou ésotériques sont des langages de programmation conçus pour être uniques, difficiles à programmer ou tout simplement bizarres. Leur design et leur charsets peuvent être particulier, c'est le cas des languages les plus retrouvés en CTF comme le <a href='https://esolangs.org/wiki/Brainfuck' target='_blank' class='highlight'>BrainFuck</a>, le <a href='https://esolangs.org/wiki/Whitespace' target='_blank' class='highlight'>WhiteSpace</a>, le <a href='https://esolangs.org/wiki/Piet' target='_blank' class='highlight'>PIET</a> ou encore le <a href='https://esolangs.org/wiki/Malbolge' target='_blank' class='highlight'>Malbolge</a>. Le site <a href='https://esolangs.org/wiki/Language_list' target='_blank' class='highlight'>EsoLang</a> référencie ces différents langages et peut être utile dans vos recherches."
+        },
+        "h_more": "Pour aller plus loin",
+        "more": {
+            "aperikube": "<a href='https://www.aperikube.fr/cat/steg/' target='_blank' class='highlight'>Blog d'Aperi'Kube - Catégorie stéganographie</a>",
+            "ctftime": "<a href='https://ctftime.org/writeups' target='_blank' class='highlight'>CTF Time - Writeups (Stégano)</a>",
+            "corkami": "<a href='http://corkami.github.io/' target='_blank' class='highlight'>Corkami</a>",
+            "rootme": "<a href='https://www.root-me.org/fr/Challenges/Steganographie/' target='_blank' class='highlight'>Root-Me - Stéganographie</a>",
+            "stereogrammes": "<a href='https://fr.wikipedia.org/wiki/Autost%C3%A9r%C3%A9ogramme' target='_blank' class='highlight'>Stéréogrammes</a>"
+        },
+        "h_maintenance": "En cours d'écriture..."
+    }
+}

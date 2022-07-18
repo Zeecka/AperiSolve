@@ -3,3 +3,5 @@ __pycache__/
 *.py[cod]
 *$py.class
 uploads/*
+mongo/data/*
+web/static/uploads/*

@@ -5,13 +5,43 @@ services:
     restart: always
     container_name: aperisolve_web
     volumes:
-    - ./web:/app
+      - ./web:/app
     ports:
       - "5000:5000"
+    env_file:
+      - .env
+    depends_on:
+      - mongodb
+    networks:
+      - frontend
+      - backend
   backend:
     build: backend
     restart: always
     container_name: aperisolve_back
     volumes:
-    - ./backend:/app
-    - ./web/static/uploads:/app/uploads
+      - ./backend:/app
+      - ./web/static/uploads:/app/uploads
+    env_file:
+      - .env
+    depends_on:
+      - mongodb
+    networks:
+      - backend
+  mongodb:
+    image: mongo:4.0.8
+    container_name: mongodb
+    restart: unless-stopped
+    command: mongod --auth
+    env_file:
+      - .env
+    volumes:
+      - ./mongo/data:/data/db
+      - ./mongo/mongo-init.js:/docker-entrypoint-initdb.d/mongo-init.js:ro
+    networks:
+      - backend
+networks:
+  frontend:
+    driver: bridge
+  backend:
+    driver: bridge

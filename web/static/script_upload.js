@@ -6,23 +6,22 @@ $("#file-drag").click(function () {
 $("#optionsform button").click(function () {
   $(this).toggleClass("disable");
   if ($(this).hasClass("disable")) {
-    $(this).text("Disable");
+    $(this).text($(this).data("disable"));
   } else {
-    $(this).text("Enable");
+    $(this).text($(this).data("enable"));
   }
 });
 function initFileUpl() {
-
-
   var fileSelect = document.getElementById('file-upload'),
     fileDrag = document.getElementById('file-drag'),
     submitButton = document.getElementById('submit-button');
-
-  fileSelect.addEventListener('change', fileSelectHandler, false);
+  if (fileSelect) {
+    fileSelect.addEventListener('change', fileInputSelectHandler, false);
+  }
 
   // Is XHR2 available?
   var xhr = new XMLHttpRequest();
-  if (xhr.upload) {
+  if (fileDrag && xhr.upload) {
     // File Drop
     fileDrag.addEventListener('dragover', fileDragHover, false);
     fileDrag.addEventListener('dragleave', fileDragHover, false);
@@ -45,13 +44,20 @@ function fileSelectHandler(e) {
 
   // Cancel event and hover styling
   fileDragHover(e);
-
   // Process all File objects
   for (var i = 0, f; f = files[i]; i++) {
     parseFile(f);
   }
+  var fileinput = document.getElementById('file-upload');
+  fileinput.files = files;
 }
 
+function fileInputSelectHandler(e) {
+  var files = e.target.files || e.dataTransfer.files;
+  for (var i = 0, f; f = files[i]; i++) {
+    parseFile(f);
+  }
+}
 // Output
 function output(msg) {
   // Response
@@ -116,16 +122,16 @@ function uploadFile(file) {
     xhr.onreadystatechange = function (e) {
       if (xhr.readyState == 4) {  // when upload is ok
         response = JSON.parse(xhr.response);
-        if ("File" in response){
-          document.location = "/"+response['File'];
+        if ("File" in response) {
+          document.location = "/" + response['File'];
         }
-        else if ("Error" in response){
+        else if ("Error" in response) {
           $("#error").text(response["Error"]);
           $("#error").slideDown();
         }
       }
     };
-    
+
     // Start upload
     xhr.open('POST', '/upload', true);
     //xhr.setRequestHeader('Content-Type', 'multipart/form-data');
@@ -146,11 +152,11 @@ if (window.File && window.FileList && window.FileReader) {
   document.getElementById('file-drag').style.display = 'none';
 }
 
-$("#upload_button").click(function(){
+$("#upload_button").click(function () {
   //alert("ok");
   uploadFile($("#file-upload").prop('files')[0]);
 });
 
-$("#btn_password").click(function(){
+$("#btn_password").click(function () {
   $("#password").slideToggle();
 });

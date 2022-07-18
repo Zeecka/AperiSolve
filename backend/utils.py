@@ -1,11 +1,17 @@
 #!/usr/bin/python3
 # -*- encoding: utf-8 -*-
 
-from subprocess import PIPE, Popen
-import random
-import string
+"""
+Aperi'Solve - Flask application.
+Aperi'Solve is a web steganography plateform.
+"""
+__author__ = "@Zeecka"
+__copyright__ = "WTFPL"
 
-def cmd_exec(cmd, shell=True):
+from subprocess import PIPE, Popen
+
+
+def cmd(cmd, shell=True):
     """Execute command @cmd and return output using Popen()."""
     print(cmd)
     process = Popen(

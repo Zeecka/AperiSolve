@@ -1,0 +1,305 @@
+{% include 'header.html' %}
+  <div id="parentmain">
+    <div id="cheatsheet" class="min_width">
+      <h1>Cheatsheet</h1>
+
+      <h2 id="metadata">{{ cheatsheet.h_disclaimer }}</h2>
+      <div id="result_top" class="result">
+        <div class="min_width">
+          {{ cheatsheet.disclaimer.message }}
+        </div>
+      </div>
+      <h2 id="metadata">{{ cheatsheet.h_meta }}</h2>
+      <div id="result_top" class="result">
+        <div class="min_width">
+          <ul>
+            <li>{{ cheatsheet.meta.unknownext|safe }}</li>
+            <li>{{ cheatsheet.meta.file|safe }}</li>
+          </ul>
+          <div class="command"><span class="highlight">$</span> file data.raw
+            <div class="clipboard" data-value='file data.raw'></div>
+          </div>
+          <ul>
+            <li>{{ cheatsheet.meta.unknownfile|safe }}</li>
+            <li>{{ cheatsheet.meta.exiftool|safe }}</li>
+          </ul>
+          <div class="command">
+            <span class="highlight">$</span> exiftool data.raw
+            <div class="clipboard" data-value='file data.raw'></div>
+          </div>
+        </div>
+      </div>
+      <h2 id="filestruct">{{ cheatsheet.h_fstruct }}</h2>
+      <div id="result_top" class="result">
+        <div class="min_width">
+          <ul>
+            <li>{{ cheatsheet.struct.chunk|safe }}</li>
+          </ul>
+          <div style="text-align: center;">
+            <img src="/static/images/cheatsheet/tweakpng.png" alt="TweakPNG"/>
+          </div>
+          <ul>
+            <li>{{ cheatsheet.struct.crc|safe }}</li>
+          </ul>
+          <div class="command">
+            <span class="highlight">$</span> pngcheck -c file.png<br/>
+            <span class="highlight">$</span> PCRT.py -v -i file.png
+          </div>
+          <ul>
+            <li>{{ cheatsheet.struct.size|safe }}</li>
+          </ul>
+        </div>
+      </div>
+      <h2 id="rawdata">{{ cheatsheet.h_rawdata }}</h2>
+      <div id="result_top" class="result">
+        <div class="min_width">
+          <ul>
+            <li>{{ cheatsheet.rawdata.audacity|safe }}</li>
+          </ul>
+          <div style="text-align: center;">
+            <img src="/static/images/cheatsheet/audacity_raw.png" alt="Audacity"/>
+          </div>
+          <ul>
+            <li>{{ cheatsheet.rawdata.gimp|safe }}</li>
+            <li>{{ cheatsheet.rawdata.binvis|safe }}</li>
+            <li>{{ cheatsheet.rawdata.strings|safe }}</li>
+          </ul>
+          <div class="command">
+            <span class="highlight">$</span> strings -s file.raw<br/>
+            <span class="highlight">$</span> strings -S file.raw<br/>
+            <span class="highlight">$</span> strings -b file.raw<br/>
+            <span class="highlight">$</span> strings -l file.raw<br/>
+            <span class="highlight">$</span> strings -B file.raw<br/>
+            <span class="highlight">$</span> strings -L file.raw
+          </div>
+        </div>
+      </div>
+      <h2 id="image">{{ cheatsheet.h_image }}</h2>
+      <div id="result_top" class="result">
+        <div class="min_width">
+          <table class="cstable center">
+            <tr>
+              <th class="table_tl_none"></th>
+              <th>PNG</th>
+              <th>JPG/JPEG</th>
+              <th>BMP</th>
+            </tr>
+            <tr>
+              <td>Aperi'Solve</td>
+              <td class="hgreen">OK</td>
+              <td class="hgreen">OK</td>
+              <td class="hgreen">OK</td>
+            </tr>
+            <tr>
+              <td>Zsteg</td>
+              <td class="hgreen">OK</td>
+              <td class="hred">KO</td>
+              <td class="hgreen">OK</td>
+            </tr>
+            <tr>
+              <td>Steghide</td>
+              <td class="hred">KO</td>
+              <td class="hgreen">OK</td>
+              <td class="hgreen">OK</td>
+            </tr>
+            <tr>
+              <td>OutGuess</td>
+              <td class="hred">KO</td>
+              <td class="hgreen">OK</td>
+              <td class="hred">KO</td>
+            </tr>
+          </table>
+        </div>
+        <div class="min_width">
+          <ul>
+            <li>{{ cheatsheet.image.compare|safe }}</li>
+            <li>{{ cheatsheet.image.stegsolve_compare|safe }}</li>
+          </ul>
+          <div style="text-align: center;">
+            <img src="/static/images/cheatsheet/stegsolve_xor.png" alt="Stegsolve Xor"/>
+            <img src="/static/images/cheatsheet/stegsolve_xor2.png" alt="Stegsolve Xor 2"/>
+          </div>
+          <ul>
+            <li>{{ cheatsheet.image.zsteg_layer|safe }}</li>
+          </ul>
+          <div class="command">
+            <span class="highlight">$</span> zsteg file.png 2b,g,lsb,xy<br/>
+            <span class="highlight">$</span> zsteg file.png -E '1b,rgb,lsb'
+            <div class="clipboard" data-value='zsteg file.png'></div>
+          </div>
+          <ul>
+            <li>{{ cheatsheet.image.pxpython|safe }}</li>
+          </ul>
+          <div class="command">
+             # pip install Pillow<br/>
+             from PIL import Image<br/>
+             stegano_image = Image.open('file.png')<br/>
+             width, height = stegano_image.size<br/>
+             pxs = list(stegano_image.getdata())<br/>
+             print(pxs[:10])
+            <div class="clipboard" data-value='# pip install Pillow
+from PIL import Image
+stegano_image = Image.open("file.png")
+width, height = stegano_image.size
+pxs = list(stegano_image.getdata())
+print(pxs[:10])'></div>
+          </div>
+          <ul>
+            <li>{{ cheatsheet.image.steghide|safe }}</li>
+          </ul>
+          <div class="command">
+            <span class="highlight">$</span> steghide extract -p "secret" -sf file.jpg<br/>
+            <span class="highlight">$</span> stegcracker file.jpg /usr/share/wordlists/rockyou.txt
+          </div>
+        </div>
+      </div>
+      <h2 id="png">{{ cheatsheet.h_png }}</h2>
+      <div id="result_top" class="result">
+        <div class="min_width">
+          <ul>
+            <li>{{ cheatsheet.png.tools|safe }}</li>
+          </ul>
+          <div class="command">
+            <span class="highlight">$</span> zsteg file.png 2b,g,lsb,xy<br/>
+            <span class="highlight">$</span> zsteg file.png -E '1b,rgb,lsb'
+            <div class="clipboard" data-value='zsteg file.png'></div>
+          </div>
+          <ul>
+            <li>{{ cheatsheet.png.apng|safe }}</li>
+          </ul>
+          <div style="text-align: center;">
+            <img src="https://upload.wikimedia.org/wikipedia/commons/1/14/Animated_PNG_example_bouncing_beach_ball.png" alt="APNG"/>
+          </div>
+          <ul>
+            <li>{{ cheatsheet.png.tweak|safe }}</li>
+          </ul>
+          <div style="text-align: center;">
+            <img src="/static/images/cheatsheet/tweakpng.png" alt="TweakPNG"/>
+          </div>
+        </div>
+      </div>
+      <h2 id="jpg">{{ cheatsheet.h_jpeg }}</h2>
+      <div id="result_top" class="result">
+        <div class="min_width">
+          <ul>
+            <li>{{ cheatsheet.jpeg.tools|safe }}</li>
+          </ul>
+          <div class="command">
+            <span class="highlight">$</span> outguess -k secret file.jpg output.raw<br/>
+            <span class="highlight">$</span> steghide extract -p "secret" -sf file.jpg
+          </div>
+        </div>
+      </div>
+      <h2 id="gif">{{ cheatsheet.h_gif }}</h2>
+      <div id="result_top" class="result">
+        <div class="min_width">
+          <ul>
+            <li>{{ cheatsheet.gif.tools|safe }}</li>
+            <li>{{ cheatsheet.gif.hiddenframe|safe }}</li>
+          </ul>
+          <div style="text-align: center;">
+            <img src="/static/images/cheatsheet/gif_maker.png" alt="GIF Maker"/>
+          </div>
+          <ul>
+            <li>{{ cheatsheet.gif.timeframe|safe }}</li>
+            <li>{{ cheatsheet.gif.extract|safe }}</li>
+          </ul>
+          <div class="command">
+            <span class="highlight">$</span> ffmpeg -i file.gif -vsync 0 output/file%d.png
+            <div class="clipboard" data-value='ffmpeg -i file.gif -vsync 0 output/file%d.png'></div>
+          </div>
+        </div>
+      </div>
+      <h2 id="audio">{{ cheatsheet.h_audio }}</h2>
+      <div id="result_top" class="result">
+        <div class="min_width">
+          <ul>
+            <li>{{ cheatsheet.audio.spectre|safe }}</li>
+          </ul>
+          <div style="text-align: center;">
+            <img src="/static/images/cheatsheet/audacity_1.png" alt="Audacity spectrum"/>
+          </div>
+          <br/>{{ cheatsheet.audio.audacityhelp }}
+          <div style="text-align: center;"><br/>
+            <img src="/static/images/cheatsheet/audacity_2.png" alt="Audacity spectrum"/>
+          </div>
+          <ul>
+            <li>{{ cheatsheet.audio.spectrehigh|safe }}</li>
+            <li>{{ cheatsheet.audio.specialencode|safe }}</li>
+            <li>{{ cheatsheet.audio.size|safe }}</li>
+            <li>{{ cheatsheet.audio.lsb|safe }}</li>
+          </ul>
+          <div class="command">
+            <span class="highlight">$</span> stegolsb wavsteg -r -i file.wav -o output.txt -n 1 -b 1000
+            <div class="clipboard" data-value='stegolsb wavsteg -r -i file.wav -o output.txt -n 1 -b 1000'></div>
+          </div>
+          <ul>
+            <li>{{ cheatsheet.audio.tools|safe }}</li>
+          </ul>
+          <div style="text-align: center;"><br/>
+            <img src="/static/images/cheatsheet/DeepSound.png" alt="DeepSound"/>
+          </div>
+        </div>
+      </div>
+      <h2 id="polyglot">{{ cheatsheet.h_polyglot }}</h2>
+      <div id="result_top" class="result">
+        <div class="min_width">
+          {{ cheatsheet.polyglot.definition|safe }}
+          <ul>
+            <li>{{ cheatsheet.polyglot.poly_simple|safe }}</li>
+            <li>{{ cheatsheet.polyglot.poly_parasite|safe }}</li>
+            <li>{{ cheatsheet.polyglot.poly_mix|safe }}</li>
+            <li>{{ cheatsheet.polyglot.poly_chimere|safe }}</li>
+            <li>{{ cheatsheet.polyglot.poly_schyzo|safe }}</li>
+            <li>{{ cheatsheet.polyglot.poly_angecryption|safe }}</li>
+          </ul>
+          <div style="text-align: center;"><br/>
+            <img src="/static/images/cheatsheet/Angecryption.png" alt="Angecryption"/>
+          </div> 
+          <ul>
+            <li>{{ cheatsheet.polyglot.info|safe }}</li>
+          </ul>         
+        </div>
+      </div>
+      <h2 id="text">{{ cheatsheet.h_text }}</h2>
+      <div id="result_top" class="result">
+        <div class="min_width">
+          <ul>
+            <li>{{ cheatsheet.text.ascii|safe }}</li>
+          </ul>
+          <div class="command">
+            <span class="highlight">python2></span> hex(22405534230753963835153736737L)[2:].strip('L').decode("hex")<br/>
+            <span class="highlight">python2></span> "48656c6c6f20776f726c6421".decode("hex")
+            <div class="clipboard" data-value='hex(long_var)[2:].strip(&quot;L(&quot;).decode("hex")'></div>
+          </div>
+          <ul>
+            <li>{{ cheatsheet.text.cyberchef|safe }}</li>
+            <li>{{ cheatsheet.text.esoteric|safe }}</li>
+          </ul>
+          <div class="command">
+            <span class="highlight">brainfuck></span><br/>++++++++++[&#x3E;+&#x3E;+++&#x3E;+++++++&#x3E;++++++++++&#x3C;&#x3C;&#x3C;&#x3C;-]&#x3E;&#x3E;&#x3E;++.&#x3E;+.+++++++..+++.&#x3C;&#x3C;++.&#x3E;&#x3E;++++++++.--------.+++.------.--------.&#x3C;&#x3C;+.
+            <br/><br/><span class="highlight">malbolge></span><br/>(&#x27;&#x26;%:9]!~}|z2Vxwv-,POqponl$Hjig%eB@@&#x3E;}=&#x3C;M:9wv6WsU2T|nm-,jcL(I&#x26;%$#&#x22;
+            &#x60;CB]V?Tx&#x3C;uVtT&#x60;Rpo3NlF.Jh++FdbCBA@?]!~|4XzyTT43Qsqq(Lnmkj&#x22;Fhg${z@&#x3E;
+          </div>
+          <div style="text-align: center;"><br/>
+            <a href='https://esolangs.org/wiki/Piet' target="_blank"><img src="/static/images/cheatsheet/piet.png" alt="PIET"/></a>
+          </div> 
+        </div>
+      </div>
+      <h2 id="more">{{ cheatsheet.h_more }}</h2>
+      <div id="result_top" class="result">
+        <div class="min_width">
+          <ul>
+            <li>{{ cheatsheet.more.aperikube|safe }}</li>
+            <li>{{ cheatsheet.more.ctftime|safe }}</li>
+            <li>{{ cheatsheet.more.corkami|safe }}</li>
+            <li>{{ cheatsheet.more.rootme|safe }}</li>
+            <li>{{ cheatsheet.more.stereogrammes|safe }}</li>
+          </ul>    
+        </div>
+      </div>
+    </div>
+  </div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+<script src="static/script_upload.js"></script>
+{% include 'footer.html' %}

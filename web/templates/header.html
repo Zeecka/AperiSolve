@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+        <meta charset="utf-8">
+        <meta name="description" content="">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <title>Aperi'Solve</title>
+        <!-- Meta -->
+        <meta name="Content-Language" content="{{ lang }}">
+        <meta name="Keywords" content="AperiSolve, Apérisolve, Aperi'Solve, Apéri'Solve, Zeecka">
+        <meta name="Author" content="Zeecka">
+        <meta name="Robots" content="all">
+        <meta name="theme-color" content="#42f4c5">
+        <link rel="icon" type="image/svg+xml" href="/static/images/watermelon.svg" />
+        <link rel="preconnect" href="https://fonts.gstatic.com">
+        <link href="https://fonts.googleapis.com/css2?family=Roboto+Mono:wght@300;400;600;700&display=swap" rel="stylesheet">
+        <link href="static/normalize.css" rel="stylesheet">
+        <link href="static/style.css" rel="stylesheet">
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/particles.js/2.0.0/particles.min.js"></script>
+    </head>
+    <body>
+        <div id="copiedclipboard">{{ clipboard }}</div>
+            <header><!--
+                --><div class="menu_item"><a href="/"><img src="/static/images/watermelon.svg"/>Aperi'Solve</a></div><!--
+                --><div class="menu_item"><a href="/cheatsheet">Cheat Sheet</a></div><!--
+                --><div class="menu_item"><a href="https://github.com/Zeecka/AperiSolve" target="_blank">Github</a></div><!--
+                --><div class="menu_item"><a href="https://www.zeecka.fr/cat/steganography/" target="_blank">Blog</a></div><!--
+                --><div class="menu_item"><a href="https://twitter.com/intent/follow?region=follow_link&screen_name=Zeecka_" target="_blank">Twitter</a></div>
+                <div id="menulang">
+                    <a href="/lang/fr"><div {% if lang == "fr" %}class="active" {% endif %}style="background-image: url('/static/images/flags/fr.svg');"></div></a>
+                    <a href="/lang/en"><div {% if lang == "en" %}class="active" {% endif %}style="background-image: url('/static/images/flags/en.svg');"></div></a>
+                </div>
+                <div id="menuphone"><img src="/static/images/burger.svg"/></div>
+            </header>

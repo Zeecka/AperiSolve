@@ -1,46 +1,22 @@
-<!DOCTYPE html>
-<html>
-
-<head>
-  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
-  <meta charset="utf-8">
-  <meta name="description" content="">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Aperi'Solve</title>
-  <!-- Meta -->
-  <meta name="Content-Language" content="en">
-  <meta name="Keywords" content="AperiSolve, Apérisolve, Aperi'Solve, Apéri'Solve, Zeecka">
-  <meta name="Author" content="Zeecka">
-  <meta name="Robots" content="all">
-  <meta name="theme-color" content="#42f4c5">
-  <link rel="shortcut icon" type="image/x-icon" href="/static/images/watermelon.png" />
-  <link rel="icon" type="image/png" href="/static/images/watermelon.png" />
-  <link rel="preconnect" href="https://fonts.gstatic.com">
-  <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@300;400;600;700&display=swap" rel="stylesheet">
-  <link href="static/normalize.css" rel="stylesheet">
-  <link href="static/style.css" rel="stylesheet">
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/particles.js/2.0.0/particles.min.js"></script>
-  <script src="https://platform.twitter.com/widgets.js" charset="utf-8"></script>
-  <script src="https://buttons.github.io/buttons.js"></script>
-</head>
-<body>
-  <div id="parentmain">
-    <div id="parenthome">
-      <h1 id="logo">Aperi'Solve</h1>
+{% include 'header.html' %}
+<div id="parentmain" class="filtercolor">
+  <div id="parenthome"><!--
+      --><div class="home_section"></div><!--
+      --><div
+      class="home_section">
       <div id="mainform">
-        What is this ?
-        <p>Aperi'Solve is an online platform which performs layer analysis on image. The platform also uses zsteg,
-          steghide, outguess, exiftool, binwalk, foremost and strings for deeper steganography analysis. The platform
-          supports the following images format: .png, .jpg, .gif, .bmp, .jpeg, .jfif, .jpe, .tiff...</p>
+        <h2 class="highlight">{{ index.what }}</h2>
+        <p>{{ index.description }}</p>
         <form id="file-upload-form" class="uploader">
           <input id="file-upload" type="file" name="file" accept="image/*" />
           <div id="file-drag">
-            <img id="file-image" src="#" alt="Preview" class="hidden">
+            <img id="file-image" src="#" alt="Preview" class="hidden nofilter">
             <div id="start">
               <i class="fa fa-download" aria-hidden="true"></i>
-              <div>Select a file or drag here</div>
-              <div id="notimage" class="hidden">Please select an image</div>
-              <span id="file-upload-btn" class="btn btn-primary">Select a file</span>
+              <div>{{ index.selectfile }}</div>
+              <div id="notimage" class="hidden"></div>
+              <span id="file-upload-btn" class="btn btn-primary">{{
+                index.selectimage }}</span>
             </div>
             <div id="response" class="hidden">
               <div id="messages"></div>
@@ -49,26 +25,35 @@
               </progress>
             </div>
           </div>
-          <button class="btn" id="upload_button" type="button">Submit</button>
+          <button class="btn" id="upload_button" type="button">{{ index.submit
+            }}</button>
           <div id="error" class="error"></div>
         </form>
       </div>
       <div id="optionsform">
-        <div>Extract all zsteg files (--extract) ? <button class="btn disable" id="btn_zsteg_ext">Disable</button></div>
-        <div>Test all options of zsteg (--all) ? <button class="btn disable" id="btn_zsteg_all">Disable</button></div>
-        <div>I've got a password ! <button class="btn disable" id="btn_password">Disable</button></div>
-        <div id="password"><input type="text" name="password" placeholder="password..."></div>
+        <div>{{ index.zsteg.extract }} <button class="btn disable"
+            id="btn_zsteg_ext" data-enable="{{ index.enable }}" data-disable="{{
+            index.disable }}">{{ index.disable }}</button></div>
+        <div>{{ index.zsteg.options }} <button class="btn disable"
+            id="btn_zsteg_all" data-enable="{{ index.enable }}" data-disable="{{
+            index.disable }}">{{ index.disable }}</button></div>
+        <div>{{ index.gotpass }} <button class="btn disable" id="btn_password"
+            data-enable="{{ index.enable }}" data-disable="{{ index.disable }}">{{
+            index.disable }}</button></div>
+        <div id="password"><input type="text" name="password" placeholder="{{
+            index.password }}..." /></div>
       </div>
-    </div>
-  </div>
-  <div id="social">
-    <a class="github-button" href="https://github.com/Zeecka/AperiSolve" data-color-scheme="no-preference: light; light: light; dark: light;" data-size="large" data-show-count="true" aria-label="Star Zeecka/AperiSolve on GitHub">Star</a><br/>
-    <a href="https://twitter.com/Zeecka_" class="twitter-follow-button" data-show-count="false">Follow @Zeecka_</a>
-  </div>
-  <div id="particles-js"></div>
-  <script>particlesJS.load('particles-js', 'static/particles.json', function () { });</script>
-</body>
+      <div id="alias">
+        <div class="command">
+          <span class="highlight">$</span> sudo sh -c "$(curl -fs
+          https://aperisolve.com/install.sh)" &&<br/>
+          aperisolve &lt;file&gt;
+          <div class="clipboard" data-value='sudo sh -c "$(curl -fs https://www.aperisolve.com/install.sh)"'></div>
+        </div>
+      </div>
+    </div><!--
+      --></div>
+</div>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
 <script src="static/script_upload.js"></script>
-
-</html>
+{% include 'footer.html' %}
