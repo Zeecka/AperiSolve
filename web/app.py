@@ -51,7 +51,9 @@ def load_i18n(request):
     if cookie_lang in lang_keys:
         return languages[cookie_lang]
     header_lang = request.accept_languages.best_match(lang_keys)
-    return languages[header_lang]
+    if header_lang in lang_keys:
+        return languages[header_lang]
+    return languages["en"]
 
 
 def mencoder(o):
