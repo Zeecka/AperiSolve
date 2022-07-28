@@ -171,7 +171,9 @@ def cheatsheet():
 
 @app.route('/show')
 def show():
-    return render_template('show.html', **load_i18n(request))
+    folder = f"{UPLOAD_FOLDER}/"
+    dirs = os.listdir(folder)
+    return render_template('show.html', dirs=dirs, **load_i18n(request))
 
 
 @app.route('/<md5_file>')

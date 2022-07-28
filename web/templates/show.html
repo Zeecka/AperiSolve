@@ -8,6 +8,9 @@
       <div class="min_width">
         <div class="viewsteg">
             <div id="show">
+              {% for d in dirs %}
+              <div><a href='/{{ d }}'><img data-src='{{ d }}'/></a></div>
+              {% endfor %}
             </div>
         </div>
       </div>
