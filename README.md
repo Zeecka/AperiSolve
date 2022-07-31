@@ -64,5 +64,4 @@ Then check your browser at [http://localhost:5000/](http://localhost:5000).
 - "Probable flag" with regex
 - Implement "out of the box" png check (increase size of png) ?
 - Implement PNGcheck ?
-- Implement stegoVeritas ?
 - ...
