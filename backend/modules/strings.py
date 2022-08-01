@@ -52,7 +52,7 @@ if __name__ == "__main__":
                     continue
                 m = Strings(d)
                 status = m.get_config_status(d)
-                if status is None:
+                if status is None or status.get("strings") is None:
                     RUNNING.append(d)
                     m.start()  # Run
             except Exception() as e:

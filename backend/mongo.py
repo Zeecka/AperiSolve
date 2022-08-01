@@ -29,4 +29,4 @@ db_status = mydb["status"]
 def get_status(file):
     data = list(db_status.find({"md5_full": file}))
     if len(data):
-        return data[0]["status"]["view"]
+        return data[0]["status"]

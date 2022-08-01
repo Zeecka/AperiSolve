@@ -53,7 +53,7 @@ if __name__ == "__main__":
                     continue
                 m = Foremost(d)
                 status = m.get_config_status(d)
-                if status is None:
+                if status is None or status.get("foremost") is None:
                     RUNNING.append(d)
                     m.start()  # Run
             except Exception() as e:

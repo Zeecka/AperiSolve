@@ -639,10 +639,12 @@ textarea,
 #result_strings,
 #result_zsteg,
 #result_steghide,
-#result_outguess {
+#result_outguess,
+#result_pcrt_raw {
   border: 3px solid var(--color-main);
   color: var(--color-white);
   background: var(--color-dark);
+  text-align: left;
 }
 
 .clipboard {
@@ -671,6 +673,7 @@ textarea,
   font-weight: bold;
 }
 
+#result_pcrt_raw,
 #result_exiftool,
 #result_zsteg {
   height: 100%;

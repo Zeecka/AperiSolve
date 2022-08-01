@@ -5,7 +5,7 @@
     <div class="min_width">
       <h1>{{ result.informations }}</h1>
     </div>
-    <div id="result_top" class="result">
+    <div class="result">
       <div class="min_width"><!--
         --><div id="result_main_img"><img id="main_img" src="/static/images/load.svg" class="imgscandisplay" /></div><!--
         --><div id="result_main_desc">
@@ -88,13 +88,13 @@
     <div class="min_width">
       <h1>Zsteg</h1>
     </div>
-    <div id="result_top" class="result">
+    <div class="result">
       <div id="result_zsteg" class="min_width"><div id="zsteg_load" class='loader'><img src="/static/images/load.svg" /></div></div>
     </div>
     <div class="min_width">
       <h1>Steghide</h1>
     </div>
-    <div id="result_top" class="result" style='margin-bottom: 20px;'>
+    <div class="result" style='margin-bottom: 20px;'>
       <div id="result_steghide" class="min_width"><div id="b_load" class='loader'><img src="/static/images/load.svg" /></div></div>
     </div>
     <div class="min_width">
@@ -103,7 +103,7 @@
     <div class="min_width">
       <h1>Outguess</h1>
     </div>
-    <div id="result_top" class="result" style='margin-bottom: 20px;'>
+    <div class="result" style='margin-bottom: 20px;'>
       <div id="result_outguess" class="min_width"><div id="b_load" class='loader'><img src="/static/images/load.svg" /></div></div>
     </div>
     <div class="min_width">
@@ -112,7 +112,7 @@
     <div class="min_width">
       <h1>ExifTool</h1>
     </div>
-    <div id="result_top" class="result_table">
+    <div class="result_table">
       <div class="min_width">
         <div id="result_exiftool"><div id="b_load" class='loader'><img src="/static/images/load.svg" /></div></div>
       </div>
@@ -121,7 +121,7 @@
       <h1>Binwalk</h1>
     </div>
     
-    <div id="result_top" class="result_table">
+    <div class="result_table">
       <div class="min_width">
         <div id="binwalk_table"><div id="b_load" class='loader'><img src="/static/images/load.svg" /></div></div><br/>
         <button id="result_binwalk" class="btn disable">{{ result.dowloadfiles }}</button>
@@ -130,7 +130,7 @@
     <div class="min_width">
       <h1>Foremost</h1>
     </div>
-    <div id="result_top" class="result_table">
+    <div class="result_table">
       <div class="min_width">
         <button id="result_foremost" class="btn disable">{{ result.dowloadfiles }}</button>
       </div>
@@ -138,9 +138,23 @@
     <div class="min_width">
       <h1>Strings</h1>
     </div>
-    <div id="result_top" class="result">
+    <div class="result">
       <textarea id="result_strings" class="min_width" disabled>
       </textarea>
+    </div>
+    <div class="min_width">
+      <h1>PngCheck</h1>
+    </div>
+    <div class="result">
+      <div id="result_pngcheck" class="min_width"><div id="pngcheck_load" class='loader'><img src="/static/images/load.svg" /></div></div>
+    </div>
+    <div class="min_width">
+      <h1>PCRT</h1>
+    </div>
+    <div class="result min_width">
+      <div id="result_pcrt_raw" class="min_width" ><div id="b_load" class='loader'><img src="/static/images/load.svg" /></div></div><br/>
+      <br/>
+      <button id="result_pcrt" class="btn disable">{{ result.dowloadfiles }}</button>
     </div>
   </div>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>

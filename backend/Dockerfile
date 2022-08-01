@@ -69,6 +69,25 @@ RUN echo "**** install Foremost ****" \
 && cd foremost \
 && make && make install
 
+#
+# PCRT
+#
+RUN echo "**** install PCRT ****" \
+&& cd /usr/bin \
+&& wget https://raw.githubusercontent.com/Zeecka/PCRT/AperiSolve/PCRT.py \
+&& mv PCRT.py PCRT \
+&& chmod +x PCRT
+
+#
+# PngCheck
+#
+RUN echo "**** install PngCheck ****" \
+&& cd /tmp \
+&& wget http://libpng.org/pub/png/src/pngcheck-3.0.3.zip \
+&& unzip pngcheck-3.0.3.zip \
+&& mv Makefile.unx Makefile \
+&& make \
+&& mv pngcheck /usr/bin/
 
 WORKDIR /app
 COPY . .

@@ -328,4 +328,43 @@ $(document).ready(function () {
 	});
 
 
+	/* Load pcrt */
+
+	(function load_pcrt() {
+		$.ajax({
+			url: '/stats/' + md5 + '?' + (new Date()).getTime(), success: function (data) {
+				if (data["status"]["pcrt"] == "finished") {
+					$("#result_pcrt").removeClass("disable");
+					$("#result_pcrt").click(function () {
+						window.location.href = 'static/uploads/' + md5 + '/PCRT.7z';
+					});
+					$.ajax({
+						url: 'static/uploads/' + md5 + '/pcrt.txt', success: function (data) {
+							$("#result_pcrt_raw").html(formatCmd(escapeHtml(data)));
+						}
+					});
+				} else {
+					setTimeout(load_pcrt, 5000);
+				}
+			}
+		});
+	})();
+
+
+	(function load_pngcheck() {
+		$.ajax({
+			url: '/stats/' + md5 + '?' + (new Date()).getTime(), success: function (data) {
+				if (data["status"]["pngcheck"] == "finished") {
+					$.ajax({
+						url: 'static/uploads/' + md5 + '/pngcheck.txt?' + (new Date()).getTime(), success: function (data) {
+							$("#result_pngcheck").html(fmZsteg(formatCmd(escapeHtml(data))));
+						}
+					});
+				} else {
+					setTimeout(load_pngcheck, 5000);
+				}
+			}
+		});
+	})();
+
 });
