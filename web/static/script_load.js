@@ -328,7 +328,7 @@ $(document).ready(function () {
 	});
 
 
-	/* Load pcrt 
+	/* Load pcrt */
 
 	(function load_pcrt() {
 		$.ajax({
@@ -366,5 +366,5 @@ $(document).ready(function () {
 			}
 		});
 	})();
-*/
+
 });
