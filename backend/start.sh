@@ -101,16 +101,16 @@ while sleep 3; do
         fi
     fi
 
-    ps aux |grep pcrt.py |grep -v grep
-    PROCESS_STATUS=$?
-    if [ $PROCESS_STATUS -ne 0 ]; then
-        echo "pcrt.py exited. Reboot..."
-        ./pcrt.py &
-        status=$?
-        if [ $status -ne 0 ]; then
-            echo "Failed to start pcrt: $status"
-        fi
-    fi
+    #ps aux |grep pcrt.py |grep -v grep
+    #PROCESS_STATUS=$?
+    #if [ $PROCESS_STATUS -ne 0 ]; then
+    #    echo "pcrt.py exited. Reboot..."
+    #    ./pcrt.py &
+    #    status=$?
+    #    if [ $status -ne 0 ]; then
+    #        echo "Failed to start pcrt: $status"
+    #    fi
+    #fi
 
     ps aux |grep pngcheck.py |grep -v grep
     PROCESS_STATUS=$?

@@ -328,7 +328,7 @@ $(document).ready(function () {
 	});
 
 
-	/* Load pcrt */
+	/* Load pcrt 
 
 	(function load_pcrt() {
 		$.ajax({
@@ -349,7 +349,7 @@ $(document).ready(function () {
 			}
 		});
 	})();
-
+	*/
 
 	(function load_pngcheck() {
 		$.ajax({
