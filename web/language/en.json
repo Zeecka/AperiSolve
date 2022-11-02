@@ -7,8 +7,8 @@
         "selectfile": "Select a file or drag here",
         "selectimage": "Please select an image",
         "submit": "Submit",
-        "enable": "Enable",
-        "disable": "Disable",
+        "enable": "Enabled",
+        "disable": "Disabled",
         "gotpass": "I've got a password !",
         "password": "password",
         "zsteg": {
