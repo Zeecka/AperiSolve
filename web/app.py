@@ -103,6 +103,7 @@ def upload_image():
         pwd = password.encode("utf-8")
         salt = pwd+str(zext_bool).encode("utf-8")
         salt += str(zall_bool).encode("utf-8")
+        file.seek(0)
         hash_full = str(hashlib.md5(file.read()+salt).hexdigest())
     file.seek(0)
     size = len(file.read())
