@@ -1,6 +1,6 @@
 FROM alpine:3.12
 
-ARG EXIFTOOL_VERSION=12.43
+ARG EXIFTOOL_VERSION=12.51
 
 RUN apk update \
 && apk add build-base gcc musl-dev make openssl git wget jpeg-dev zlib-dev p7zip ruby ruby-etc perl \
