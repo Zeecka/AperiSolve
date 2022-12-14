@@ -1,7 +1,7 @@
 # Aperi'Solve
 
-[![Website](https://img.shields.io/website?url=https%3A%2F%2Faperisolve.fr)](https://aperisolve.fr/)
-[![Rawsec's CyberSecurity Inventory](https://inventory.rawsec.ml/img/badges/Rawsec-inventoried-FF5050_flat.svg)](https://inventory.rawsec.ml/tools.html#Aperi'Solve)
+[![Website](https://img.shields.io/website?url=https%3A%2F%2Faperisolve.com)](https://aperisolve.com/)
+[![Rawsec's CyberSecurity Inventory](https://inventory.raw.pm/img/badges/Rawsec-inventoried-FF5050_flat.svg)](https://inventory.raw.pm/tools.html#Aperi'Solve)
 
 <p align="center"><a href="https://www.aperisolve.com"><img src="https://raw.githubusercontent.com/Zeecka/AperiSolve/master/examples/screenshot.png"/></a></p>
 
