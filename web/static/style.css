@@ -507,6 +507,7 @@ h1 {
 .result,
 .result_table {
   margin-bottom: 40px;
+  overflow-wrap: break-word;
 }
 
 .result div {
