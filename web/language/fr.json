@@ -6,7 +6,7 @@
         "description": "Aperi'Solve est une plateforme en ligne d'analyse d'image. Cette plateforme utilise notamment zsteg, steghide, outguess, exiftool, binwalk, foremost et strings pour une stéganalyse approfondie. La plateforme supporte les formats d'image suivants : .png, .jpg, .gif, .bmp, .jpeg, .jfif, .jpe, .tiff...",
         "selectfile": "Sélectionner un fichier ou glisser ici",
         "selectimage": "Sélectionner une image",
-        "submit": "Envoyé",
+        "submit": "Envoyer",
         "enable": "Activé",
         "disable": "Désactivé",
         "gotpass": "J'ai un mot de passe !",
