@@ -38,7 +38,7 @@ class Binwalk(Module):
             image = self.config["image"]
             c_input = f"{self.folder}/{image}"  # image.png
             output = cmd(f"binwalk -e . -C {self.folder}/binwalk "
-                         f"--dd='.*' {c_input} --run-as=root 2>&1")
+                         f"--dd='.*' {c_input} 2>&1")
             cmd(f"7z a {self.folder}/binwalk.7z {self.folder}/binwalk/*/*")
             cmd(f"rm -r {self.folder}/binwalk")
             with open(f"{self.folder}/binwalk.txt", "w") as f:
