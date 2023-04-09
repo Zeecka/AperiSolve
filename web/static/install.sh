@@ -22,7 +22,7 @@ EOF
 chmod +x /usr/local/bin/aperisolve
 echo "Aperi'Solve 🍉 is installed (/usr/local/bin/aperisolve) 🙂."
 echo "Usage: aperisolve <file>";;
-    *)          echo 'Installing for Linux...' cat << EOF > /usr/bin/aperisolve
+    *)          echo 'Installing for Linux...' && cat << EOF > /usr/bin/aperisolve
 HOST="https://www.aperisolve.com"
 ARGC=\$#
 EXPECTED_ARGS=1
