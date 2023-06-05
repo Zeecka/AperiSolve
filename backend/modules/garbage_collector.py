@@ -37,7 +37,7 @@ def get_last_submit_date(filehash):
     return max(dates, default=0)
 
 
-def remove_image(file):
+def remove_image(d):
     cmd(f"rm -rf {UPLOAD_FOLDER}/{d}")
     db_status.delete_many({"md5_full": d})
 
