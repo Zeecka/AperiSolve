@@ -1,4 +1,4 @@
 Flask==2.3.2
 Flask-PyMongo==2.3.0
 Flask-Babel==2.0.0
-Werkzeug==2.3.3
+Werkzeug==3.0.1
