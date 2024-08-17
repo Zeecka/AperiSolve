@@ -1,2 +1,2 @@
 #!/bin/sh
-screen -dmS aperisolve docker-compose up
+screen -dmS aperisolve docker compose up
