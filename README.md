@@ -48,10 +48,9 @@ Both of the two part has its own docker container.
 
 # VI . Run with Docker-Compose
 
-Simply run the following command:
+You can pull all the images from the GitHub Container Registry. A simple docker compose file is included in the repos. Just use:  
 ```bash
-docker-compose build
-docker-compose up
+docker compose -f docker-compose.yml up
 ```
 
 Then check your browser at [http://localhost:5000/](http://localhost:5000).
