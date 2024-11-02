@@ -1,10 +1,9 @@
 services:
   web:
-    build: web
-    restart: always
+    image: ghcr.io/zeecka/aperisolve-web:v2.2
     container_name: aperisolve_web
     volumes:
-      - ./web:/app
+      - aperisolve-data:/app/static/uploads
     ports:
       - "5000:5000"
     env_file:
@@ -15,12 +14,10 @@ services:
       - frontend
       - backend
   backend:
-    build: backend
-    restart: always
+    image: ghcr.io/zeecka/aperisolve-backend:v2.2
     container_name: aperisolve_back
     volumes:
-      - ./backend:/app
-      - ./web/static/uploads:/app/uploads
+      - aperisolve-data:/app/uploads
     env_file:
       - .env
     depends_on:
@@ -35,12 +32,17 @@ services:
     env_file:
       - .env
     volumes:
-      - ./mongo/data:/data/db
+      - aperisolve-db:/data/db
       - ./mongo/mongo-init.js:/docker-entrypoint-initdb.d/mongo-init.js:ro
     networks:
       - backend
+
 networks:
   frontend:
     driver: bridge
   backend:
     driver: bridge
+volumes:
+  aperisolve-data: # All uploads will be stored in this volume
+  aperisolve-db: # All mongo db related data will be stored in this volume
+  
