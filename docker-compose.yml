@@ -1,6 +1,6 @@
 services:
   web:
-    image: ghcr.io/zeecka/aperisolve-web:v2.2
+    image: ghcr.io/zeecka/aperisolve-web:latest
     container_name: aperisolve_web
     volumes:
       - aperisolve-data:/app/static/uploads
@@ -14,7 +14,7 @@ services:
       - frontend
       - backend
   backend:
-    image: ghcr.io/zeecka/aperisolve-backend:v2.2
+    image: ghcr.io/zeecka/aperisolve-backend:latest
     container_name: aperisolve_back
     volumes:
       - aperisolve-data:/app/uploads
