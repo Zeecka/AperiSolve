@@ -3,7 +3,7 @@
 [![Website](https://img.shields.io/website?url=https%3A%2F%2Faperisolve.com)](https://aperisolve.com/)
 [![Rawsec's CyberSecurity Inventory](https://inventory.raw.pm/img/badges/Rawsec-inventoried-FF5050_flat.svg)](https://inventory.raw.pm/tools.html#Aperi'Solve)
 
-<p align="center"><a href="https://www.aperisolve.com"><img src="https://raw.githubusercontent.com/Zeecka/AperiSolve/master/examples/screenshot.png"/></a></p>
+<p align="center"><a href="https://www.aperisolve.com"><img src="https://raw.githubusercontent.com/Zeecka/AperiSolve/main/examples/screenshot.png"/></a></p>
 
 <b>Try it now: https://www.aperisolve.com</b>
 
@@ -12,8 +12,6 @@
 Aperi'Solve is a platform which performs steganalysis on images.<br/>
 
 The platform uses *layer analysis*, "*zsteg*", "*steghide*", "*outguess*", "*exiftool*", "*binwalk*", "*foremost*" and "*strings*" for deeper steganography analysis.
-
-<p align="center"><a href="https://www.aperisolve.com"><img src="https://raw.githubusercontent.com/Zeecka/AperiSolve/master/examples/video.gif"/></a></p>
 
 ### Why Aperi'Solve?
 
