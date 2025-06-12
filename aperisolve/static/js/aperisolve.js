@@ -254,7 +254,7 @@ function parseResult(result) {
         // Parse image output
         var channels = ["Superimposed", "Red", "Green", "Blue", "Alpha"];
         if (Object.keys(result[tool]["images"]).length == 1) {
-          channels = ["Greyscale"];
+          channels = ["Grayscale"];
         } else if (Object.keys(result[tool]["images"]).length == 4) {
           channels = ["Superimposed", "Red", "Green", "Blue"];
         }

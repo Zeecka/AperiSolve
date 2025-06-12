@@ -2,6 +2,8 @@
 
 [![Website](https://img.shields.io/website?url=https%3A%2F%2Faperisolve.com)](https://aperisolve.com/)
 [![Rawsec's CyberSecurity Inventory](https://inventory.raw.pm/img/badges/Rawsec-inventoried-FF5050_flat.svg)](https://inventory.raw.pm/tools.html#Aperi'Solve)
+![CI](https://github.com/Zeecka/AperiSolve/actions/workflows/releases.yml/badge.svg)
+![Black Code Style](https://img.shields.io/badge/code%20style-black-000000.svg)
 
 <p align="center"><a href="https://www.aperisolve.com"><img src="https://raw.githubusercontent.com/Zeecka/AperiSolve/main/examples/screenshot.png"/></a></p>
 
