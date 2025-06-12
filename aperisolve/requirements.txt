@@ -1,0 +1,10 @@
+Flask
+Flask-SQLAlchemy
+numpy
+redis
+rq
+psycopg2-binary
+types-Flask-SQLAlchemy
+sqlalchemy-stubs
+Pillow
+gunicorn

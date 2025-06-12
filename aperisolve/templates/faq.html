@@ -1,0 +1,409 @@
+{% extends 'base.html' %}
+{% block body_content %}
+<div id="cheatsheet">
+  <h1>Cheatsheet</h1>
+  <h2>Disclaimer</h2>
+  <div>
+    <div>
+      This cheatsheet is intended to guide CTF players in their research. This cheatsheet is not representative of
+      modern steganography/seganalysis techniques, and its content does not match with the creation of an interesting
+      challenges 😉.
+    </div>
+  </div>
+  <h2>Check file type / metadata</h2>
+  <div>
+    <div>
+      <ul class="fa-ul">
+        <li>Check the file extension on the internet if you don't know it. Also check the file format.</li>
+        <li>Use the <span class='highlight'>file</span> command to check that the extension matches the file type. This
+          command is based on the <a href='https://en.wikipedia.org/wiki/List_of_file_signatures' target='_blank'
+            class='highlight'>Magic Bytes</a> at the beginning of the file, so it may return false positives.</li>
+      </ul>
+      <div class="command"><span class="highlight">$</span> file data.raw
+        <div class="clipboard" data-value='file data.raw'></div>
+      </div>
+      <ul class="fa-ul">
+        <li>In case of unknown extension and file, inspect the hexadecimal structure of the file with an editor like <a
+            href='https://hexed.it/' target='_blank' class='highlight'>hexed.it</a> to identify the file structure.</li>
+        <li>Display the file's metadata with the <span class='highlight'>exiftool</span> command.</li>
+      </ul>
+      <div class="command">
+        <span class="highlight">$</span> exiftool data.raw
+        <div class="clipboard" data-value='file data.raw'></div>
+      </div>
+    </div>
+  </div>
+  <h2 id="filestruct">Modify the file structure</h2>
+  <div>
+    <div>
+      <ul class="fa-ul">
+        <li>Modify the file structure with a hexadecimal editor like <a href='https://hexed.it/' target='_blank'
+            class='highlight'>hexed.it</a>. PNG chunks can be easily edited with <a
+            href='http://entropymine.com/jason/tweakpng/' target='_blank' class='highlight'>TweakPNG</a> (Windows or
+          Wine).</li>
+      </ul>
+      <div style="text-align: center;">
+        <img src="/static/img/cheatsheet/tweakpng.png" alt="TweakPNG" />
+      </div>
+      <ul class="fa-ul">
+        <li>Verify the checksums of the file. These are usually CRC32, some tools like <a
+            href='http://www.libpng.org/pub/png/apps/pngcheck.html' target='_blank' class='highlight'>PngCheck</a> or <a
+            href='https://github.com/sherlly/PCRT' target='_blank' class='highlight'>PCRT</a> are usefull to verify and
+          correct these checksums.</li>
+      </ul>
+      <div class="command">
+        <span class="highlight">$</span> pngcheck -c file.png<br />
+        <span class="highlight">$</span> PCRT.py -v -i file.png
+      </div>
+      <ul class="fa-ul">
+        <li>For many types of files (PNG, WAV, ...) the media size is contained in the headers. This size can then be
+          reduced to display only a part of the media (beginning of an image, beginning of a sound, ...).</li>
+      </ul>
+    </div>
+  </div>
+  <h2 id="rawdata">Raw data</h2>
+  <div>
+    <div>
+      <ul class="fa-ul">
+        <li>It is possible to import a raw file into <a href='https://www.audacityteam.org/download/' target='_blank'
+            class='highlight'>Audacity</a> to listen to it as a soundtrack (File > Import > Raw Data).</li>
+      </ul>
+      <div style="text-align: center;">
+        <img src="/static/img/cheatsheet/audacity_raw.png" alt="Audacity" />
+      </div>
+      <ul class="fa-ul">
+        <li>Similarly, the <a href='https://www.gimp.org/downloads/' target='_blank' class='highlight'>GIMP</a> tool
+          allows image import from raw data (File > Open).</li>
+        <li>The <a href='http://binvis.io/' target='_blank' class='highlight'>BinVis.io</a> tool allows you to
+          graphically view binary files and can give hints as to the file type.</li>
+        <li>The <span class='highlight'>strings</span> command allows you to display the strings present in a file.</li>
+      </ul>
+      <div class="command">
+        <span class="highlight">$</span> strings -s file.raw<br />
+        <span class="highlight">$</span> strings -S file.raw<br />
+        <span class="highlight">$</span> strings -b file.raw<br />
+        <span class="highlight">$</span> strings -l file.raw<br />
+        <span class="highlight">$</span> strings -B file.raw<br />
+        <span class="highlight">$</span> strings -L file.raw
+      </div>
+    </div>
+  </div>
+  <h2 id="image">Image</h2>
+  <div>
+    <div>
+      <table class="cstable center">
+        <tr>
+          <th class="table_tl_none"></th>
+          <th>PNG</th>
+          <th>JPG/JPEG</th>
+          <th>BMP</th>
+        </tr>
+        <tr>
+          <td>Aperi'Solve</td>
+          <td class="hgreen">OK</td>
+          <td class="hgreen">OK</td>
+          <td class="hgreen">OK</td>
+        </tr>
+        <tr>
+          <td>Zsteg</td>
+          <td class="hgreen">OK</td>
+          <td class="hred">KO</td>
+          <td class="hgreen">OK</td>
+        </tr>
+        <tr>
+          <td>Steghide</td>
+          <td class="hred">KO</td>
+          <td class="hgreen">OK</td>
+          <td class="hgreen">OK</td>
+        </tr>
+        <tr>
+          <td>OutGuess</td>
+          <td class="hred">KO</td>
+          <td class="hgreen">OK</td>
+          <td class="hred">KO</td>
+        </tr>
+      </table>
+    </div>
+    <div>
+      <ul class="fa-ul">
+        <li>The robustness of steganography relies on the algorithm used and the knowledge of the cover medium. A search
+          of the original media allows us to make a comparison and identify the alterations made. A reverse search on <a
+            href='https://images.google.com/' target='_blank' class='highlight'>Google Image</a> or <a
+            href='https://yandex.com/images/' target='_blank' class='highlight'>Yandex Images</a> can find the original
+          media (be sure to check that the file size and type match).</li>
+        <li>The <a href='http://www.caesum.com/handbook/Stegsolve.jar' target='_blank' class='highlight'>Stegsolve</a>
+          tool allows you to perform operations on 2 images, and thus identify the differences between a cover medium
+          and a stegano medium using the XOR operation.</li>
+      </ul>
+      <div style="text-align: center;">
+        <img src="/static/img/cheatsheet/stegsolve_xor.png" alt="Stegsolve Xor" />
+        <img src="/static/img/cheatsheet/stegsolve_xor2.png" alt="Stegsolve Xor 2" />
+      </div>
+      <ul class="fa-ul">
+        <li>The <a href='https://github.com/zed-0xff/zsteg' target='_blank' class='highlight'>Zsteg</a> tool allows you
+          to extract messages and binaries encoded on different layers, such as the 2 green LSB.</li>
+      </ul>
+      <div class="command">
+        <span class="highlight">$</span> zsteg file.png 2b,g,lsb,xy<br />
+        <span class="highlight">$</span> zsteg file.png -E '1b,rgb,lsb'
+        <div class="clipboard" data-value='zsteg file.png'></div>
+      </div>
+      <ul class="fa-ul">
+        <li>Sometimes, bit-layer analysis on the <a href='http://www.caesum.com/handbook/Stegsolve.jar' target='_blank'
+            class='highlight'>Stegsolve</a> tool (or Aperi'Solve) can highlight specific areas that have been altered.
+          Scripting may then be required to extract specific areas. The following python code retrieves an image as a
+          list of pixels: [(100,120,43), (230, 124, 110), ...]</li>
+      </ul>
+      <div class="command">
+        # pip install Pillow<br />
+        from PIL import Image<br />
+        stegano_image = Image.open('file.png')<br />
+        width, height = stegano_image.size<br />
+        pxs = list(stegano_image.getdata())<br />
+        print(pxs[:10])
+        <div class="clipboard" data-value='# pip install Pillow
+from PIL import Image
+stegano_image = Image.open("file.png")
+width, height = stegano_image.size
+pxs = list(stegano_image.getdata())
+print(pxs[:10])'></div>
+      </div>
+      <ul class="fa-ul">
+        <li>Stegano mediums can rely on an algorithm using an encryption key. This is the case for <a
+            href='http://steghide.sourceforge.net/' target='_blank' class='highlight'>Steghide</a> and <a
+            href='https://github.com/resurrecting-open-source-projects/outguess' target='_blank'
+            class='highlight'>OutGuess</a>. The password can be the name of the file, a string of characters contained
+          in the file (<span class='highlight'>strings</span> & <span class='highlight'>exiftool</span>), or the object
+          represented by the image. In some cases, the password cannot be retrieved and a bruteforce must be performed.
+          The tool <a href='https://github.com/Paradoxis/StegCracker' target='_blank' class='highlight'>StegCracker</a>
+          and <a href='https://github.com/ R4yGM/stegbrute' target='_blank' class='highlight'>Stegbrute</a> allows
+          bruteforce of hidden secrets with <a href='http://steghide.sourceforge.net/' target='_blank'
+            class='highlight'>Steghide</a>.</li>
+      </ul>
+      <div class="command">
+        <span class="highlight">$</span> steghide extract -p "secret" -sf file.jpg<br />
+        <span class="highlight">$</span> stegcracker file.jpg /usr/share/wordlists/rockyou.txt
+      </div>
+    </div>
+  </div>
+  <h2 id="png">PNG (Portable Network Graphics)</h2>
+  <div>
+    <div>
+      <ul class="fa-ul">
+        <li>Tools like <a href='http://steghide.sourceforge.net/' target='_blank' class='highlight'>Steghide</a> and <a
+            href='https://github.com/resurrecting-open-source-projects/outguess' target='_blank'
+            class='highlight'>OutGuess</a> does not work for PNG files. On the other hand, this type of file allows a
+          backup without compression, and therefore to hide messages on the LSBs. The tool <a
+            href='https://github.com/zed-0xff/zsteg' target='_blank' class='highlight'>Zsteg</a> presented above and
+          available on Aperi'Solve allows the extracting secrets from PNG files.</li>
+      </ul>
+      <div class="command">
+        <span class="highlight">$</span> zsteg file.png 2b,g,lsb,xy<br />
+        <span class="highlight">$</span> zsteg file.png -E '1b,rgb,lsb'
+        <div class="clipboard" data-value='zsteg file.png'></div>
+      </div>
+      <ul class="fa-ul">
+        <li>PNG offers an <a href='https://en.wikipedia.org/wiki/APNG' target='_blank' class='highlight'>"APNG"</a>
+          extension allowing to have an animation of images like GIF files. It is possible that the visualization of the
+          PNG does not reflect all of its content (for example, a frame with a zero duration, or a very long first
+          frame). The tool <a href='https://ezgif.com/apng-maker' target='_blank' class='highlight'>APNG Maker</a>
+          allows you to view the different frames of an APNG file. A message can also be encoded on the durations of
+          each frame.</li>
+      </ul>
+      <div style="text-align: center;">
+        <img src="https://upload.wikimedia.org/wikipedia/commons/1/14/Animated_PNG_example_bouncing_beach_ball.png"
+          alt="APNG" />
+      </div>
+      <ul class="fa-ul">
+        <li>The tool <a href='http://entropymine.com/jason/tweakpng/' target='_blank' class='highlight'>TweakPNG</a>
+          presented earlier allows to perform several types of operations like recalculate checksums, reorder PNG
+          chunks, increase the visible size of the PNG or modify a header.</li>
+      </ul>
+      <div style="text-align: center;">
+        <img src="/static/img/cheatsheet/tweakpng.png" alt="TweakPNG" />
+      </div>
+    </div>
+  </div>
+  <h2 id="jpg">JPEG (Joint Photographic Experts Group)</h2>
+  <div>
+    <div>
+      <ul class="fa-ul">
+        <li>The tool <a href='https://github.com/zed-0xff/zsteg' target='_blank' class='highlight'>Zsteg</a> does not
+          work on JPEG files (jpg, jpeg, ...) because the latter necessarily include a compression algorithm reducing
+          the quality of the image and altering the LSBs. In contrast, the tools <a
+            href='http://steghide.sourceforge.net/' target='_blank' class='highlight'>Steghide</a> and <a
+            href='https://github.com/resurrecting-open-source-projects/outguess' target='_blank'
+            class='highlight'>OutGuess</a> shown above are compatible with this file format.</li>
+      </ul>
+      <div class="command">
+        <span class="highlight">$</span> outguess -k secret file.jpg output.raw<br />
+        <span class="highlight">$</span> steghide extract -p "secret" -sf file.jpg
+      </div>
+    </div>
+  </div>
+  <h2 id="gif">GIF (Graphics Interchange Format)</h2>
+  <div>
+    <div>
+      <ul class="fa-ul">
+        <li>GIFs are generally animated images whose format is generally poorly supported by steganalysis tools. In
+          addition, the image format generally offers a color palette not exceeding 256 colors, against 16 million for
+          PNG (excluding transparency). However, the tool <a href='https://ezgif.com/maker' target='_blank'
+            class='highlight'>GIF Maker</a> makes it easy to manipulate GIF files.</li>
+        <li>GIFs can embed images (frames) with zero duration. These will then not be viewable without an analysis of
+          each frame.</li>
+      </ul>
+      <div style="text-align: center;">
+        <img src="/static/img/cheatsheet/gif_maker.png" alt="GIF Maker" />
+      </div>
+      <ul class="fa-ul">
+        <li>A hidden message can be embedded over the duration of the frames (morse, ascii, binary, ...).</li>
+        <li><a href='https://ffmpeg.org/' target='_blank' class='highlight'>Ffmpeg</a> can be used to extract frames
+          from a GIF. Completeness of extracted frames cannot be guaranteed.</li>
+      </ul>
+      <div class="command">
+        <span class="highlight">$</span> ffmpeg -i file.gif -vsync 0 output/file%d.png
+        <div class="clipboard" data-value='ffmpeg -i file.gif -vsync 0 output/file%d.png'></div>
+      </div>
+    </div>
+  </div>
+  <h2 id="audio">Audio</h2>
+  <div>
+    <div>
+      <ul class="fa-ul">
+        <li>The most common technique for sound files is based on the audio spectrum. Indeed, it is possible to draw a
+          visible message on the audio spectrum with tools like <a href='https://www.abc.se/~re/Coagula/Coagula.html'
+            target='_blank' class='highlight'>Coagula</a>. Then this spectrum can be analyzed using spectral analysis
+          tools like <a href='https://www.sonicvisualiser.org/' target='_blank' class='highlight'>Sonic Visualiser</a>,
+          <a href='https://www.audacityteam.org/' target='_blank' class='highlight'>Audacity</a> or the online tool <a
+            href='https://www.dcode.fr/spectral-analysis' target='_blank' class='highlight'>dcode</a>.</li>
+      </ul>
+      <div style="text-align: center;">
+        <img src="/static/img/cheatsheet/audacity_1.png" alt="Audacity spectrum" />
+      </div>
+      <br />Right-clicking the scale to zoom out and view the entire spectrum, or switch to logarithm mode, may be
+      required.
+      <div style="text-align: center;"><br />
+        <img src="/static/img/cheatsheet/audacity_2.png" alt="Audacity spectrum" />
+      </div>
+      <ul class="fa-ul">
+        <li>Inaudible frequencies can be used to hide messages. A spectral analysis beyond 20KHz and below 20Hz is
+          recommended, a message encoded in morse or binary can be hidden there.</li>
+        <li>Sounds are simple telecommunications signals that can be used for other purposes. Special encoding methods
+          can be used, such as <a href='https://en.wikipedia.org/wiki/Dual-tone_multi-frequency_signaling'
+            target='_blank' class='highlight'>DTMF Code</a> formerly used in telephony or <a
+            href='https://en.wikipedia.org/wiki/Slow-scan_television' target='_blank' class='highlight'>SSTV</a> used in
+          television for image transfer. These signals are encoded on audible frequencies but their interpretations
+          require special decoders. We will then opt for a <a href='http://dialabc.com/sound/detect/' target='_blank'
+            class='highlight'>DTMF decoder</a> for the first technique, and an SSTV decoder like <a
+            href='https://doc.ubuntu-fr.org/qsstv' target='_blank' class='highlight'>QSSTV</a> for the second one.</li>
+        <li>Just like PNG files, some sound files embed their theoretical sizes in their headers. This is particularly
+          the case for <a href='https://fr.wikipedia.org/wiki/Waveform_Audio_File_Format#En-t%C3%AAte_de_fichier_WAV'
+            target='_blank' class='highlight'>WAV files</a> whose DataSize block can be decreased or increased using a
+          hex editor.</li>
+        <li>The LSB technique can be used on certain audio files. It is then necessary to extract the LSBs from the
+          audio data; the <a href='https://github.com/ragibson/Steganography#WavSteg' target='_blank'
+            class='highlight'>WavSteg</a> tool allows you to perform this manipulation on WAV files.</li>
+      </ul>
+      <div class="command">
+        <span class="highlight">$</span> stegolsb wavsteg -r -i file.wav -o output.txt -n 1 -b 1000
+        <div class="clipboard" data-value='stegolsb wavsteg -r -i file.wav -o output.txt -n 1 -b 1000'></div>
+      </div>
+      <ul class="fa-ul">
+        <li>The tools <a href='http://steghide.sourceforge.net/' target='_blank' class='highlight'>Steghide</a> and <a
+            href='http://jpinsoft.net/deepsound/overview.aspx' target='_blank' class='highlight'>DeepSound</a> are
+          commonly used in CTF to hide messages. These can take a key as a parameter, so you will have to guess this key
+          from the available information (media, file name, challenge name, etc.) or by using a wordlist.</li>
+      </ul>
+      <div style="text-align: center;"><br />
+        <img src="/static/img/cheatsheet/DeepSound.png" alt="DeepSound" />
+      </div>
+    </div>
+  </div>
+  <h2 id="polyglot">Polyglot Files</h2>
+  <div>
+    <div>
+      This is a file type that is valid for different file formats. For example an image file which can therefore be
+      viewed and which is also a jar file (which can be executed). There are several types of polyglot file types:
+      <ul class="fa-ul">
+        <li>"Simple" polyglot: This is a simple concatenation of files;</li>
+        <li>"Parasitic" polyglot: This is a file that contains another type of file.</li>
+        <li>"Mille-feuilles" polyglot: The layers are alternated by controlling the internal structure of the file.</li>
+        <li>"Chimera" polyglot: The file has a body (data) and several heads. Since several formats use the same
+          algorithm to store data, such as Zlib's Deflate, the same block of data is used by different headers. (for
+          example, the pixels of an image). Several headers are present so that this image is visible via several
+          formats (jpg, png, ..), within the same file.</li>
+        <li>"Schizophrenic" files: This is a single type of file, but its contents are interpreted differently depending
+          on the tool that is running or accessing this file. These are usually PDF files (interpretation or not of
+          javascript) or Images (like the technique of <a href='https://carlmastrangelo.com/blog/gamma-steganography'
+            target='_blank' class='highlight '>Gamma</a>).</li>
+        <li>Angecryption : The result of an encryption or decryption of a file gives another valid file of the same type
+          or of a different type:</li>
+      </ul>
+      <div style="text-align: center;"><br />
+        <img src="/static/img/cheatsheet/Angecryption.png" alt="Angecryption" />
+      </div>
+      <ul class="fa-ul">
+        <li>Docx, jar, apk, pptx, odf... files are valid archives and can be decompressed. You must then check whether
+          the file in question can be opened with a tool other than the one associated with its extension. The <span
+            class='highlight'>file</span> command does not identify polyglot files.</li>
+      </ul>
+    </div>
+  </div>
+  <h2 id="text">Encoding and exotic languages</h2>
+  <div>
+    <div>
+      <ul class="fa-ul">
+        <li>ASCII text can be encoded in binary in blocks of <span class='highlight'>8 bits</span>, it is then easily
+          identifiable because each block corresponding to a letter begins with a 0. It is possible to remove this 0 ,
+          the blocks are then only <span class='highlight'>7 bits</span>. The text can also be coded on an integer of
+          type <span class='highlight'>long</span> (sometimes in a base other than base 10), for example the character
+          string “Hello world! encoded on a long type in base 10 can be decoded with the following python 2 code:</li>
+      </ul>
+      <div class="command">
+        <span class="highlight">python2></span> hex(22405534230753963835153736737L)[2:].strip('L').decode("hex")<br />
+        <span class="highlight">python2></span> "48656c6c6f20776f726c6421".decode("hex")
+        <div class="clipboard" data-value='hex(long_var)[2:].strip(&quot;L(&quot;).decode("hex")'></div>
+      </div>
+      <ul class="fa-ul">
+        <li>Tools like <a href='https://gchq.github.io/CyberChef/' target='_blank' class='highlight'>CyberChef</a> (and
+          the "magic" option) can help detect the encoding used and decode the hidden message. Sometimes a charset
+          change may be necessary (monoalphabetic substitution, or base change).</li>
+        <li>Exotic or esoteric languages are programming languages designed to be unique, difficult to program, or just
+          plain weird. Their design and their charsets can be particular, it is the case of the most found languages in
+          CTF like <a href='https://esolangs.org/wiki/Brainfuck' target='_blank' class='highlight'>BrainFuck</a>, <a
+            href='https://esolangs.org/wiki/Whitespace' target='_blank' class='highlight'>WhiteSpace</a>, <a
+            href='https://esolangs.org/wiki/Piet' target='_blank' class='highlight'>PIET</a> or <a
+            href='https://esolangs.org/wiki/Malbolge' target='_blank' class='highlight'>Malbolge</a>. The website <a
+            href='https://esolangs.org/wiki/Language_list' target='_blank' class='highlight'>EsoLang</a> references
+          these different languages and can be useful in your research.</li>
+      </ul>
+      <div class="command">
+        <span
+          class="highlight">brainfuck></span><br />++++++++++[&#x3E;+&#x3E;+++&#x3E;+++++++&#x3E;++++++++++&#x3C;&#x3C;&#x3C;&#x3C;-]&#x3E;&#x3E;&#x3E;++.&#x3E;+.+++++++..+++.&#x3C;&#x3C;++.&#x3E;&#x3E;++++++++.--------.+++.------.--------.&#x3C;&#x3C;+.
+        <br /><br /><span
+          class="highlight">malbolge></span><br />(&#x27;&#x26;%:9]!~}|z2Vxwv-,POqponl$Hjig%eB@@&#x3E;}=&#x3C;M:9wv6WsU2T|nm-,jcL(I&#x26;%$#&#x22;
+        &#x60;CB]V?Tx&#x3C;uVtT&#x60;Rpo3NlF.Jh++FdbCBA@?]!~|4XzyTT43Qsqq(Lnmkj&#x22;Fhg${z@&#x3E;
+      </div>
+      <div style="text-align: center;">
+        <a href='https://esolangs.org/wiki/Piet' target="_blank"><img src="/static/img/cheatsheet/piet.png"
+            alt="PIET" /></a>
+      </div><br />
+    </div>
+  </div>
+  <h2 id="more">To go further</h2>
+  <div>
+    <div>
+      <ul class="fa-ul">
+        <li><a href='https://www.aperikube.fr/cat/steg/' target='_blank' class='highlight'> Aperi'Kube's Blog -
+            Stéganography category</a></li>
+        <li><a href='https://ctftime.org/writeups' target='_blank' class='highlight'>CTF Time - Writeups (Stegano)</a>
+        </li>
+        <li><a href='http://corkami.github.io/' target='_blank' class='highlight'>Corkami</a></li>
+        <li><a href='https://www.root-me.org/en/Challenges/Steganography/' target='_blank' class='highlight'>Root-Me -
+            Steganography</a></li>
+        <li><a href='https://en.wikipedia.org/wiki/Autostereogram' target='_blank' class='highlight'>Stereogram</a></li>
+      </ul>
+    </div>
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,10 @@
+{% extends 'base.html' %}
+{% block body_content %}
+<div id="result" class="mt-5">
+  {% for img in images %}<!--
+    --><div class="browse-images">
+      <a href="{{ img.link }}" target="_blank"><img src="{{ img.file }}"/></a>
+    </div><!--
+  -->{% endfor %}
+</div>
+{% endblock %}

@@ -1,0 +1,12 @@
+{% extends 'base.html' %}
+{% block body_content %}
+<div id="result" class="mt-5">
+  <div id="result-infos" class="mb-3"></div>
+  <div id="result-analyzers" class="mb-3"></div>
+</div>
+{% endblock %}
+{% block footer_content %}
+<script>
+  pollStatus("{{ hash_val }}");
+</script>
+{% endblock %}

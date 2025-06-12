@@ -1,0 +1,42 @@
+name: Linters
+
+on: [push, pull_request]
+
+env:
+  FLAKE8_IGNORE: E203,E501,W503
+  PYLINT_IGNORE: W0718,R0903,R0801
+  MYPY_IGNORE: unused-awaitable
+
+permissions:
+  checks: write
+  contents: write
+
+jobs:
+  run-linters:
+    name: Run linters
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out Git repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: 3.11
+
+      - name: Install Python dependencies
+        run: |
+          pip install isort black flake8 pylint mypy mypy-extensions
+          pip install -r aperisolve/requirements.txt
+
+      - name: Run linters
+        uses: wearerequired/lint-action@v2
+        with:
+          black: true
+          flake8: true
+          flake8_args: "--ignore=E203,E501,W503"
+          pylint: true
+          pylint_args: "--disable W0511,W0718,R0801,R0903,R0914"
+          mypy: true
+          mypy_args: "--disallow-any-generics --disallow-untyped-def --follow-imports skip --ignore-missing-imports --disable-error-code unused-awaitable"

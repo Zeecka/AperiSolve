@@ -1,0 +1,410 @@
+/* ======== Base Layout ======== */
+::selection {
+    background: #c9fbff;
+    color: black;
+}
+
+:root {
+    --theme-dark-blue: #0b121f;
+    --theme-dark-blue-hover: #0d1931;
+    --theme-green: #9fef00;
+    --theme-green-shadow: #9fef0055;
+    --theme-green-shadow2: #9fef00aa;
+}
+
+html {
+    --dark-bg: var(--theme-dark-blue);
+    --dark-bg-hover: var(--theme-dark-blue-hover);
+    --bs-progress-bar-bg: #f00 !important;
+}
+
+body {
+    background-color: var(--dark-bg);
+    color: #e0e0e0;
+    font-family: 'Fira Code', monospace;
+}
+
+/* ======== Typography ======== */
+h1,
+h2,
+h3,
+h4,
+h5,
+h6,
+strong,
+.highlight {
+    color: var(--theme-green);
+    text-shadow: 0 0 5px var(--theme-green);
+}
+
+a,
+.text-accent {
+    color: var(--theme-green);
+    text-decoration: none;
+}
+
+a:hover {
+    color: #ccff66;
+    text-shadow: 0 0 5px #ccff66;
+}
+
+.title_link {
+    text-decoration: none;
+    color: inherit;
+}
+
+/* ======== Background ======== */
+
+#three-bg {
+    position: fixed;
+    top: 0;
+    left: 0;
+    z-index: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    background-color: transparent;
+}
+
+.container,
+#result,
+form {
+    position: relative;
+    z-index: 1;
+}
+
+/* ======== Components ======== */
+
+.card,
+.form-control,
+.table,
+.border,
+.card-hack {
+    background-color: var(--dark-bg);
+    border: 1px solid var(--theme-green) !important;
+    color: #e0e0e0;
+    box-shadow: 0 0 10px var(--theme-green-shadow);
+    border-radius: 0.5rem;
+}
+
+.material-icons {
+    vertical-align: middle;
+}
+
+#main-img-right span {
+    font-weight: bold;
+    color: var(--theme-green);
+}
+
+#water-logo {
+    width: 70px;
+    display: inline;
+}
+
+/* Buttons */
+
+.btn,
+.btn-primary,
+.btn-hack {
+    background-color: var(--theme-green);
+    color: #000;
+    font-weight: bold;
+    border: none;
+    text-shadow: none;
+}
+
+.btn:hover,
+.btn-primary:hover,
+.btn-hack:hover {
+    background-color: var(--theme-green);
+    box-shadow: 0 0 10px var(--theme-green-shadow2);
+}
+
+/* Bootstrap contextual colors override */
+.text-success,
+.bg-success {
+    color: var(--theme-green) !important;
+    background-color: #1e2b00 !important;
+}
+
+.text-danger,
+.bg-danger {
+    color: #ff4d4d !important;
+    background-color: #330000 !important;
+}
+
+.text-warning,
+.bg-warning {
+    color: #ffcc00 !important;
+    background-color: #332b00 !important;
+}
+
+.text-info,
+.bg-info {
+    color: #00e6e6 !important;
+    background-color: #002e2e !important;
+}
+
+.analyzer {
+    margin-top: 25px;
+}
+
+.analyzer h2+div {
+    margin-top: 15px;
+}
+
+.analyzer h3 {
+    margin-top: 25px;
+}
+
+/* ======== Forms & Inputs ======== */
+input,
+textarea,
+select,
+pre {
+    border: 1px solid var(--theme-green);
+    color: #ffffff;
+}
+
+input:focus,
+textarea:focus,
+select:focus,
+pre {
+    outline: none;
+    box-shadow: 0 0 10px var(--theme-green);
+    background-color: var(--dark-bg-hover) !important;
+}
+
+
+textarea.form-control,
+pre {
+    padding: 25px;
+}
+
+.textarea-container {
+    display: block;
+}
+
+.copy-icon {
+    position: absolute;
+    right: 10px;
+    margin-top: -40px;
+    cursor: pointer;
+    display: none;
+    color: #555;
+    background: rgba(255, 255, 255, 0.8);
+    border-radius: 4px;
+    padding: 4px;
+    transition: color 0.2s;
+}
+
+.textarea-container:hover .copy-icon {
+    display: block;
+}
+
+.copy-icon:hover {
+    color: #000;
+}
+
+/* File drop zone */
+#drop-zone {
+    background-color: var(--dark-bg);
+    border: 2px dashed var(--theme-green);
+    color: var(--theme-green);
+    transition: all 0.3s ease;
+}
+
+#drop-zone:hover,
+#drop-zone.dragover {
+    background-color: var(--dark-bg-hover);
+    box-shadow: 0 0 10px var(--theme-green);
+}
+
+#upload-form {
+    transition: height 0.4s ease, padding 0.4s ease, margin 0.4s ease;
+    overflow: hidden;
+}
+
+/* ======== Tables ======== */
+table {
+    width: 100%;
+    background-color: var(--theme-dark-blue);
+    border-collapse: collapse;
+    color: white;
+}
+
+th,
+td {
+    border: 1px solid var(--theme-dark-blue);
+    padding: 0.75rem;
+}
+
+th,
+td:first-child {
+    color: var(--theme-green);
+}
+
+tr:nth-child(even) {
+    background-color: rgba(0, 0, 0, 0.25);
+}
+
+tr:first-child td {
+    border-top: 1px solid #ddd;
+}
+
+td {
+    text-align: left;
+    border-bottom: 1px solid #ddd;
+}
+
+/* ======== Images ======== */
+#result img {
+    width: 100%;
+    height: auto;
+    cursor: pointer;
+}
+
+.results_img {
+    width: 25%;
+    display: inline-block;
+    padding: 10px;
+    box-sizing: border-box;
+}
+
+/* ======== Modal ======== */
+#image-modal-container {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.9);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.3s ease-in-out, visibility 0.3s ease-in-out;
+    z-index: 1000;
+}
+
+#image-modal-container img {
+    width: 60%;
+    border: 2px solid var(--theme-green);
+    box-shadow: 0 0 20px var(--theme-green);
+    cursor: pointer;
+}
+
+#image-modal-container.modal-visible {
+    opacity: 1;
+    visibility: visible;
+}
+
+.browse-images {
+    display: inline-block;
+    padding: 10px;
+    width: 25%;
+}
+
+/* ======== FAQ ======== */
+
+#cheatsheet>div {
+    background-color: rgba(0, 0, 0, 0.5);
+    padding: 10px;
+    margin-top: 10px;
+    margin-bottom: 50px;
+}
+
+.command {
+    background-color: var(--theme-dark-blue);
+    border: 3px solid var(--theme-green);
+    padding: 5px 10px;
+    margin-bottom: 25px;
+}
+
+#cheatsheet ul {
+    list-style: none;
+    padding-left: 5px;
+    margin-left: 0;
+}
+
+#cheatsheet li::before {
+    content: "\f054";
+    font-family: "Font Awesome 6 Free";
+    font-weight: 900;
+    position: absolute;
+    left: 0;
+    top: 0;
+    color: var(--theme-green);
+}
+
+#cheatsheet li {
+    padding-left: 25px;
+}
+
+#cheatsheet img,
+#cheatsheet table {
+    margin-bottom: 15px;
+}
+
+/* ======== Analyzer Blocks ======== */
+
+.analyzer {
+    margin-bottom: 10px;
+}
+
+#result-infos {
+    display: flex;
+}
+
+#result-infos>div {
+    height: 100%;
+    width: 50%;
+    height: auto;
+    flex: 1 1 0;
+    width: 50%;
+    display: inline-block;
+    padding: 10px;
+    box-sizing: border-box;
+    vertical-align: top;
+}
+
+
+.a-exiftool .table-container {
+    max-height: 400px;
+    overflow-y: auto;
+}
+
+.a-strings textarea {
+    height: 400px;
+}
+
+/* ======== Footer ======== */
+
+footer {
+    position: relative;
+    z-index: 1;
+    margin: 0 20px 20px 0;
+    justify-content: flex-end !important;
+}
+@media screen and (min-width: 1800px) {
+    footer {
+        position: fixed;
+        bottom: 0;
+        right: 0;
+        left: auto;
+        margin: 0 20px 20px 0;
+    }
+}
+
+
+footer a i {
+    font-size: 32px;
+}
+
+/* ======== Utility ======== */
+
+.glow-border {
+    border: 1px solid var(--theme-green);
+    box-shadow: 0 0 10px var(--theme-green-shadow);
+}

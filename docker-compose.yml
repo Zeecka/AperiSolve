@@ -1,0 +1,69 @@
+services:
+  web:
+    image: ghcr.io/zeecka/aperisolve:latest
+    #build: .
+    container_name: aperisolve-web
+    restart: always
+    ports:
+      - "5000:5000"
+    volumes:
+      - apresults:/aperisolve/results
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_started
+      worker:
+        condition: service_started
+    env_file:
+      - .env
+
+  worker:
+    image: ghcr.io/zeecka/aperisolve:latest
+    #build: .
+    container_name: aperisolve-worker
+    restart: always
+    command: rq worker default --url redis://redis:6379/0
+    volumes:
+      - apresults:/aperisolve/results
+    depends_on:
+      - redis
+      - postgres
+    env_file:
+      - .env
+
+  postgres:
+    image: postgres:14
+    container_name: postgres
+    restart: always
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U aperiuser -d aperisolve"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    env_file:
+      - .env
+
+  redis:
+    image: redis:7
+    container_name: redis
+    restart: always
+    env_file:
+      - .env
+
+  rqdashboard:
+    image: eoranged/rq-dashboard
+    container_name: rq-dashboard
+    restart: always
+    ports:
+      - "9181:9181"
+    depends_on:
+      - redis
+    env_file:
+      - .env
+      
+volumes:
+  apresults:
+  pgdata:

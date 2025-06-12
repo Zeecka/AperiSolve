@@ -1,0 +1,38 @@
+{% extends 'base.html' %}
+{% block body_content %}
+<form id="upload-form" class="card p-4" method="POST" enctype="multipart/form-data">
+  <div class="mb-3">
+    <div>
+      <h2>What is this ?</h2>
+      <p>Aperi'Solve is an online platform which performs layer analysis on image. The platform also uses zsteg,
+        steghide, outguess, exiftool, binwalk, foremost and strings for deeper steganography analysis. The platform
+        supports the following images format: .png, .jpg, .gif, .bmp, .jpeg, .jfif, .jpe, .tiff...</p>
+    </div>
+    <div id="drop-zone" class="border border-secondary rounded p-4 text-center mb-3">
+      <p id="drag-msg">📂 Drag and drop an image here or click to select</p>
+      <input type="file" id="image" name="image" accept="image/*" hidden required />
+      <button type="button" class="btn btn-secondary mt-2" id="browse-btn">
+        Choose an image
+      </button>
+    </div>
+  </div>
+  <div class="mb-3">
+    <label for="password" class="form-label">Password (optional)</label>
+    <input class="form-control" type="text" name="password" id="password" />
+  </div>
+  <div class="form-check mb-3">
+    <input class="form-check-input" type="checkbox" id="deep" />
+    <label class="form-check-label" for="deep">Deep analysis</label>
+  </div>
+  <button type="submit" class="btn btn-primary">Submit</button>
+  <div class="progress mt-3 d-none" id="progress-container">
+    <div class="progress-bar" id="progress-bar" role="progress-bar" style="width: 0%">
+      0%
+    </div>
+  </div>
+</form>
+<div id="result" class="mt-5">
+  <div id="result-infos" class="mb-3"></div>
+  <div id="result-analyzers" class="mb-3"></div>
+</div>
+{% endblock %}

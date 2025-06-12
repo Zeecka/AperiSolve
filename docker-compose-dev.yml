@@ -1,0 +1,76 @@
+services:
+  web:
+    #image: ghcr.io/zeecka/aperisolve:latest
+    build: .
+    container_name: aperisolve-web
+    restart: always
+    command: ["flask", "--app", "aperisolve.app", "run", "--host=0.0.0.0", "--port=5000"]
+    ports:
+      - "5000:5000"
+    volumes:
+      - ./aperisolve:/aperisolve
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_started
+      worker:
+        condition: service_started
+    env_file:
+      - .env
+    environment:
+      - FLASK_DEBUG=true
+      - FLASK_ENV=development
+
+  worker:
+    #image: ghcr.io/zeecka/aperisolve:latest
+    build: .
+    container_name: aperisolve-worker
+    restart: always
+    command: rq worker default --url redis://redis:6379/0
+    volumes:
+      - ./aperisolve:/aperisolve
+    depends_on:
+      - redis
+      - postgres
+    env_file:
+      - .env
+    environment:
+      - FLASK_DEBUG=true
+      - FLASK_ENV=development
+
+  redis:
+    image: redis:7
+    container_name: redis
+    restart: always
+    env_file:
+      - .env
+
+  postgres:
+    image: postgres:14
+    container_name: postgres
+    restart: always
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U aperiuser -d aperisolve"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    env_file:
+      - .env
+
+
+  rqdashboard:
+    image: eoranged/rq-dashboard
+    container_name: rq-dashboard
+    restart: always
+    ports:
+      - "9181:9181"
+    depends_on:
+      - redis
+    env_file:
+      - .env
+      
+volumes:
+  pgdata:
