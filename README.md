@@ -1,9 +1,9 @@
 # Aperi'Solve
 
-[![Website](https://img.shields.io/website?url=https%3A%2F%2Faperisolve.com)](https://aperisolve.com/)
 ![CI](https://github.com/Zeecka/AperiSolve/actions/workflows/releases.yml/badge.svg)
 ![Lint](https://github.com/Zeecka/AperiSolve/actions/workflows/lint.yml/badge.svg)
 ![Black Code Style](https://img.shields.io/badge/code%20style-black-000000.svg)
+[![Website](https://img.shields.io/website?url=https%3A%2F%2Faperisolve.com)](https://aperisolve.com/)
 [![Rawsec's CyberSecurity Inventory](https://inventory.raw.pm/img/badges/Rawsec-inventoried-FF5050_flat.svg)](https://inventory.raw.pm/tools.html#Aperi'Solve)
 
 <p align="center"><a href="https://www.aperisolve.com"><img src="https://raw.githubusercontent.com/Zeecka/AperiSolve/main/examples/screenshot.png"/></a></p>
@@ -16,6 +16,8 @@ Aperi'Solve is a platform which performs steganalysis on images.<br/>
 
 The platform uses *layer analysis*, "*zsteg*", "*steghide*", "*outguess*", "*exiftool*", "*binwalk*", "*foremost*" and "*strings*" for deeper steganography analysis.
 
+<p align="center"><a href="https://www.aperisolve.com"><img src="https://i.imgur.com/qiR1mlT.gif"/></a></p>
+ 
 ### Why Aperi'Solve?
 
 Aperi'Solve has been created in order to have an "easy to use" platform which performs common steganalysis tests such as LSB or `steghide`. The platform is also a quick alternative for people who didn't manage to install tools like `zsteg` (ruby gem) properly.
