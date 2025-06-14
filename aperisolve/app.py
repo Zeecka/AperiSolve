@@ -246,6 +246,11 @@ def get_image(
     return send_file(output_file, as_attachment=True)
 
 
+@app.route("/ads.txt")
+def google_ads() -> str:
+    return "google.com, pub-2324718887045017, DIRECT, f08c47fec0942fa0"
+
+
 if __name__ == "__main__":
     debug_mode = os.environ.get("FLASK_DEBUG", "false").lower() == "true"
     app.run(host="0.0.0.0", port=5000, debug=debug_mode)
