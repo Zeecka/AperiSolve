@@ -20,6 +20,7 @@ app: Flask = Flask(__name__)
 app.json.sort_keys = False  # type: ignore
 app.config["SQLALCHEMY_DATABASE_URI"] = os.environ.get("DB_URI")
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
+app.config["MAX_CONTENT_LENGTH"] = os.environ.get("MAX_CONTENT_LENGTH")
 RESULT_FOLDER.mkdir(parents=True, exist_ok=True)
 
 
@@ -27,6 +28,11 @@ db.init_app(app)
 init_db(app)
 redis_conn = Redis(host="redis", port=6379)
 queue = Queue(connection=redis_conn)
+
+
+@app.errorhandler(413)
+def too_large(e):
+    return jsonify({"error": "Image size exceeded"}), 413
 
 
 @app.route("/")
