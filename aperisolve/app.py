@@ -31,7 +31,8 @@ queue = Queue(connection=redis_conn)
 
 
 @app.errorhandler(413)
-def too_large(e):
+def too_large(_) -> tuple[Response, int]:
+    """Error Handler for Max File Size."""
     return jsonify({"error": "Image size exceeded"}), 413
 
 
@@ -248,6 +249,7 @@ def get_image(
 
 @app.route("/ads.txt")
 def google_ads() -> str:
+    """Google Ads required file"""
     return "google.com, pub-2324718887045017, DIRECT, f08c47fec0942fa0"
 
 
