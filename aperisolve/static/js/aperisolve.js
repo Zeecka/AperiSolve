@@ -53,7 +53,7 @@ function slideUp(element, duration = 400) {
 
 function formatBytes(bytes) {
   if (typeof bytes !== "number" || isNaN(bytes)) return bytes;
-  const units = ["o", "Ko", "Mo", "Go", "To", "Po"];
+  const units = ["B", "KB", "MB", "GB", "TB", "PB"];
   let i = 0;
   while (bytes >= 1024 && i < units.length - 1) {
     bytes /= 1024;
