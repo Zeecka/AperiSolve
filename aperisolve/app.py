@@ -6,7 +6,7 @@ import os
 import time
 from datetime import datetime, timezone
 from pathlib import Path
-from typing import Optional
+from typing import Any, Optional
 
 from flask import Flask, Response, abort, jsonify, render_template, request, send_file
 from redis import Redis
@@ -31,7 +31,7 @@ queue = Queue(connection=redis_conn)
 
 
 @app.errorhandler(413)
-def too_large(_) -> tuple[Response, int]:
+def too_large(_: Any) -> tuple[Response, int]:
     """Error Handler for Max File Size."""
     return jsonify({"error": "Image size exceeded"}), 413
 
