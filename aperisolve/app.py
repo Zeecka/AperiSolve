@@ -38,6 +38,12 @@ def too_large(_: Any) -> tuple[Response, int]:
     return jsonify({"error": "Image size exceeded"}), 413
 
 
+@app.errorhandler(404)
+def not_found(_: Any) -> str:
+    """Error Handler for 404 not found."""
+    return render_template("error.html", message="Ressource not found", statuscode=404)
+
+
 @app.route("/")
 def index() -> str:
     """Render the main index page."""
