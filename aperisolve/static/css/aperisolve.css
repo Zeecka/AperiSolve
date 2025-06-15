@@ -408,3 +408,10 @@ footer a i {
     border: 1px solid var(--theme-green);
     box-shadow: 0 0 10px var(--theme-green-shadow);
 }
+
+#httperror{
+    padding-top: 100px;
+}
+#httperror h1, #httperror h2{
+    text-align: center;
+}
