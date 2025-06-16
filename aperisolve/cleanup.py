@@ -48,7 +48,7 @@ def cleanup_old_entries() -> None:
             db.session.delete(img)
 
         # Delete Images with missing submission
-        if len(img.submissions) == 0 and delay > MAX_PENDING_TIME:
+        if len(img.submissions) == 0 and delay.total_seconds() > MAX_PENDING_TIME:
             shutil.rmtree(RESULT_FOLDER / img.hash)  # type: ignore
             db.session.delete(img)
 
