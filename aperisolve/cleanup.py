@@ -40,16 +40,18 @@ def cleanup_old_entries() -> None:
         else:
             img_date = img.last_submission_date
         delay = datetime.now(timezone.utc) - img_date
-
+        img_fold = RESULT_FOLDER / img.hash
         if delay.total_seconds() > MAX_STORE_TIME:
             for s in img.submissions:
                 db.session.delete(s)  # type: ignore
-            shutil.rmtree(RESULT_FOLDER / img.hash)  # type: ignore
+            if img_fold.exists():
+                shutil.rmtree(img_fold)  # type: ignore
             db.session.delete(img)
 
         # Delete Images with missing submission
         if len(img.submissions) == 0 and delay.total_seconds() > MAX_PENDING_TIME:
-            shutil.rmtree(RESULT_FOLDER / img.hash)  # type: ignore
+            if img_fold.exists():
+                shutil.rmtree(img_fold)  # type: ignore
             db.session.delete(img)
 
     db.session.commit()
