@@ -3,7 +3,7 @@
 import subprocess
 from pathlib import Path
 
-from .utils import update_data
+from .utils import MAX_PENDING_TIME, update_data
 
 
 def analyze_exiftool(input_img: Path, output_dir: Path) -> None:
@@ -11,7 +11,11 @@ def analyze_exiftool(input_img: Path, output_dir: Path) -> None:
 
     try:
         data = subprocess.run(
-            ["exiftool", input_img], capture_output=True, text=True, check=True
+            ["exiftool", input_img],
+            capture_output=True,
+            text=True,
+            check=True,
+            timeout=MAX_PENDING_TIME,
         )
 
         if data.stderr:

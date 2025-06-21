@@ -9,6 +9,8 @@ from typing import Any
 
 _thread_lock = threading.Lock()
 
+MAX_PENDING_TIME = int(os.getenv("MAX_PENDING_TIME", "600"))  # 10 minutes by default
+
 
 def update_data(
     output_dir: Path, new_data: dict[Any, Any], json_filename: str = "results.json"
