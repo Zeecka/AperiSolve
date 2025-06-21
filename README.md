@@ -50,7 +50,7 @@ docker compose up -d
 
 > Default will run on http://localhost:5000/
 
-## Developpment
+## Development
 
 Aperi'Solve platform is a *Flask* web service (python 3.11+) with python workers performing analysis.
 Jobs are stacked in a redis-queue, and images informations are stored in a postgresql database.
