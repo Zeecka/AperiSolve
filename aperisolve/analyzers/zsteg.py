@@ -3,7 +3,7 @@
 import subprocess
 from pathlib import Path
 
-from .utils import update_data
+from .utils import MAX_PENDING_TIME, update_data
 
 
 def analyze_zsteg(input_img: Path, output_dir: Path) -> None:
@@ -11,7 +11,11 @@ def analyze_zsteg(input_img: Path, output_dir: Path) -> None:
 
     try:
         data = subprocess.run(
-            ["zsteg", input_img], capture_output=True, text=True, check=False
+            ["zsteg", input_img],
+            capture_output=True,
+            text=True,
+            check=False,
+            timeout=MAX_PENDING_TIME,
         )
         if data.stderr or "PNG::NotSupported" in data.stdout[:100]:
             error_msg = data.stderr or data.stdout

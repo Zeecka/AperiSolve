@@ -4,7 +4,7 @@ import shutil
 import subprocess
 from pathlib import Path
 
-from .utils import update_data
+from .utils import MAX_PENDING_TIME, update_data
 
 
 def analyze_foremost(input_img: Path, output_dir: Path) -> None:
@@ -21,6 +21,7 @@ def analyze_foremost(input_img: Path, output_dir: Path) -> None:
             capture_output=True,
             text=True,
             check=False,
+            timeout=MAX_PENDING_TIME,
         )
         # Note: foremost use stderr as standard output for results :o)
         # So we can't use it as error dectection :
@@ -33,6 +34,7 @@ def analyze_foremost(input_img: Path, output_dir: Path) -> None:
             capture_output=True,
             text=True,
             check=False,
+            timeout=MAX_PENDING_TIME,
         )
 
         stderr += zip_data.stderr

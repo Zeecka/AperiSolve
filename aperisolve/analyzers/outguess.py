@@ -5,7 +5,7 @@ import subprocess
 from pathlib import Path
 from typing import Optional
 
-from .utils import update_data
+from .utils import MAX_PENDING_TIME, update_data
 
 
 def analyze_outguess(
@@ -38,6 +38,7 @@ def analyze_outguess(
             capture_output=True,
             text=True,
             check=False,
+            timeout=MAX_PENDING_TIME,
         )
 
         if data.returncode != 0:
@@ -58,6 +59,7 @@ def analyze_outguess(
             capture_output=True,
             text=True,
             check=False,
+            timeout=MAX_PENDING_TIME,
         )
 
         stderr += zip_data.stderr

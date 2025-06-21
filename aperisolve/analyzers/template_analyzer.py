@@ -4,7 +4,7 @@ import shutil
 import subprocess
 from pathlib import Path
 
-from .utils import update_data
+from .utils import MAX_PENDING_TIME, update_data
 
 
 def analyze_myanalyzer(input_img: Path, output_dir: Path) -> None:
@@ -25,6 +25,7 @@ def analyze_myanalyzer(input_img: Path, output_dir: Path) -> None:
             capture_output=True,
             text=True,
             check=False,
+            timeout=MAX_PENDING_TIME,
         )
 
         stderr += data.stderr
@@ -48,6 +49,7 @@ def analyze_myanalyzer(input_img: Path, output_dir: Path) -> None:
                 capture_output=True,
                 text=True,
                 check=False,
+                timeout=MAX_PENDING_TIME,
             )
             zip_exist = True
 

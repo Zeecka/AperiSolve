@@ -6,7 +6,7 @@ import subprocess
 from pathlib import Path
 from typing import Optional
 
-from .utils import update_data
+from .utils import MAX_PENDING_TIME, update_data
 
 
 def analyze_steghide(
@@ -30,6 +30,7 @@ def analyze_steghide(
             capture_output=True,
             text=True,
             check=False,
+            timeout=MAX_PENDING_TIME,
         )
 
         match = re.search(r'embedded file "([^"]+)"', data.stdout)
@@ -75,6 +76,7 @@ def analyze_steghide(
             capture_output=True,
             text=True,
             check=False,
+            timeout=MAX_PENDING_TIME,
         )
         stderr += data.stderr
 
@@ -85,6 +87,7 @@ def analyze_steghide(
             capture_output=True,
             text=True,
             check=False,
+            timeout=MAX_PENDING_TIME,
         )
 
         stderr += zip_data.stderr
