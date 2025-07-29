@@ -44,7 +44,7 @@ Even if Aperi'Solve is available at the URL https://www.aperisolve.com/, you can
 
 ```bash
 git clone https://github.com/Zeecka/AperiSolve.git
-cd aperisolve
+cd AperiSolve
 docker compose up -d
 ```
 
