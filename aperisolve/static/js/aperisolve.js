@@ -451,7 +451,7 @@ if (browseBtn) {
       });
 
       xhr.onload = () => {
-        if (xhr.status === 200) {
+        if (xhr.status === 200 || xhr.status === 202) {
           try {
             const response = JSON.parse(xhr.responseText);
             if (response.submission_hash) {

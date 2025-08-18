@@ -142,49 +142,66 @@ def upload_image() -> tuple[Response, int]:
         ).first()
         return jsonify({"submission_hash": submission.hash, "batch_id": batch_id}), 200
 
-    # If image is new, create a new Image entry
-    new_img_path = RESULT_FOLDER / img_hash / image_name
-    if not new_img_path.parent.exists():
+    # Check if image already exists in database
+    sub_img = Image.query.filter_by(hash=img_hash).first()
+    
+    if sub_img is None:
+        # If image is new, create a new Image entry
+        new_img_path = RESULT_FOLDER / img_hash / image_name
         new_img_path.parent.mkdir(parents=True, exist_ok=True)
-        with open(new_img_path, "wb") as f:  # Write file to disk
+        
+        # Write the image file to disk
+        with open(new_img_path, "wb") as f:
             f.write(image_data)
 
-        new_img = Image(
+        # Create new image record
+        sub_img = Image(
             file=str(new_img_path),
             hash=img_hash,
             size=len(image_data),
-            upload_count=0,
+            upload_count=1,  # First upload
             first_submission_date=datetime.now(timezone.utc),
             last_submission_date=datetime.now(timezone.utc),
         )
-        db.session.add(new_img)
-        db.session.commit()
-
-    sub_img = Image.query.filter_by(hash=img_hash).first()  # type: ignore
-    sub_img.upload_count += 1
+        db.session.add(sub_img)
+    else:
+        # Update existing image record
+        sub_img.upload_count = (sub_img.upload_count or 0) + 1
+        sub_img.last_submission_date = datetime.now(timezone.utc)
+    
+    # Commit the image changes
     db.session.commit()
 
-    # Create new Submission entry
-    submission_path.mkdir(parents=True, exist_ok=True)
-    submission = Submission(
-        filename=image.filename,
-        password=password,
-        deep_analysis=deep_analysis,
-        hash=submission_hash,
-        status="pending",
-        date=time.time(),
-        image_hash=sub_img.hash,  # type: ignore
-        batch_id=batch_id,
-    )
-    db.session.add(submission)
-
-    db.session.commit()  # Commit to save the new Image and Submission
-    # Start the analysis jobs
-    queue.enqueue("aperisolve.workers.analyze_image", submission.hash, job_timeout=300)
-
-    app.logger.info(
-        "enqueue_submission", extra={"submission_hash": submission.hash, "batch_id": batch_id}
-    )
+    try:
+        # Create new Submission entry
+        submission_path.mkdir(parents=True, exist_ok=True)
+        submission = Submission(
+            filename=image.filename,
+            password=password,
+            deep_analysis=deep_analysis,
+            hash=submission_hash,
+            status="pending",
+            date=time.time(),
+            image_hash=sub_img.hash,  # type: ignore
+            batch_id=batch_id,
+        )
+        db.session.add(submission)
+        db.session.commit()
+        
+        # Start the analysis job
+        queue.enqueue("aperisolve.workers.analyze_image", submission.hash, job_timeout=300)
+        
+        app.logger.info(
+            "enqueue_submission", 
+            extra={"submission_hash": submission.hash, "batch_id": batch_id}
+        )
+        
+        return jsonify({"submission_hash": submission.hash, "batch_id": batch_id}), 202
+        
+    except Exception as e:
+        db.session.rollback()
+        app.logger.error(f"Error creating submission: {str(e)}")
+        return jsonify({"error": "Failed to create submission"}), 500
 
     return jsonify({"submission_hash": submission.hash, "batch_id": batch_id}), 202
 
