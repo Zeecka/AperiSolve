@@ -80,6 +80,45 @@ docker exec -it aperisolve-web bash # Get shell in running web app
 
 > Note, if you used [docker-compose-dev.yml](docker-compose-dev.yml), you must remove "results" when switching to [production docker](docker-compose.yml).
 
+### Batch / Programmatic Usage
+
+You can logically group multiple uploads by supplying a `batch_id` with each `POST /upload` request. A batch is a lightweight grouping (no multi-file POST) enabling you to poll aggregate status or export a list.
+
+Example uploads:
+
+```bash
+curl -F "image=@examples/example1.png" -F "batch_id=ctf_round3" http://localhost:5000/upload
+curl -F "image=@examples/example2.jpg" -F "batch_id=ctf_round3" http://localhost:5000/upload
+```
+
+Get batch summary:
+
+```bash
+curl http://localhost:5000/api/v1/batches/ctf_round3
+```
+
+Export CSV:
+
+```bash
+curl -OJ "http://localhost:5000/api/v1/batches/ctf_round3/export?format=csv"
+```
+
+Export JSON (same as summary):
+
+```bash
+curl http://localhost:5000/api/v1/batches/ctf_round3/export?format=json
+```
+
+Limits (configurable via env):
+- Max 25 files per batch (`BATCH_MAX_FILES`)
+- Pattern: `[A-Za-z0-9_-]{1,50}`
+
+Errors:
+- `invalid_batch_id` (400)
+- `batch_not_found` (404)
+- `batch_limit_exceeded` (429)
+- `unsupported_format` (400)
+
 ### Code quality
 
 Python code follows the following linters:

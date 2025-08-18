@@ -20,7 +20,7 @@ def analyze_exiftool(input_img: Path, output_dir: Path) -> None:
 
         if data.stderr:
             update_data(
-                output_dir, {"strings": {"status": "error", "error": data.stderr}}
+                output_dir, {"exiftool": {"status": "error", "error": data.stderr}}
             )
             return
 

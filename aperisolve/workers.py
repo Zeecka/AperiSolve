@@ -1,6 +1,7 @@
 """Asynchronous worker for analyzing image submissions."""
 
-import threading
+import concurrent.futures
+import json
 from pathlib import Path
 from typing import Any
 
@@ -15,6 +16,7 @@ from .analyzers.zsteg import analyze_zsteg
 from .app import app, db
 from .config import RESULT_FOLDER
 from .models import Image, Submission
+from .analyzers.utils import update_data
 
 
 def analyze_image(submission_hash: str) -> None:
@@ -34,40 +36,37 @@ def analyze_image(submission_hash: str) -> None:
             result_path: Path = RESULT_FOLDER / str(image.hash) / str(submission.hash)
             result_path.mkdir(parents=True, exist_ok=True)
 
-            threads: list[threading.Thread] = []
+            # Initialize an empty results file so partial results can be appended safely
+            try:
+                update_data(result_path, {})
+            except Exception:
+                pass
 
-            def run_analyzer(analyzer_func: Any, *args: Any) -> None:
-                """Run an analyzer function in a separate thread."""
-                try:
-                    analyzer_func(*args)
-                except Exception as e:
-                    print(f"Error in {analyzer_func.__name__}: {e}")
-
-            analyzers = [
-                (analyze_binwalk, img_path, result_path),
-                (analyze_decomposer, img_path, result_path),
-                (analyze_exiftool, img_path, result_path),
-                (analyze_foremost, img_path, result_path),
-                (analyze_strings, img_path, result_path),
-                (analyze_steghide, img_path, result_path, submission.password),
-                (analyze_zsteg, img_path, result_path),
+            analyzer_list = [
+                ("binwalk", analyze_binwalk, (img_path, result_path)),
+                ("decomposer", analyze_decomposer, (img_path, result_path)),
+                ("exiftool", analyze_exiftool, (img_path, result_path)),
+                ("foremost", analyze_foremost, (img_path, result_path)),
+                ("strings", analyze_strings, (img_path, result_path)),
+                ("steghide", analyze_steghide, (img_path, result_path, submission.password)),
+                ("zsteg", analyze_zsteg, (img_path, result_path)),
             ]
 
-            # Deep analysis only
             if submission.deep_analysis:
-                analyzers.extend(
-                    [
-                        (analyze_outguess, img_path, result_path),
-                    ]
-                )
+                analyzer_list.append(("outguess", analyze_outguess, (img_path, result_path)))
 
-            for analyzer in analyzers:
-                thread = threading.Thread(target=run_analyzer, args=analyzer)
-                threads.append(thread)
-                thread.start()
+            with concurrent.futures.ThreadPoolExecutor() as executor:
+                futures = []
+                for _name, analyzer_func, args in analyzer_list:
+                    futures.append(executor.submit(analyzer_func, *args))
 
-            for thread in threads:
-                thread.join()
+                # Ensure all analyzers finish; they write their own outputs via update_data
+                for future in concurrent.futures.as_completed(futures):
+                    try:
+                        future.result()
+                    except Exception:
+                        # Individual analyzers already record their own errors
+                        pass
 
             submission.status = "completed"
         except Exception:

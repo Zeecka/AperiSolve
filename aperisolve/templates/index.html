@@ -20,6 +20,11 @@
     <label for="password" class="form-label">Password (optional)</label>
     <input class="form-control" type="text" name="password" id="password" />
   </div>
+  <div class="mb-3">
+    <label for="batch_id" class="form-label">Batch ID (optional)</label>
+    <input class="form-control" type="text" name="batch_id" id="batch_id" maxlength="50" placeholder="e.g. ctf_round3" />
+    <small class="form-text text-muted">Pattern: [A-Za-z0-9_-]{1,50}</small>
+  </div>
   <div class="form-check mb-3">
     <input class="form-check-input" type="checkbox" id="deep" />
     <label class="form-check-label" for="deep">Deep analysis</label>
