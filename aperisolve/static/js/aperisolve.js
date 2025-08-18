@@ -427,6 +427,11 @@ if (browseBtn) {
       formData.append("image", fileInput.files[0]);
       formData.append("password", passwordInput.value);
       formData.append("deep", deepCheckbox.checked);
+      // Append optional batch_id if provided
+      const batchInput = document.getElementById("batch_id");
+      if (batchInput && batchInput.value.trim()) {
+        formData.append("batch_id", batchInput.value.trim());
+      }
 
       const xhr = new XMLHttpRequest();
       xhr.open("POST", "/upload", true);

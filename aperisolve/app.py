@@ -85,7 +85,11 @@ def result_page(hash_val: str) -> str:
 
 @app.route("/upload", methods=["POST"])
 def upload_image() -> tuple[Response, int]:
-    """Handle image upload and initiate analysis."""
+    """Handle image upload and initiate analysis.
+
+    Returns 202 for a newly accepted asynchronous analysis job.
+    Returns 200 if the exact same submission (including batch_id) already exists (idempotent replay).
+    """
 
     cleanup_old_entries()
 
@@ -182,7 +186,7 @@ def upload_image() -> tuple[Response, int]:
         "enqueue_submission", extra={"submission_hash": submission.hash, "batch_id": batch_id}
     )
 
-    return jsonify({"submission_hash": submission.hash, "batch_id": batch_id}), 200
+    return jsonify({"submission_hash": submission.hash, "batch_id": batch_id}), 202
 
 
 @app.route("/status/<hash_val>", methods=["GET"])
@@ -305,6 +309,7 @@ def get_batch(batch_id: str):  # type: ignore
         elif st == "error":
             status_counts["failed"] += 1
         else:
+            # Any other future/unknown status is treated as pending for aggregation simplicity
             status_counts["pending"] += 1
         files.append(
             {
