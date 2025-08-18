@@ -5,7 +5,7 @@ from decimal import Decimal
 
 from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
-from sqlalchemy import Boolean, Column, DateTime, Float, Integer, String
+from sqlalchemy import Boolean, Column, DateTime, Float, Integer, String, text
 
 db: SQLAlchemy = SQLAlchemy()
 
@@ -47,15 +47,38 @@ class Submission(db.Model):  # type: ignore
     date: Column[Decimal] = Column(
         Float, nullable=False, default=lambda: datetime.now(timezone.utc)
     )
+    # Optional logical batch identifier for grouping submissions
+    batch_id: Column[str] = Column(String(50), index=True, nullable=True)
 
     # Foreign key to Image
     image_hash = Column(String, db.ForeignKey("image.hash"), nullable=False)
 
 
 def init_db(app: Flask) -> None:
-    """Initialize the database with the given Flask app."""
+    """Initialize the database with the given Flask app.
+
+    Also performs a lightweight runtime schema adjustment to add new columns
+    ("batch_id") if the table already exists but the column does not.
+    This keeps backward compatibility without a dedicated migration framework.
+    """
     with app.app_context():
-        if not db.engine.dialect.has_table(db.engine.connect(), "image"):
-            print("Creating database...")
-            db.create_all()
-            print("Database created successfully.")
+        engine = db.engine
+        conn = engine.connect()
+        try:
+            if not engine.dialect.has_table(conn, "image"):
+                print("Creating database...")
+                db.create_all()
+                print("Database created successfully.")
+            else:
+                # Lightweight check for missing batch_id column
+                inspector = db.inspect(engine)
+                submission_cols = {c["name"] for c in inspector.get_columns("submission")}
+                if "batch_id" not in submission_cols:
+                    try:
+                        conn.execute(text("ALTER TABLE submission ADD COLUMN batch_id VARCHAR(50);"))
+                        conn.execute(text("CREATE INDEX IF NOT EXISTS ix_submission_batch_id ON submission (batch_id);"))
+                        print("Added column 'batch_id' to submission table.")
+                    except Exception as exc:  # pragma: no cover - best effort
+                        print(f"Warning: could not add batch_id column automatically: {exc}")
+        finally:
+            conn.close()

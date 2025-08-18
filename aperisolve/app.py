@@ -3,7 +3,10 @@
 import hashlib
 import json
 import os
+import re
 import time
+import csv
+import io
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any, Optional
@@ -23,6 +26,10 @@ app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 app.config["MAX_CONTENT_LENGTH"] = int(
     os.environ.get("MAX_CONTENT_LENGTH", 1024 * 1024)
 )
+# Batch feature configuration
+app.config.setdefault("BATCH_MAX_FILES", int(os.environ.get("BATCH_MAX_FILES", 25)))
+app.config.setdefault("BATCH_ID_REGEX", r"[A-Za-z0-9_-]{1,50}")
+
 RESULT_FOLDER.mkdir(parents=True, exist_ok=True)
 
 
@@ -88,6 +95,17 @@ def upload_image() -> tuple[Response, int]:
     image = request.files["image"]
     password = request.form.get("password")
     deep_analysis = request.form.get("deep") == "true"
+    batch_id = request.form.get("batch_id") or request.headers.get("X-Batch-ID")
+    if batch_id == "":  # normalize empty string to None
+        batch_id = None
+
+    if batch_id is not None:
+        pattern = app.config["BATCH_ID_REGEX"]
+        if not re.fullmatch(pattern, batch_id):
+            return jsonify({"error": "invalid_batch_id"}), 400
+        existing_count = Submission.query.filter_by(batch_id=batch_id).count()
+        if existing_count >= app.config["BATCH_MAX_FILES"]:
+            return jsonify({"error": "batch_limit_exceeded"}), 429
 
     if image.filename is None or image.filename == "":
         return jsonify({"error": "No image provided"}), 400
@@ -108,16 +126,17 @@ def upload_image() -> tuple[Response, int]:
         + image.filename.encode()
         + (password.encode() if password else b"")
         + (b"deep_analysis" if deep_analysis else b"")
+        + (batch_id.encode() if batch_id else b"")
     )
     submission_hash = hashlib.md5(submission_data).hexdigest()
     submission_path = RESULT_FOLDER / img_hash / submission_hash
 
-    # If submission already exists, return submission hash
+    # If submission already exists, return submission hash (idempotent)
     if submission_path.exists():
         submission: Submission = Submission.query.filter_by(
             hash=submission_hash
         ).first()
-        return jsonify({"submission_hash": submission.hash}), 200
+        return jsonify({"submission_hash": submission.hash, "batch_id": batch_id}), 200
 
     # If image is new, create a new Image entry
     new_img_path = RESULT_FOLDER / img_hash / image_name
@@ -151,6 +170,7 @@ def upload_image() -> tuple[Response, int]:
         status="pending",
         date=time.time(),
         image_hash=sub_img.hash,  # type: ignore
+        batch_id=batch_id,
     )
     db.session.add(submission)
 
@@ -158,7 +178,11 @@ def upload_image() -> tuple[Response, int]:
     # Start the analysis jobs
     queue.enqueue("aperisolve.workers.analyze_image", submission.hash, job_timeout=300)
 
-    return jsonify({"submission_hash": submission.hash}), 200
+    app.logger.info(
+        "enqueue_submission", extra={"submission_hash": submission.hash, "batch_id": batch_id}
+    )
+
+    return jsonify({"submission_hash": submission.hash, "batch_id": batch_id}), 200
 
 
 @app.route("/status/<hash_val>", methods=["GET"])
@@ -253,6 +277,103 @@ def get_image(
         return abort(404, description="Image not found or unsupported format")
 
     return send_file(output_file, as_attachment=True)
+
+
+# ----------------------------- Batch API ----------------------------- #
+
+def _validate_batch_id(batch_id: str) -> Optional[Response]:
+    pattern = app.config["BATCH_ID_REGEX"]
+    if not re.fullmatch(pattern, batch_id):
+        return jsonify({"error": "invalid_batch_id"}), 400
+    return None
+
+
+@app.route("/api/v1/batches/<batch_id>", methods=["GET"])
+def get_batch(batch_id: str):  # type: ignore
+    err = _validate_batch_id(batch_id)
+    if err:
+        return err
+    subs = Submission.query.filter_by(batch_id=batch_id).all()
+    if not subs:
+        return jsonify({"error": "batch_not_found"}), 404
+    status_counts = {"completed": 0, "failed": 0, "pending": 0}
+    files = []
+    for s in subs:
+        st = s.status
+        if st == "completed":
+            status_counts["completed"] += 1
+        elif st == "error":
+            status_counts["failed"] += 1
+        else:
+            status_counts["pending"] += 1
+        files.append(
+            {
+                "submission_hash": s.hash,
+                "filename": s.filename,
+                "status": st,
+            }
+        )
+    submitted = len(subs)
+    partial = status_counts["pending"] > 0
+    return jsonify(
+        {
+            "batch_id": batch_id,
+            "totals": {
+                "submitted": submitted,
+                "completed": status_counts["completed"],
+                "failed": status_counts["failed"],
+                "pending": status_counts["pending"],
+            },
+            "files": files,
+            "partial": partial,
+        }
+    )
+
+
+@app.route("/api/v1/batches/<batch_id>/export", methods=["GET"])
+def export_batch(batch_id: str):  # type: ignore
+    fmt = request.args.get("format", "json").lower()
+    err = _validate_batch_id(batch_id)
+    if err:
+        return err
+    subs = Submission.query.filter_by(batch_id=batch_id).all()
+    if not subs:
+        return jsonify({"error": "batch_not_found"}), 404
+
+    # Reuse summary
+    summary_resp = get_batch(batch_id)
+    if fmt == "json":
+        return summary_resp
+    if fmt == "csv":
+        # Build minimal CSV rows
+        subs_json = summary_resp.json  # type: ignore[attr-defined]
+        rows = []
+        for f in subs_json["files"]:
+            rows.append(
+                {
+                    "batch_id": batch_id,
+                    "submission_hash": f["submission_hash"],
+                    "filename": f["filename"],
+                    "status": f["status"],
+                }
+            )
+        if not rows:
+            rows = []
+        output = io.StringIO()
+        fieldnames = ["batch_id", "submission_hash", "filename", "status"]
+        writer = csv.DictWriter(output, fieldnames=fieldnames)
+        writer.writeheader()
+        for r in rows:
+            writer.writerow(r)
+        csv_data = output.getvalue()
+        return Response(
+            csv_data,
+            mimetype="text/csv",
+            headers={
+                "Content-Disposition": f'attachment; filename="batch_{batch_id}.csv"'
+            },
+        )
+    return jsonify({"error": "unsupported_format"}), 400
 
 
 if __name__ == "__main__":
