@@ -366,8 +366,14 @@ function showFilename(filename) {
 
 if (browseBtn) {
   // Clicking the button triggers file input
-  browseBtn.addEventListener("click", () => fileInput.click());
-  dropZone.addEventListener("click", () => fileInput.click());
+  browseBtn.addEventListener("click", (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    fileInput.click();
+  });
+  dropZone.addEventListener("click", (e) => {
+    fileInput.click();
+  });
   dropZone.addEventListener("dragover", (e) => {
     e.preventDefault();
     dropZone.style.boxShadow = "0 0 20px #9fef00";
@@ -413,7 +419,6 @@ if (browseBtn) {
     .addEventListener("submit", function (e) {
       e.preventDefault();
 
-      const fileInput = document.getElementById("image");
       const passwordInput = document.getElementById("password");
       const deepCheckbox = document.getElementById("deep");
       const progressContainer = document.getElementById("progress-container");
@@ -421,6 +426,7 @@ if (browseBtn) {
 
       if (!fileInput.files.length) {
         showDanger("Please select an image.", true);
+        return;
       }
 
       const formData = new FormData();
