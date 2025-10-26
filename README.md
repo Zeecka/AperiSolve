@@ -53,8 +53,17 @@ docker compose up -d
 ## Development
 
 Aperi'Solve platform is a *Flask* web service (python 3.11+) with python workers performing analysis.
-Jobs are stacked in a redis-queue, and images informations are stored in a postgresql database.
+Jobs can be processed asynchronously using Redis Queue (optional) or synchronously without Redis. Image information is stored in a PostgreSQL database.
 All services are well contained inside Docker containers.
+
+### Redis Configuration
+
+Redis is **optional** and controlled by the `REDIS_URL` environment variable:
+
+- **With Redis** (async processing): Set `REDIS_URL` environment variable (e.g., `redis://redis:6379/0`)
+- **Without Redis** (sync processing): Leave `REDIS_URL` unset - suitable for free-tier deployments like Render
+
+When running without Redis, image analysis runs synchronously in the main web process.
 
 ### Adding new analyzer
 

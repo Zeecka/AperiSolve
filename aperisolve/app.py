@@ -9,8 +9,6 @@ from pathlib import Path
 from typing import Any, Optional
 
 from flask import Flask, Response, abort, jsonify, render_template, request, send_file
-from redis import Redis
-from rq import Queue
 
 from .cleanup import cleanup_old_entries
 from .config import IMAGE_EXTENSIONS, RESULT_FOLDER, WORKER_FILES
@@ -28,8 +26,22 @@ RESULT_FOLDER.mkdir(parents=True, exist_ok=True)
 
 db.init_app(app)
 init_db(app)
-redis_conn = Redis(host="redis", port=6379)
-queue = Queue(connection=redis_conn)
+
+# Initialize Redis/RQ if REDIS_URL is provided, otherwise run synchronously
+redis_url = os.environ.get("REDIS_URL")
+queue = None
+if redis_url:
+    try:
+        from redis import Redis
+        from rq import Queue
+        redis_conn = Redis.from_url(redis_url)
+        queue = Queue(connection=redis_conn)
+        print("Redis Queue initialized successfully")
+    except Exception as e:
+        print(f"Failed to initialize Redis: {e}")
+        print("Running in synchronous mode (without Redis)")
+else:
+    print("REDIS_URL not set. Running in synchronous mode (without Redis)")
 
 
 @app.errorhandler(413)
@@ -155,8 +167,15 @@ def upload_image() -> tuple[Response, int]:
     db.session.add(submission)
 
     db.session.commit()  # Commit to save the new Image and Submission
-    # Start the analysis jobs
-    queue.enqueue("aperisolve.workers.analyze_image", submission.hash, job_timeout=300)
+
+    # Start the analysis - either async with Redis or synchronously
+    if queue is not None:
+        # Use Redis Queue for async processing
+        queue.enqueue("aperisolve.workers.analyze_image", submission.hash, job_timeout=300)
+    else:
+        # Run synchronously without Redis
+        from .workers import analyze_image
+        analyze_image(submission.hash)
 
     return jsonify({"submission_hash": submission.hash}), 200
 
