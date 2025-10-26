@@ -28,7 +28,7 @@ RESULT_FOLDER.mkdir(parents=True, exist_ok=True)
 
 db.init_app(app)
 init_db(app)
-redis_conn = Redis(host="redis", port=6379)
+redis_conn = Redis(host="localhost", port=6379)
 queue = Queue(connection=redis_conn)
 
 
