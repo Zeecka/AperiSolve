@@ -22,4 +22,7 @@ COPY aperisolve/ /aperisolve/
 
 RUN pip install --no-cache-dir -r /aperisolve/requirements.txt
 
-CMD ["bash", "-c", "redis-server & gunicorn -w 4 -b 0.0.0.0:5000 aperisolve.wsgi:application"]
+# Bind to the platform-provided $PORT (fallback 5000 for local runs).
+# Reduce worker count by default to fit free-tier memory.
+# No redis-server needed; app runs synchronously when REDIS_URL is unset.
+CMD ["bash", "-c", "gunicorn -w ${WORKERS:-2} -b 0.0.0.0:${PORT:-5000} aperisolve.wsgi:application"]
