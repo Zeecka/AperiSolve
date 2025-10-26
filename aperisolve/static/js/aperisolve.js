@@ -32,6 +32,7 @@ function slideUp(element, duration = 400) {
   element.style.boxSizing = "border-box";
   element.style.overflow = "hidden";
   element.style.height = 0;
+
   element.style.paddingTop = 0;
   element.style.paddingBottom = 0;
   element.style.marginTop = 0;
@@ -66,6 +67,7 @@ function formatBytes(bytes) {
  * Alert functions
  */
 
+
 function showAlert(message, alertType, reset) {
   const resultDiv = document.getElementById("result-analyzers");
   if (reset) {
@@ -97,6 +99,7 @@ document.addEventListener('click', function (event) {
     // Check if the clicked element is a copy icon
     if (event.target.classList.contains('copy-icon')) {
       const icon = event.target;
+
       const textarea = icon.closest('.textarea-container').querySelector('textarea');
 
       if (textarea) {
@@ -129,7 +132,8 @@ function updateCurrentImages() {
 }
 
 // Function to handle image click (open modal)
-function openImageModal(src) {
+functio
+  n openImageModal(src) {
   updateCurrentImages();
   currentIndex = currentImages.findIndex((img) => img.src === src);
   if (currentIndex !== -1) {
@@ -161,7 +165,8 @@ modalImage.addEventListener("click", function () {
   document.body.appendChild(link);
   link.click();
   document.body.removeChild(link);
-  closeImageModal();
+  c
+    loseImageModal();
 });
 
 // Optional: Close modal if user clicks outside the image
@@ -192,7 +197,8 @@ document.addEventListener("keydown", function (e) {
   }
 });
 
-async function fetchImageInfo(submission_hash) {
+async
+  function fetchImageInfo(submission_hash) {
   const infoResp = await fetch(`/infos/${submission_hash}`);
   const infoData = await infoResp.json();
 
@@ -223,6 +229,7 @@ async function fetchImageInfo(submission_hash) {
   tableInfos.innerHTML += `<tr><td><i class="fa fa-upload"></i> Upload count:</td><td>${infoData.upload_count}</td></tr>`;
   if (Array.isArray(infoData.passwords)) {
     const passwordList = infoData.passwords
+   
       .map((pwd) => `<code>${escapeHtml(pwd)}</code>`)
       .join(", ");
     tableInfos.innerHTML += `<tr><td><i class="fa fa-key"></i> Common password(s):</td><td>${passwordList}</td></tr>`;
@@ -254,6 +261,7 @@ function parseResult(result) {
         // Parse image output
         var channels = ["Superimposed", "Red", "Green", "Blue", "Alpha"];
         if (Object.keys(result[tool]["images"]).length == 1) {
+       
           channels = ["Grayscale"];
         } else if (Object.keys(result[tool]["images"]).length == 4) {
           channels = ["Superimposed", "Red", "Green", "Blue"];
@@ -395,7 +403,8 @@ if (browseBtn) {
   ["dragleave", "drop"].forEach((eventName) => {
     dropZone.addEventListener(eventName, (e) => {
       e.preventDefault();
-      dropZone.classList.remove("dragover");
+      dropZone.c
+        lassList.remove("dragover");
     });
   });
 
