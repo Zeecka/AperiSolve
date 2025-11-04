@@ -12,6 +12,7 @@ from .analyzers.outguess import analyze_outguess
 from .analyzers.steghide import analyze_steghide
 from .analyzers.strings import analyze_strings
 from .analyzers.zsteg import analyze_zsteg
+from .analyzers.pngcheck import analyze_pngcheck
 from .app import app, db
 from .config import RESULT_FOLDER
 from .models import Image, Submission
@@ -49,6 +50,7 @@ def analyze_image(submission_hash: str) -> None:
                 (analyze_exiftool, img_path, result_path),
                 (analyze_foremost, img_path, result_path),
                 (analyze_strings, img_path, result_path),
+                (analyze_pngcheck, img_path, result_path),
                 (analyze_steghide, img_path, result_path, submission.password),
                 (analyze_zsteg, img_path, result_path),
             ]

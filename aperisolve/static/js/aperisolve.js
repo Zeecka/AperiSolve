@@ -4,6 +4,7 @@ const TOOL_ORDER = [
   "binwalk",
   "foremost",
   "outguess",
+  "pngcheck",
   "steghide",
   "zsteg",
   "strings",

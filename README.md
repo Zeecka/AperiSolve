@@ -36,6 +36,7 @@ The platform allow you to:
 - **Visualise `binwalk` informations**
 - **Download `binwalk` files** such as zip in png headers
 - **Download `foremost` files** such as zip in png headers
+- **Visualise `pngcheck` output**
 - **Visualise `strings` output**
 
 ## Installation
@@ -93,7 +94,7 @@ GitHub CI will alert in case of failure.
 
 ## Roadmap
 
-- [ ] PngCheck
+- [x] PngCheck
 - [ ] Zsteg extract / --all --> **Download `zsteg` files** such as mp3 encoded on LSB
 - [ ] Test on mobile
 - [ ] i18n
