@@ -81,7 +81,7 @@ def analyze_steghide(
         # Filter out lines that indicate success
         stdout = []
         for line in data.stderr.split("\n"):
-            if line.startswith("wrote extracted data to \""):
+            if line.startswith('wrote extracted data to "'):
                 stdout.append(line)
             elif line:
                 stderr += line + "\n"
