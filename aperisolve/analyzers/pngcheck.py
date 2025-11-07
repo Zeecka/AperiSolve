@@ -11,7 +11,7 @@ def analyze_pngcheck(input_img: Path, output_dir: Path) -> None:
 
     try:
         data = subprocess.run(
-            ["pngcheck", "-v",input_img],
+            ["pngcheck", "-v", input_img],
             capture_output=True,
             text=True,
             check=False,
