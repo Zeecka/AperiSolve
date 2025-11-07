@@ -61,9 +61,9 @@ def analyze_steghide(
             "steghide",
             "extract",
             "-sf",
-            "../" + str(image_name),
+            "../../" + str(image_name),
             "-xf",
-            str(embedded_filename),
+            str(embedded_file.name),
         ]
         if password:
             cmd_ext += ["-p", password]
@@ -72,13 +72,19 @@ def analyze_steghide(
 
         data = subprocess.run(
             cmd_ext,
-            cwd=output_dir,
+            cwd=extracted_dir,
             capture_output=True,
             text=True,
             check=False,
             timeout=MAX_PENDING_TIME,
         )
-        stderr += data.stderr
+        # Filter out lines that indicate success
+        stdout = []
+        for line in data.stderr.split("\n"):
+            if line.startswith('wrote extracted data to "'):
+                stdout.append(line)
+            elif line:
+                stderr += line + "\n"
 
         # Zip extracted files
         zip_data = subprocess.run(
@@ -94,7 +100,7 @@ def analyze_steghide(
 
         if len(stderr) > 0:
             err = {
-                "binwalk": {
+                "steghide": {
                     "status": "error",
                     "error": stderr,
                 }
@@ -110,7 +116,7 @@ def analyze_steghide(
             {
                 "steghide": {
                     "status": "ok",
-                    "output": data.stdout.split("\n") if data else [],
+                    "output": stdout,
                     "download": f"/download/{output_dir.name}/steghide",
                 }
             },
