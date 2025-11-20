@@ -367,8 +367,13 @@ function showFilename(filename) {
 
 if (browseBtn) {
   // Clicking the button triggers file input
-  browseBtn.addEventListener("click", () => fileInput.click());
-  dropZone.addEventListener("click", () => fileInput.click());
+  browseBtn.addEventListener("click", (e) => {
+    e.stopPropagation();
+    fileInput.click();
+  });
+  dropZone.addEventListener("click", () => {
+    fileInput.click();
+  });
   dropZone.addEventListener("dragover", (e) => {
     e.preventDefault();
     dropZone.style.boxShadow = "0 0 20px #9fef00";
