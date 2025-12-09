@@ -73,13 +73,13 @@ Here is a batch of usefull commands.
 
 ```bash
 docker compose down -v  # Remove volume containings results
-docker compose -f docker-compose-dev.yml up  # Start application in developpement mode
+docker compose -f compose.dev.yml up  # Start application in developpement mode
 rm -rf aperisolve/results  # Remove results from developpement mode
 docker exec -it postgres psql -U aperiuser -d aperisolve  # Get postgresql shell
 docker exec -it aperisolve-web bash # Get shell in running web app
 ```
 
-> Note, if you used [docker-compose-dev.yml](docker-compose-dev.yml), you must remove "results" when switching to [production docker](docker-compose.yml).
+> Note, if you used [compose.dev.yml](compose.dev.yml), you must remove "results" when switching to [production docker](compose.yml).
 
 ### Code quality
 
@@ -94,7 +94,6 @@ GitHub CI will alert in case of failure.
 
 ## Roadmap
 
-- [x] PngCheck
 - [ ] Zsteg extract / --all --> **Download `zsteg` files** such as mp3 encoded on LSB
 - [ ] Test on mobile
 - [ ] i18n

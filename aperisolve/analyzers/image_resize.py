@@ -1,6 +1,7 @@
 """Image size bruteforcer for common PNG sizes."""
 
 import zlib
+import shutil
 from pathlib import Path
 from .utils import update_data
 
@@ -116,74 +117,79 @@ def analyze_image_resize(input_img: Path, output_dir: Path) -> None:
 
     # 3. Initialize Logs
     logs = []
-    recovered_images = []
+    recovered_image = None
 
     try:
         with open(input_img, "rb") as image:
             f = image.read()
-            b = bytearray(f)
 
-            # Find IHDR start
-            IHDR = b.find(b'\x49\x48\x44\x52')
-            if IHDR == -1:
-                logs.append("Failure: PNG header (IHDR) not found.")
-                update_data(output_dir, {"image_resize": {"status": "error", "error": "PNG header not found."}})
-                return
+        b = bytearray(f)
 
-            # Calculate Chunk Length (The 4 bytes BEFORE IHDR tag)
-            chunk_length = int.from_bytes((b[IHDR- 4: IHDR]), byteorder="big") + 4
+        # Find IHDR start
+        IHDR = b.find(b'\x49\x48\x44\x52')
+        if IHDR == -1:
+            logs.append("Failure: PNG header (IHDR) not found.")
+            update_data(output_dir, {"image_resize": {"status": "error", "error": "PNG header not found."}})
+            if extracted_dir.exists():
+                shutil.rmtree(extracted_dir, ignore_errors=True)
+            return
 
-            # Extract Target CRC (The 4 bytes AFTER the chunk data)
-            target_crc = b[IHDR + chunk_length:IHDR + chunk_length + 4]
+        # Calculate Chunk Length (The 4 bytes BEFORE IHDR tag)
+        chunk_length = int.from_bytes((b[IHDR- 4: IHDR]), byteorder="big") + 4
 
-            # Isolate the header chunk (Type + Data)
-            header_chunk = b[IHDR:IHDR + chunk_length]
+        # Extract Target CRC (The 4 bytes AFTER the chunk data)
+        target_crc = b[IHDR + chunk_length:IHDR + chunk_length + 4]
 
-            logs.append(f"Target CRC found: 0x{target_crc.hex()}")
+        # Isolate the header chunk (Type + Data)
+        header_chunk = b[IHDR:IHDR + chunk_length]
 
-            match_found = False
+        logs.append(f"Target CRC found: 0x{target_crc.hex()}")
 
-            # Brute-force Loop
-            for size in EXPECTED_SIZES:
-                width, height = size
+        match_found = False
 
-                # Convert dimensions to 4-byte Big Endian arrays
-                width_bytes = bytearray(width.to_bytes(4, byteorder='big'))
-                height_bytes = bytearray(height.to_bytes(4, byteorder='big'))
+        # Brute-force Loop
+        for size in EXPECTED_SIZES:
+            width, height = size
 
-                # Check if this size matches the file's CRC
-                if target_crc == calc_checksum(header_chunk, width_bytes, height_bytes):
-                    match_found = True
-                    logs.append(f"Success: Match found! Dimensions: {width}x{height}")
+            # Convert dimensions to 4-byte Big Endian arrays
+            width_bytes = bytearray(width.to_bytes(4, byteorder='big'))
+            height_bytes = bytearray(height.to_bytes(4, byteorder='big'))
 
-                    # Create Output Filename
-                    output_filename = f"recovered_{width}x{height}.png"
-                    output_path = extracted_dir / output_filename
+            # Check if this size matches the file's CRC
+            if target_crc == calc_checksum(header_chunk, width_bytes, height_bytes):
+                match_found = True
+                logs.append(f"Success: Match found! Dimensions: {width}x{height}")
 
-                    # Splicing: [Start...IHDR+4] + [W] + [H] + [IHDR+12...End]
-                    full_png_data = b[:IHDR+4] + width_bytes + height_bytes + b[IHDR+12:]
+                # Create Output Filename
+                output_filename = f"recovered_{width}x{height}.png"
+                output_path = extracted_dir / output_filename
 
-                    # Write the recovered file to disk
-                    with open(output_path, "wb") as out_f:
-                        out_f.write(full_png_data)
+                # Splicing: [Start...IHDR+4] + [W] + [H] + [IHDR+12...End]
+                full_png_data = b[:IHDR+4] + width_bytes + height_bytes + b[IHDR+12:]
 
-                    recovered_images.append(output_filename)
-                    break # Stop looking after finding the match
+                # Write the recovered file to disk
+                with output_path.open("wb") as out_f:
+                    out_f.write(full_png_data)
 
-            if not match_found:
-                logs.append("Failure: No matching dimensions found.")
+                recovered_image = output_filename
+                break # Stop looking after finding the match
+
+        if not match_found:
+            logs.append("Failure: No matching dimensions found.")
 
         # 4. Final Data Update
         output_data = {
             "image_resize": {  # Key name must match your module name in AperiSolve
                 "status": "ok",
                 "output": logs,
-                "images": recovered_images, # Tells frontend to display the image
+                "images": recovered_image, # Tells frontend to display the image
             }
         }
         update_data(output_dir, output_data)
 
     except Exception as e:
         update_data(output_dir, {"image_resize": {"status": "error", "error": str(e)}})
+        if extracted_dir.exists():
+            shutil.rmtree(extracted_dir, ignore_errors=True)
 
     return None
