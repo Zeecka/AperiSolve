@@ -110,17 +110,13 @@ def analyze_image_resize(input_img: Path, output_dir: Path) -> None:
     # 1. Setup Paths
     input_img = Path(input_img)
     output_dir = Path(output_dir)
-    extracted_dir = output_dir / "image_resize_output_dir"
-
-    # 2. CREATE THE DIRECTORY (Crucial Step!)
-    extracted_dir.mkdir(parents=True, exist_ok=True)
 
     # 3. Initialize Logs
     logs = []
     recovered_image = None
 
     try:
-        with open(input_img, "rb") as image:
+        with input_img.open("rb") as image:
             f = image.read()
 
         b = bytearray(f)
@@ -130,8 +126,6 @@ def analyze_image_resize(input_img: Path, output_dir: Path) -> None:
         if IHDR == -1:
             logs.append("Failure: PNG header (IHDR) not found.")
             update_data(output_dir, {"image_resize": {"status": "error", "error": "PNG header not found."}})
-            if extracted_dir.exists():
-                shutil.rmtree(extracted_dir, ignore_errors=True)
             return
 
         # Calculate Chunk Length (The 4 bytes BEFORE IHDR tag)
@@ -161,8 +155,11 @@ def analyze_image_resize(input_img: Path, output_dir: Path) -> None:
                 logs.append(f"Success: Match found! Dimensions: {width}x{height}")
 
                 # Create Output Filename
-                output_filename = f"recovered_{width}x{height}.png"
-                output_path = extracted_dir / output_filename
+                img_name = f"recovered_{width}x{height}.png"
+
+                # Create parent directories if they don't exist
+                output_dir.mkdir(parents=True, exist_ok=True)
+                output_path = output_dir / img_name
 
                 # Splicing: [Start...IHDR+4] + [W] + [H] + [IHDR+12...End]
                 full_png_data = b[:IHDR+4] + width_bytes + height_bytes + b[IHDR+12:]
@@ -171,7 +168,7 @@ def analyze_image_resize(input_img: Path, output_dir: Path) -> None:
                 with output_path.open("wb") as out_f:
                     out_f.write(full_png_data)
 
-                recovered_image = output_filename
+                recovered_image = Path(output_dir.name) / img_name
                 break # Stop looking after finding the match
 
         if not match_found:
@@ -181,15 +178,13 @@ def analyze_image_resize(input_img: Path, output_dir: Path) -> None:
         output_data = {
             "image_resize": {  # Key name must match your module name in AperiSolve
                 "status": "ok",
-                "output": logs,
-                "images": recovered_image, # Tells frontend to display the image
+                "output": logs
             }
         }
+        if recovered_image:
+            output_data["image_resize"]["image"] = "/image/" + str(recovered_image)
         update_data(output_dir, output_data)
 
     except Exception as e:
         update_data(output_dir, {"image_resize": {"status": "error", "error": str(e)}})
-        if extracted_dir.exists():
-            shutil.rmtree(extracted_dir, ignore_errors=True)
-
     return None
