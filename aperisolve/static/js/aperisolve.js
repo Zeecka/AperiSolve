@@ -8,6 +8,7 @@ const TOOL_ORDER = [
   "steghide",
   "zsteg",
   "strings",
+  "image_resize",
 ];
 
 function escapeHtml(text) {
@@ -248,7 +249,7 @@ function parseResult(result) {
     analyzer.className = `analyzer a-${escapeHtml(tool)}`;
     resultDiv.appendChild(analyzer);
 
-    analyzer.innerHTML += `<h2>${capitalize(tool)}</h2>`;
+    analyzer.innerHTML += `<h2>${capitalize(tool.replace("_"," "))}</h2>`;
 
     if (result[tool]["status"] === "ok") {
       if ("images" in result[tool]) {
@@ -270,7 +271,16 @@ function parseResult(result) {
           }
         }
       }
+
+      if ("image" in result[tool]) {
+        // Parse image output
+        analyzer.innerHTML += `<div class='results_img'><img src='${escapeHtml(
+          result[tool]["image"]
+        )}'/></div>`;
+      }
+
       // Parse text output
+  
 
       if (typeof result[tool]["output"] === "string") {
         analyzer.innerHTML += `<pre>${escapeHtml(
