@@ -40,6 +40,10 @@ def analyze_binwalk(input_img: Path, output_dir: Path) -> None:
             zip_exist = True
             stderr += zip_data.stderr
 
+        # Remove the extracted directory
+        if extracted_dir.exists():
+            shutil.rmtree(extracted_dir)
+
         if len(stderr) > 0:
             err = {
                 "binwalk": {
@@ -49,10 +53,6 @@ def analyze_binwalk(input_img: Path, output_dir: Path) -> None:
             }
             update_data(output_dir, err)
             return None
-
-        # Remove the extracted directory
-        if extracted_dir.exists():
-            shutil.rmtree(extracted_dir)
 
         output_data = {
             "binwalk": {
