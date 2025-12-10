@@ -43,7 +43,7 @@ def analyze_binwalk(input_img: Path, output_dir: Path) -> None:
         # Remove the extracted directory
         if extracted_dir.exists():
             shutil.rmtree(extracted_dir)
-            
+
         if len(stderr) > 0:
             err = {
                 "binwalk": {
