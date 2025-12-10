@@ -177,8 +177,8 @@ def analyze_image_resize(input_img: Path, output_dir: Path) -> None:
         b = bytearray(f)
 
         # Find IHDR start
-        IHDR = b.find(b"\x49\x48\x44\x52")
-        if IHDR == -1:
+        ihdr = b.find(b"\x49\x48\x44\x52")
+        if ihdr == -1:
             logs.append("Failure: PNG header (IHDR) not found.")
             update_data(
                 output_dir,
@@ -187,13 +187,13 @@ def analyze_image_resize(input_img: Path, output_dir: Path) -> None:
             return
 
         # Calculate Chunk Length (The 4 bytes BEFORE IHDR tag)
-        chunk_length = int.from_bytes((b[IHDR - 4 : IHDR]), byteorder="big") + 4
+        chunk_length = int.from_bytes((b[ihdr - 4 : ihdr]), byteorder="big") + 4
 
         # Extract Target CRC (The 4 bytes AFTER the chunk data)
-        target_crc = b[IHDR + chunk_length : IHDR + chunk_length + 4]
+        target_crc = b[ihdr + chunk_length : ihdr + chunk_length + 4]
 
         # Isolate the header chunk (Type + Data)
-        header_chunk = b[IHDR : IHDR + chunk_length]
+        header_chunk = b[ihdr : ihdr + chunk_length]
 
         logs.append(f"Target CRC found: 0x{target_crc.hex()}")
 
@@ -221,7 +221,7 @@ def analyze_image_resize(input_img: Path, output_dir: Path) -> None:
 
                 # Splicing: [Start...IHDR+4] + [W] + [H] + [IHDR+12...End]
                 full_png_data = (
-                    b[: IHDR + 4] + width_bytes + height_bytes + b[IHDR + 12 :]
+                    b[: ihdr + 4] + width_bytes + height_bytes + b[ihdr + 12 :]
                 )
 
                 # Write the recovered file to disk
@@ -247,4 +247,3 @@ def analyze_image_resize(input_img: Path, output_dir: Path) -> None:
 
     except Exception as e:
         update_data(output_dir, {"image_resize": {"status": "error", "error": str(e)}})
-    return None
