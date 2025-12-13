@@ -1,6 +1,7 @@
 """Image size bruteforcer for common PNG sizes."""
 
 import zlib
+import sqlite3
 from pathlib import Path
 from .utils import update_data
 
@@ -142,6 +143,31 @@ EXPECTED_SIZES = [
 ]
 
 
+def write_recovered_png(
+    png_bytes: bytearray,
+    ihdr_offset: int,
+    width: int,
+    height: int,
+    output_path: Path,
+) -> None:
+    """
+    Rebuilds a PNG by patching IHDR width/height and writes it to disk.
+    """
+    height_bytes = height.to_bytes(4, byteorder="big")
+    width_bytes = width.to_bytes(4, byteorder="big")
+
+    # Splicing: [Start...IHDR+4] + [W] + [H] + [IHDR+12...End]
+    full_png_data = (
+        png_bytes[: ihdr_offset + 4]
+        + width_bytes
+        + height_bytes
+        + png_bytes[ihdr_offset + 12 :]
+    )
+
+    with output_path.open("wb") as out_f:
+        out_f.write(full_png_data)
+
+
 def calc_checksum(
     header_chunk: bytearray, width_bytes: bytearray, height_bytes: bytearray
 ) -> bytearray:
@@ -156,10 +182,43 @@ def calc_checksum(
     return bytearray((zlib.crc32(new_header) & 0xFFFFFFFF).to_bytes(4, byteorder="big"))
 
 
+def lookup_crc(crc_bytes: bytes, logs: list) -> list:
+    """
+    Queries the SQLite DB for the CRC and returns a list of (width, height) tuples.
+    """
+    # Locate DB relative to this script file
+    db_path = Path(__file__).parent / "ihdr_crcs.db"
+
+    if not db_path.exists():
+        logs.append(f"Error: Database not found at {db_path}")
+        return []
+
+    try:
+        target_crc = int.from_bytes(crc_bytes, byteorder="big")
+    except ValueError:
+        logs.append(f"Invalid CRC bytes: {crc_bytes}")
+        return []
+
+    conn = sqlite3.connect(db_path)
+    cursor = conn.cursor()
+
+    # Query the database
+    cursor.execute("SELECT width, height FROM ihdr WHERE crc = ?", (target_crc,))
+    results = cursor.fetchall()  # Returns list of (width, height)
+    conn.close()
+
+    if results:
+        logs.append(f"Database: Found {len(results)} match(es) for CRC {target_crc}")
+        return results
+    else:
+        logs.append(f"Database: No match found for CRC {target_crc}")
+        return []
+
+
 def analyze_image_resize(input_img: Path, output_dir: Path) -> None:
     """
     Analyze an image submission using python-based resize bruteforce.
-    Attempts to recover PNGs with modified resolutions but valid CRCs.
+    Strategy: Check common sizes first, then fall back to DB lookup.
     """
 
     # 1. Setup Paths
@@ -168,7 +227,6 @@ def analyze_image_resize(input_img: Path, output_dir: Path) -> None:
 
     # 3. Initialize Logs
     logs = []
-    recovered_image = None
 
     try:
         with input_img.open("rb") as image:
@@ -198,8 +256,9 @@ def analyze_image_resize(input_img: Path, output_dir: Path) -> None:
         logs.append(f"Target CRC found: 0x{target_crc.hex()}")
 
         match_found = False
+        candidates = []
 
-        # Brute-force Loop
+        # --- STRATEGY 1: Check Common Sizes ---
         for size in EXPECTED_SIZES:
             width, height = size
 
@@ -210,39 +269,48 @@ def analyze_image_resize(input_img: Path, output_dir: Path) -> None:
             # Check if this size matches the file's CRC
             if target_crc == calc_checksum(header_chunk, width_bytes, height_bytes):
                 match_found = True
-                logs.append(f"Success: Match found! Dimensions: {width}x{height}")
+                logs.append(f"Success (Common List): Match found! Dimensions: {width}x{height}")
+                candidates.append((width, height))
+                break  # Stop after first match
 
-                # Create Output Filename
-                img_name = f"recovered_{width}x{height}.png"
-
-                # Create parent directories if they don't exist
-                output_dir.mkdir(parents=True, exist_ok=True)
-                output_path = output_dir / img_name
-
-                # Splicing: [Start...IHDR+4] + [W] + [H] + [IHDR+12...End]
-                full_png_data = (
-                    b[: ihdr + 4] + width_bytes + height_bytes + b[ihdr + 12 :]
-                )
-
-                # Write the recovered file to disk
-                with output_path.open("wb") as out_f:
-                    out_f.write(full_png_data)
-
-                recovered_image = Path(output_dir.name) / img_name
-                break  # Stop looking after finding the match
-
+        # --- STRATEGY 2: Check SQLite DB ---
         if not match_found:
-            logs.append("Failure: No matching dimensions found.")
+            logs.append("No common size matched. Checking database...")
+            db_matches = lookup_crc(target_crc, logs)
+            if db_matches:
+                candidates.extend(db_matches)
+                match_found = True
+
+        # --- Generate Output Images ---
+        saved_img_urls = []
+
+        if match_found and candidates:
+            # Create parent directories if they don't exist
+            output_dir.mkdir(parents=True, exist_ok=True)
+
+            # Iterate through ALL candidates found
+            for w, h in candidates:
+                img_name = f"recovered_{w}x{h}.png"
+                output_path = output_dir / img_name
+                write_recovered_png(b, ihdr, w, h, output_path)
+
+                logs.append(f"Image saved: {img_name}")
+
+                # Append the formatted URL to our list
+                saved_img_urls.append("/image/" + str(Path(output_dir.name) / img_name))
+
+        else:
+            logs.append("Failure: No matching dimensions found in List or DB.")
 
         # 4. Final Data Update
         output_data = {
-            "image_resize": {  # Key name must match your module name in AperiSolve
+            "image_resize": {
                 "status": "ok",
                 "output": logs,
+                "png_images": saved_img_urls,
             }
         }
-        if recovered_image:
-            output_data["image_resize"]["image"] = "/image/" + str(recovered_image)
+
         update_data(output_dir, output_data)
 
     except Exception as e:
