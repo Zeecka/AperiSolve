@@ -3,6 +3,7 @@
 import zlib
 import sqlite3
 from pathlib import Path
+from typing import List
 from .utils import update_data
 
 # Full list of expected sizes
@@ -182,7 +183,7 @@ def calc_checksum(
     return bytearray((zlib.crc32(new_header) & 0xFFFFFFFF).to_bytes(4, byteorder="big"))
 
 
-def lookup_crc(crc_bytes: bytes, logs: list) -> list:
+def lookup_crc(crc_bytes: bytes, logs: List[str]) -> List[tuple[int, int]]:
     """
     Queries the SQLite DB for the CRC and returns a list of (width, height) tuples.
     """
@@ -196,7 +197,7 @@ def lookup_crc(crc_bytes: bytes, logs: list) -> list:
     try:
         target_crc = int.from_bytes(crc_bytes, byteorder="big")
     except ValueError:
-        logs.append(f"Invalid CRC bytes: {crc_bytes}")
+        logs.append(f"Invalid CRC bytes: {crc_bytes!r}")
         return []
 
     conn = sqlite3.connect(db_path)
@@ -210,9 +211,9 @@ def lookup_crc(crc_bytes: bytes, logs: list) -> list:
     if results:
         logs.append(f"Database: Found {len(results)} match(es) for CRC {target_crc}")
         return results
-    else:
-        logs.append(f"Database: No match found for CRC {target_crc}")
-        return []
+
+    logs.append(f"Database: No match found for CRC {target_crc}")
+    return []
 
 
 def analyze_image_resize(input_img: Path, output_dir: Path) -> None:
@@ -269,7 +270,9 @@ def analyze_image_resize(input_img: Path, output_dir: Path) -> None:
             # Check if this size matches the file's CRC
             if target_crc == calc_checksum(header_chunk, width_bytes, height_bytes):
                 match_found = True
-                logs.append(f"Success (Common List): Match found! Dimensions: {width}x{height}")
+                logs.append(
+                    f"Success (Common List): Match found! Dimensions: {width}x{height}"
+                )
                 candidates.append((width, height))
                 break  # Stop after first match
 
