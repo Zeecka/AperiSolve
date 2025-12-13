@@ -21,4 +21,6 @@ COPY aperisolve/ /aperisolve/
 
 RUN pip install --no-cache-dir -r /aperisolve/requirements.txt
 
+RUN PYTHONPATH=/ python -c "from aperisolve.utils import create_crc_db; create_crc_db()"
+
 CMD ["gunicorn", "-w", "4", "-b", "0.0.0.0:5000", "aperisolve.wsgi:application"]
