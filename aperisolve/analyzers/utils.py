@@ -64,10 +64,12 @@ def create_crc_db() -> None:
     if os.path.exists(DB_PATH):
         print(f"Database already exists at {DB_PATH}. Skipping generation.")
         return
-    db_filename = "ihdr_crcs.db"
 
-    # Connect to database
-    conn = sqlite3.connect(db_filename)
+    # Use the global DB_PATH variable so it writes to /data/ in Docker
+    # and /analyzers/ in local dev
+    print(f"Generating database at: {DB_PATH}")
+    conn = sqlite3.connect(DB_PATH)
+
     cursor = conn.cursor()
 
     # Optimization: Turn off safety checks for bulk insertion speed

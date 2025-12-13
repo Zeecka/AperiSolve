@@ -4,7 +4,8 @@ import zlib
 import sqlite3
 from pathlib import Path
 from typing import List
-from .utils import update_data
+from .utils import update_data, DB_PATH
+
 
 # Full list of expected sizes
 EXPECTED_SIZES = [
@@ -188,7 +189,7 @@ def lookup_crc(crc_bytes: bytes, logs: List[str]) -> List[tuple[int, int]]:
     Queries the SQLite DB for the CRC and returns a list of (width, height) tuples.
     """
     # Locate DB relative to this script file
-    db_path = Path(__file__).parent / "ihdr_crcs.db"
+    db_path = Path(DB_PATH)
 
     if not db_path.exists():
         logs.append(f"Error: Database not found at {db_path}")

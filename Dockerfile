@@ -19,8 +19,10 @@ RUN apt-get update && apt-get install -y \
 
 COPY aperisolve/ /aperisolve/
 
+RUN mkdir -p /data
+
 RUN pip install --no-cache-dir -r /aperisolve/requirements.txt
 
-RUN PYTHONPATH=/ python -c "from aperisolve.utils import create_crc_db; create_crc_db()"
+RUN PYTHONPATH=/ python -c "from aperisolve.analyzers.utils import create_crc_db; create_crc_db()"
 
 CMD ["gunicorn", "-w", "4", "-b", "0.0.0.0:5000", "aperisolve.wsgi:application"]
