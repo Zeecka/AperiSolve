@@ -8,4 +8,3 @@ types-Flask-SQLAlchemy
 sqlalchemy-stubs
 Pillow
 gunicorn
-sqlite3
