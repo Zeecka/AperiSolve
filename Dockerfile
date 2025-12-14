@@ -23,6 +23,6 @@ RUN mkdir -p /data
 
 RUN pip install --no-cache-dir -r /aperisolve/requirements.txt
 
-RUN PYTHONPATH=/ python -c "from aperisolve.analyzers.utils import create_crc_db; create_crc_db()"
+ENV PYTHONUNBUFFERED=1
 
-CMD ["gunicorn", "-w", "4", "-b", "0.0.0.0:5000", "aperisolve.wsgi:application"]
+CMD ["gunicorn", "-w", "4", "-b", "0.0.0.0:5000", "--access-logfile", "-", "--error-logfile", "-", "--log-level", "info", "--capture-output", "aperisolve.wsgi:application"]

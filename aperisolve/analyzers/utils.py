@@ -16,12 +16,6 @@ MAX_PENDING_TIME = int(os.getenv("MAX_PENDING_TIME", "600"))  # 10 minutes by de
 
 # PATH CONFIGURATION
 # Prioritize /data for Docker persistence, fallback to local directory for bare metal
-DB_NAME = "ihdr_crcs.db"
-if os.path.exists("/data"):
-    DB_PATH = os.path.join("/data", DB_NAME)
-else:
-    DB_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), DB_NAME)
-
 
 def update_data(
     output_dir: Path, new_data: dict[Any, Any], json_filename: str = "results.json"
@@ -59,90 +53,42 @@ def update_data(
                 fcntl.flock(lock, fcntl.LOCK_UN)
 
 
-def create_crc_db() -> None:
-    """Creates and populates CRC lookup database with CRC, Width and Heigth tuples"""
-    if os.path.exists(DB_PATH):
-        print(f"Database already exists at {DB_PATH}. Skipping generation.")
-        return
-
-    # Use the global DB_PATH variable so it writes to /data/ in Docker
-    # and /analyzers/ in local dev
-    print(f"Generating database at: {DB_PATH}")
-    conn = sqlite3.connect(DB_PATH)
-
-    cursor = conn.cursor()
-
-    # Optimization: Turn off safety checks for bulk insertion speed
-    cursor.execute("PRAGMA synchronous = OFF")
-    cursor.execute("PRAGMA journal_mode = MEMORY")
-
-    # Create table
-    # We store the CRC as an integer for faster indexing/storage
-    cursor.execute(
-        """
-        CREATE TABLE IF NOT EXISTS ihdr (
-            crc INTEGER,
-            width INTEGER,
-            height INTEGER
-        )
+def pack_ihdr(width: int, height: int, depth: int, color: int, interlace: int) -> int:
     """
-    )
+    Pack IHDR fields into a single integer.
 
-    # Drop index if exists (rebuilding it at the end is faster)
-    cursor.execute("DROP INDEX IF EXISTS idx_crc")
+    Layout:
+    width     : 16 bits
+    height    : 16 bits
+    depth     : 3 bits
+    color     : 3 bits
+    interlace : 1 bit
+    """
 
-    max_width = 2000
-    max_height = 2000
-    w = range(1, max_width + 1)
-    h = range(1, max_height + 1)
+    if not (0 < width <= 0xFFFF):
+        raise ValueError("width out of range")
+    if not (0 < height <= 0xFFFF):
+        raise ValueError("height out of range")
+    if depth not in (1, 2, 4, 8, 16):
+        raise ValueError("invalid depth")
+    if color not in (0, 2, 3, 4, 6):
+        raise ValueError("invalid color")
+    if interlace not in (0, 1):
+        raise ValueError("invalid interlace")
 
-    # Standard PNG IHDR parameters
-    bit_depth = [1, 2, 4, 8, 16]
-    color_type = [0, 2, 3, 4, 6]
-    compression_method = [0]  # This is always 0 according to the PNG spec
-    filter_method = [0]  # This is always 0 according to the PNG spec
-    interlace_method = [0, 1]
+    return (width << 23) | (height << 7) | (depth << 4) | (color << 1) | interlace
 
-    # Create the generator
-    all_combinations = itertools.product(
-        w, h, bit_depth, color_type, compression_method, filter_method, interlace_method
-    )
 
-    batch_size = 100000
-    batch = []
-    count = 0
+def unpack_ihdr(packed: int) -> tuple[int, int, int, int, int]:
+    """
+    Unpack packed IHDR integer into components:
+    (width, height, depth, color, interlace)
+    """
 
-    for w_val, h_val, bd, ct, comp, filt, inter in all_combinations:
-        # Construct IHDR chunk data
-        ihdr_data = (
-            w_val.to_bytes(4, "big")
-            + h_val.to_bytes(4, "big")
-            + bytes([bd, ct, comp, filt, inter])
-        )
+    interlace = packed & 0b1
+    color = (packed >> 1) & 0b111
+    depth = (packed >> 4) & 0b111
+    height = (packed >> 7) & 0xFFFF
+    width = (packed >> 23) & 0xFFFF
 
-        # Calculate CRC
-        crc = zlib.crc32(b"IHDR" + ihdr_data) & 0xFFFFFFFF
-
-        # Add to batch
-        batch.append((crc, w_val, h_val))
-
-        if len(batch) >= batch_size:
-            cursor.executemany("INSERT INTO ihdr VALUES (?,?,?)", batch)
-            conn.commit()
-            batch = []
-            count += batch_size
-            if count % 1000000 == 0:
-                print(f"Inserted {count:,} rows...")
-
-    # Insert remaining records
-    if batch:
-        cursor.executemany("INSERT INTO ihdr VALUES (?,?,?)", batch)
-        conn.commit()
-
-    print("Insertion complete. Creating Index for faster lookups...")
-    # Creating the index allows for faster lookups
-    cursor.execute("CREATE INDEX idx_crc ON ihdr(crc)")
-    conn.commit()
-
-    conn.close()
-    print("Database ready.")
+    return width, height, depth, color, interlace

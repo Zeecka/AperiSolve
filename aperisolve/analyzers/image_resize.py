@@ -7,144 +7,6 @@ from typing import List
 from .utils import update_data, DB_PATH
 
 
-# Full list of expected sizes
-EXPECTED_SIZES = [
-    # -------------------------
-    # ICONS (Square)
-    # -------------------------
-    (16, 16),
-    (20, 20),
-    (24, 24),
-    (28, 28),
-    (32, 32),
-    (48, 48),
-    (64, 64),
-    (72, 72),
-    (96, 96),
-    (128, 128),
-    (192, 192),
-    (256, 256),
-    (384, 384),
-    (512, 512),
-    (768, 768),
-    (1024, 1024),
-    (1536, 1536),
-    (2048, 2048),
-    (4096, 4096),
-    # -------------------------
-    # 1:1 Square (General)
-    # -------------------------
-    (300, 300),
-    (500, 500),
-    (800, 800),
-    (1000, 1000),
-    (1500, 1500),
-    (2000, 2000),
-    (2500, 2500),
-    (3000, 3000),
-    # -------------------------
-    # 4:3 Aspect (Classic Screens)
-    # -------------------------
-    (320, 240),
-    (640, 480),
-    (800, 600),
-    (960, 720),
-    (1024, 768),
-    (1280, 960),
-    (1600, 1200),
-    (2048, 1536),
-    (2560, 1920),
-    (3200, 2400),
-    (4096, 3072),
-    # -------------------------
-    # 3:2 Aspect (Photography)
-    # -------------------------
-    (600, 400),
-    (900, 600),
-    (1200, 800),
-    (1500, 1000),
-    (1800, 1200),
-    (2400, 1600),
-    (3000, 2000),
-    (3600, 2400),
-    (4500, 3000),
-    (6000, 4000),
-    # -------------------------
-    # 16:9 Aspect (Video / Web)
-    # -------------------------
-    (426, 240),
-    (640, 360),
-    (854, 480),
-    (960, 540),
-    (1280, 720),
-    (1366, 768),
-    (1600, 900),
-    (1920, 1080),
-    (2560, 1440),
-    (3200, 1800),
-    (3440, 1935),
-    (3840, 2160),
-    (5120, 2880),
-    (7680, 4320),
-    (10240, 5760),
-    # -------------------------
-    # 16:10 Aspect (Laptops)
-    # -------------------------
-    (1280, 800),
-    (1440, 900),
-    (1680, 1050),
-    (1920, 1200),
-    (2560, 1600),
-    (2880, 1800),
-    (3840, 2400),
-    (5120, 3200),
-    # -------------------------
-    # Mobile Portrait (9:16)
-    # -------------------------
-    (720, 1280),
-    (1080, 1920),
-    (1440, 2560),
-    (2160, 3840),
-    (1440, 2960),
-    (1080, 2400),
-    (1170, 2532),
-    (1284, 2778),
-    (1290, 2796),
-    # -------------------------
-    # Social Media Sizes
-    # -------------------------
-    # Instagram
-    (1080, 1080),
-    (1080, 1350),
-    (1080, 1920),
-    # Facebook
-    (1200, 628),
-    (1200, 1200),
-    # Twitter/X
-    (1200, 675),
-    (1500, 500),
-    # YouTube Thumbnails
-    (1280, 720),
-    (1920, 1080),
-    # -------------------------
-    # Banners / Headers
-    # -------------------------
-    (1600, 500),
-    (1920, 500),
-    (2560, 700),
-    (3000, 1000),
-    (3840, 1200),
-    # -------------------------
-    # Print-like Digital Sizes
-    # -------------------------
-    (2550, 3300),  # Letter @ 300 DPI
-    (2480, 3508),  # A4 @ 300 DPI
-    (3508, 4961),  # A3 @ 300 DPI
-    (4961, 7016),  # A2 @ 300 DPI
-    (7016, 9933),  # A1 @ 300 DPI
-]
-
-
 def write_recovered_png(
     png_bytes: bytearray,
     ihdr_offset: int,
@@ -184,36 +46,11 @@ def calc_checksum(
     return bytearray((zlib.crc32(new_header) & 0xFFFFFFFF).to_bytes(4, byteorder="big"))
 
 
-def lookup_crc(crc_bytes: bytes, logs: List[str]) -> List[tuple[int, int]]:
+def lookup_crc(crc_bytes: bytes) -> List[tuple[int, int]]:
     """
     Queries the SQLite DB for the CRC and returns a list of (width, height) tuples.
     """
-    # Locate DB relative to this script file
-    db_path = Path(DB_PATH)
-
-    if not db_path.exists():
-        logs.append(f"Error: Database not found at {db_path}")
-        return []
-
-    try:
-        target_crc = int.from_bytes(crc_bytes, byteorder="big")
-    except ValueError:
-        logs.append(f"Invalid CRC bytes: {crc_bytes!r}")
-        return []
-
-    conn = sqlite3.connect(db_path)
-    cursor = conn.cursor()
-
-    # Query the database
-    cursor.execute("SELECT width, height FROM ihdr WHERE crc = ?", (target_crc,))
-    results = cursor.fetchall()  # Returns list of (width, height)
-    conn.close()
-
-    if results:
-        logs.append(f"Database: Found {len(results)} match(es) for CRC {target_crc}")
-        return results
-
-    logs.append(f"Database: No match found for CRC {target_crc}")
+    # TODO query DB
     return []
 
 
@@ -252,59 +89,32 @@ def analyze_image_resize(input_img: Path, output_dir: Path) -> None:
         # Extract Target CRC (The 4 bytes AFTER the chunk data)
         target_crc = b[ihdr + chunk_length : ihdr + chunk_length + 4]
 
-        # Isolate the header chunk (Type + Data)
-        header_chunk = b[ihdr : ihdr + chunk_length]
-
         logs.append(f"Target CRC found: 0x{target_crc.hex()}")
 
-        match_found = False
         candidates = []
-
-        # --- STRATEGY 1: Check Common Sizes ---
-        for size in EXPECTED_SIZES:
-            width, height = size
-
-            # Convert dimensions to 4-byte Big Endian arrays
-            width_bytes = bytearray(width.to_bytes(4, byteorder="big"))
-            height_bytes = bytearray(height.to_bytes(4, byteorder="big"))
-
-            # Check if this size matches the file's CRC
-            if target_crc == calc_checksum(header_chunk, width_bytes, height_bytes):
-                match_found = True
-                logs.append(
-                    f"Success (Common List): Match found! Dimensions: {width}x{height}"
-                )
-                candidates.append((width, height))
-                break  # Stop after first match
-
-        # --- STRATEGY 2: Check SQLite DB ---
-        if not match_found:
-            logs.append("No common size matched. Checking database...")
-            db_matches = lookup_crc(target_crc, logs)
-            if db_matches:
-                candidates.extend(db_matches)
-                match_found = True
-
-        # --- Generate Output Images ---
         saved_img_urls = []
 
-        if match_found and candidates:
-            # Create parent directories if they don't exist
-            output_dir.mkdir(parents=True, exist_ok=True)
+    
+        db_matches = lookup_crc(target_crc)
+        if db_matches:
+            candidates.extend(db_matches)
+            if candidates:
+                # Create parent directories if they don't exist
+                output_dir.mkdir(parents=True, exist_ok=True)
 
-            # Iterate through ALL candidates found
-            for w, h in candidates:
-                img_name = f"recovered_{w}x{h}.png"
-                output_path = output_dir / img_name
-                write_recovered_png(b, ihdr, w, h, output_path)
+                # Iterate through ALL candidates found
+                for w, h in candidates:
+                    img_name = f"recovered_{w}x{h}.png"
+                    output_path = output_dir / img_name
+                    write_recovered_png(b, ihdr, w, h, output_path)
 
-                logs.append(f"Image saved: {img_name}")
+                    logs.append(f"Image saved: {img_name}")
 
-                # Append the formatted URL to our list
-                saved_img_urls.append("/image/" + str(Path(output_dir.name) / img_name))
+                    # Append the formatted URL to our list
+                    saved_img_urls.append("/image/" + str(Path(output_dir.name) / img_name))
 
-        else:
-            logs.append("Failure: No matching dimensions found in List or DB.")
+            else:
+                logs.append("Failure: No matching dimensions found in List or DB.")
 
         # 4. Final Data Update
         output_data = {
