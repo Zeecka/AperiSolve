@@ -59,9 +59,12 @@ class Submission(db.Model):  # type: ignore
 
 class IHDR(db.Model):  # type: ignore
     """IHDR CRC lookup table"""
-    iid : Column[int] = Column(Integer, primary_key=True, autoincrement=True, unique=True)
-    crc : Column[int] = Column(BigInteger)
-    packed : Column[int] = Column(Integer)
+
+    iid: Column[int] = Column(
+        Integer, primary_key=True, autoincrement=True, unique=True
+    )
+    crc: Column[int] = Column(BigInteger)
+    packed: Column[int] = Column(Integer)
 
 
 def create_crc_db() -> None:
@@ -81,9 +84,15 @@ def create_crc_db() -> None:
     )
 
     count = 0
-    max_count = MAX_WIDTH * MAX_HEIGHT * len(bit_depth) * len(color_type) * len(interlace_method)
+    max_count = (
+        MAX_WIDTH
+        * MAX_HEIGHT
+        * len(bit_depth)
+        * len(color_type)
+        * len(interlace_method)
+    )
     for w_val, h_val, bd, ct, comp, filt, inter in all_combinations:
-        count +=1
+        count += 1
         # Construct IHDR chunk data
         ihdr_data = (
             w_val.to_bytes(4, "big")
@@ -102,7 +111,9 @@ def create_crc_db() -> None:
         db.session.add(ihdr_entry)
 
         if count % 10000 == 0:
-            print(f"Inserted {count}/{max_count} ({int((count*100)/max_count)}%) IHDR entries...")
+            print(
+                f"Inserted {count}/{max_count} ({int((count*100)/max_count)}%) IHDR entries..."
+            )
             db.session.commit()
 
     # Commit all entries

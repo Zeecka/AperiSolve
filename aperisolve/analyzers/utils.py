@@ -17,6 +17,7 @@ MAX_PENDING_TIME = int(os.getenv("MAX_PENDING_TIME", "600"))  # 10 minutes by de
 # PATH CONFIGURATION
 # Prioritize /data for Docker persistence, fallback to local directory for bare metal
 
+
 def update_data(
     output_dir: Path, new_data: dict[Any, Any], json_filename: str = "results.json"
 ) -> None:
@@ -64,18 +65,6 @@ def pack_ihdr(width: int, height: int, depth: int, color: int, interlace: int) -
     color     : 3 bits
     interlace : 1 bit
     """
-
-    if not (0 < width <= 0xFFFF):
-        raise ValueError("width out of range")
-    if not (0 < height <= 0xFFFF):
-        raise ValueError("height out of range")
-    if depth not in (1, 2, 4, 8, 16):
-        raise ValueError("invalid depth")
-    if color not in (0, 2, 3, 4, 6):
-        raise ValueError("invalid color")
-    if interlace not in (0, 1):
-        raise ValueError("invalid interlace")
-
     return (width << 23) | (height << 7) | (depth << 4) | (color << 1) | interlace
 
 

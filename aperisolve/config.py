@@ -7,5 +7,5 @@ WORKER_FILES = ["binwalk", "foremost", "steghide", "zsteg", "image_resize"]
 
 RESULT_FOLDER = Path(__file__).parent.resolve() / "results"
 
-MAX_WIDTH = 2000  # Used for IHDR lookup table
-MAX_HEIGHT = 2000  # Used for IHDR lookup table
+MAX_WIDTH = 5  # Used for IHDR lookup table
+MAX_HEIGHT = 5  # Used for IHDR lookup table

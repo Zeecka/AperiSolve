@@ -4,7 +4,9 @@ import zlib
 import sqlite3
 from pathlib import Path
 from typing import List
-from .utils import update_data, DB_PATH
+from .utils import update_data, unpack_ihdr
+from ..app import app
+from ..models import IHDR
 
 
 def write_recovered_png(
@@ -17,6 +19,7 @@ def write_recovered_png(
     """
     Rebuilds a PNG by patching IHDR width/height and writes it to disk.
     """
+    # TODO, use depth/color later if needed
     height_bytes = height.to_bytes(4, byteorder="big")
     width_bytes = width.to_bytes(4, byteorder="big")
 
@@ -32,26 +35,18 @@ def write_recovered_png(
         out_f.write(full_png_data)
 
 
-def calc_checksum(
-    header_chunk: bytearray, width_bytes: bytearray, height_bytes: bytearray
-) -> bytearray:
-    """
-    Calculates the CRC32 of the IHDR chunk with new dimensions.
-    header_chunk: The full IHDR chunk (Type + Data).
-    """
-    # Reconstruct IHDR: [Type(4)] + [New Width(4)] + [New Height(4)] + [Rest of Data(5)]
-    new_header = header_chunk[:4] + width_bytes + height_bytes + header_chunk[12:]
-
-    # Calculate CRC and return as 4 bytes (Big Endian)
-    return bytearray((zlib.crc32(new_header) & 0xFFFFFFFF).to_bytes(4, byteorder="big"))
-
-
-def lookup_crc(crc_bytes: bytes) -> List[tuple[int, int]]:
+def lookup_crc(crc_bytes: bytes) -> List[tuple[int, int, int, int, int]]:
     """
     Queries the SQLite DB for the CRC and returns a list of (width, height) tuples.
     """
-    # TODO query DB
-    return []
+    with app.app_context():
+        crc_b = int.from_bytes(crc_bytes, byteorder="big")
+        imgs = IHDR.query.filter_by(crc=crc_b).all()
+        results = []
+        for img in imgs:
+            packed = img.packed
+            results.append(unpack_ihdr(packed))
+    return results
 
 
 def analyze_image_resize(input_img: Path, output_dir: Path) -> None:
@@ -91,30 +86,26 @@ def analyze_image_resize(input_img: Path, output_dir: Path) -> None:
 
         logs.append(f"Target CRC found: 0x{target_crc.hex()}")
 
-        candidates = []
         saved_img_urls = []
 
-    
         db_matches = lookup_crc(target_crc)
         if db_matches:
-            candidates.extend(db_matches)
-            if candidates:
-                # Create parent directories if they don't exist
-                output_dir.mkdir(parents=True, exist_ok=True)
+            # Create parent directories if they don't exist
+            output_dir.mkdir(parents=True, exist_ok=True)
 
-                # Iterate through ALL candidates found
-                for w, h in candidates:
-                    img_name = f"recovered_{w}x{h}.png"
-                    output_path = output_dir / img_name
-                    write_recovered_png(b, ihdr, w, h, output_path)
+            # Iterate through ALL candidates found
+            for elt in db_matches:
+                w, h, _, _, _ = elt  # TODO, use depth/color later if needed
+                img_name = f"recovered_{w}x{h}.png"
+                output_path = output_dir / img_name
+                write_recovered_png(b, ihdr, w, h, output_path)
 
-                    logs.append(f"Image saved: {img_name}")
+                logs.append(f"Image saved: {img_name}")
 
-                    # Append the formatted URL to our list
-                    saved_img_urls.append("/image/" + str(Path(output_dir.name) / img_name))
-
-            else:
-                logs.append("Failure: No matching dimensions found in List or DB.")
+                # Append the formatted URL to our list
+                saved_img_urls.append("/image/" + str(Path(output_dir.name) / img_name))
+        else:
+            logs.append("Failure: No matching dimensions found in List or DB.")
 
         # 4. Final Data Update
         output_data = {
