@@ -14,7 +14,28 @@ MAX_STORE_TIME = int(getenv("MAX_STORE_TIME", "259200"))  # 3 days by default
 
 
 def cleanup_old_entries() -> None:
-    """Clean up old entries in the database and file system."""
+    """
+    Clean up old and incomplete entries from the database and file system.
+
+    This function performs two main cleanup operations:
+
+    1. Submission cleanup:
+       - Deletes submissions with "pending" or "running" status that have exceeded
+         the maximum allowed processing time (MAX_PENDING_TIME).
+       - Deletes completed submissions ("done" status) that have missing or buggy
+         results (results.json file not found).
+
+    2. Image cleanup:
+       - Deletes images older than MAX_STORE_TIME along with all associated
+         submissions and their result folders.
+       - Deletes orphaned images (with no submissions) older than MAX_PENDING_TIME
+         and removes their associated result folders from the file system.
+
+    All database changes are committed at the end of the operation.
+
+    Returns:
+        None
+    """
     now = time.time()
     for submission in Submission.query.all():  # type: ignore
         if (

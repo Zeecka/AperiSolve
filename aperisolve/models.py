@@ -1,16 +1,14 @@
-"""This module defines the database models for the Aperisolve application."""
+"""This module defines the database models for the Aperi'Solve application."""
 
-import zlib
 import itertools
-
 from datetime import datetime, timezone
 from decimal import Decimal
 
-from aperisolve.analyzers.utils import pack_ihdr
-from aperisolve.config import MAX_HEIGHT, MAX_WIDTH
 from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
-from sqlalchemy import Boolean, Column, DateTime, Float, Integer, String, BigInteger
+from sqlalchemy import BigInteger, Boolean, Column, DateTime, Float, Integer, String
+
+from aperisolve.analyzers.utils import PNG, get_resolutions, get_valid_depth_color_pairs
 
 db: SQLAlchemy = SQLAlchemy()
 
@@ -60,68 +58,76 @@ class Submission(db.Model):  # type: ignore
 class IHDR(db.Model):  # type: ignore
     """IHDR CRC lookup table"""
 
-    iid: Column[int] = Column(
-        Integer, primary_key=True, autoincrement=True, unique=True
-    )
-    crc: Column[int] = Column(BigInteger)
-    packed: Column[int] = Column(Integer)
+    iid = Column(Integer, primary_key=True, autoincrement=True)
+    crc = Column(BigInteger, nullable=False)
+    packed = Column(BigInteger, nullable=False)
 
 
 def create_crc_db() -> None:
-    w = range(1, MAX_WIDTH + 1)
-    h = range(1, MAX_HEIGHT + 1)
+    """
+    Creates a database of common PNG IHDR (Image Header) entries by generating
+    combinations of standard PNG parameters such as resolutions, bit depths,
+    color types, and interlace methods. The function checks for existing entries
+    in the database to avoid duplicates and inserts new entries in batches of
+    5000, committing the changes to the database periodically.
 
+    Returns:
+        None
+    """
     # Standard PNG IHDR parameters
-    bit_depth = [1, 2, 4, 8, 16]
-    color_type = [0, 2, 3, 4, 6]
-    compression_method = [0]  # This is always 0 according to the PNG spec
-    filter_method = [0]  # This is always 0 according to the PNG spec
-    interlace_method = [0, 1]
+    resolutions = get_resolutions()
+    bit_color_pairs = get_valid_depth_color_pairs()
+    interlace_methods = [0, 1]
 
-    # Create the generator
-    all_combinations = itertools.product(
-        w, h, bit_depth, color_type, compression_method, filter_method, interlace_method
+    combinations = itertools.product(
+        resolutions,
+        bit_color_pairs,
+        interlace_methods,
     )
 
     count = 0
-    max_count = (
-        MAX_WIDTH
-        * MAX_HEIGHT
-        * len(bit_depth)
-        * len(color_type)
-        * len(interlace_method)
-    )
-    for w_val, h_val, bd, ct, comp, filt, inter in all_combinations:
-        count += 1
-        # Construct IHDR chunk data
-        ihdr_data = (
-            w_val.to_bytes(4, "big")
-            + h_val.to_bytes(4, "big")
-            + bytes([bd, ct, comp, filt, inter])
-        )
 
-        # Calculate CRC
-        crc = zlib.crc32(b"IHDR" + ihdr_data) & 0xFFFFFFFF
+    with db.session.no_autoflush:  # pylint: disable=no-member
+        for (w, h), (bd, ct), inter in combinations:
+            p = PNG(width=w, height=h, bit_depth=bd, color_type=ct, interlace=inter)
 
-        # Compute packed
-        packed = pack_ihdr(w_val, h_val, bd, ct, inter)
+            exists = db.session.execute(  # pylint: disable=no-member
+                db.select(IHDR.iid).where(IHDR.packed == p.packed)
+            ).first()
 
-        # Create and add IHDR entry to database
-        ihdr_entry = IHDR(crc=crc, packed=packed)
-        db.session.add(ihdr_entry)
+            if exists:  # Skip if already present
+                continue
 
-        if count % 10000 == 0:
-            print(
-                f"Inserted {count}/{max_count} ({int((count*100)/max_count)}%) IHDR entries..."
-            )
-            db.session.commit()
+            db.session.add(IHDR(packed=p.packed, crc=p.crc))  # pylint: disable=no-member
+            count += 1
 
-    # Commit all entries
-    db.session.commit()
+            if count % 5000 == 0:
+                print(f"Inserted {count} common IHDR entries...")
+                db.session.commit()
+
+    db.session.commit()  # pylint: disable=no-member
+    print(f"Precomputed {count} common IHDR entries.")
 
 
 def init_db(app: Flask) -> None:
-    """Initialize the database with the given Flask app."""
+    """
+    Initialize the database by creating tables and populating lookup data.
+
+    This function creates the database schema if it doesn't already exist,
+    and populates the CRC lookup table for PNG IHDR validation.
+
+    Args:
+        app (Flask): The Flask application instance used to establish the application context
+                    for database operations.
+
+    Returns:
+        None
+
+    Side Effects:
+        - Creates all database tables if the "image" table doesn't exist
+        - Populates the IHDR CRC lookup table with initial data
+        - Prints status messages to console during initialization
+    """
     with app.app_context():
         if not db.engine.dialect.has_table(db.engine.connect(), "image"):
             print("Creating database...")
