@@ -43,7 +43,7 @@ def cleanup_old_entries() -> None:
             and now - submission.date > MAX_PENDING_TIME  # type: ignore
         ):
             # Processing took too long, delete
-            db.session.delete(submission)  # type: ignore
+            db.session.delete(submission)  # pylint: disable=no-member
         elif submission.status == "done":  # type: ignore
             # Search for buggy results, delete
             result_path = (
@@ -51,7 +51,7 @@ def cleanup_old_entries() -> None:
             )
             result_file = result_path / "results.json"
             if not result_file.exists():
-                db.session.delete(submission)  # type: ignore
+                db.session.delete(submission)  # pylint: disable=no-member
                 shutil.rmtree(result_path)
 
     # Delete "old" images
@@ -64,15 +64,15 @@ def cleanup_old_entries() -> None:
         img_fold = RESULT_FOLDER / img.hash
         if delay.total_seconds() > MAX_STORE_TIME:
             for s in img.submissions:
-                db.session.delete(s)  # type: ignore
+                db.session.delete(s)  # pylint: disable=no-member
             if img_fold.exists():
                 shutil.rmtree(img_fold)  # type: ignore
-            db.session.delete(img)
+            db.session.delete(img)  # pylint: disable=no-member
 
         # Delete Images with missing submission
         if len(img.submissions) == 0 and delay.total_seconds() > MAX_PENDING_TIME:
             if img_fold.exists():
                 shutil.rmtree(img_fold)  # type: ignore
-            db.session.delete(img)
+            db.session.delete(img)  # pylint: disable=no-member
 
-    db.session.commit()
+    db.session.commit()  # pylint: disable=no-member

@@ -2,7 +2,6 @@
 
 import itertools
 from datetime import datetime, timezone
-from decimal import Decimal
 
 from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
@@ -16,21 +15,21 @@ db: SQLAlchemy = SQLAlchemy()
 class Image(db.Model):  # type: ignore
     """Model representing an image file in the database."""
 
-    hash: Column[str] = Column(
+    hash: Column[String] = Column(
         String(64), primary_key=True, unique=True, nullable=False
     )
-    file: Column[str] = Column(String(128), unique=True, nullable=False)
-    size: Column[int] = Column(Integer, nullable=False)
-    first_submission_date: Column[datetime] = Column(
+    file: Column[String] = Column(String(128), unique=True, nullable=False)
+    size: Column[Integer] = Column(Integer, nullable=False)
+    first_submission_date: Column[DateTime] = Column(
         DateTime, nullable=False, default=lambda: datetime.now(timezone.utc)
     )
-    last_submission_date: Column[datetime] = Column(
+    last_submission_date: Column[DateTime] = Column(
         DateTime,
         nullable=False,
         default=lambda: datetime.now(timezone.utc),
         onupdate=lambda: datetime.now(timezone.utc),
     )
-    upload_count: Column[int] = Column(Integer)
+    upload_count: Column[Integer] = Column(Integer)
     submissions = db.relationship("Submission", backref="image", lazy=True)
 
 
@@ -40,14 +39,14 @@ class Submission(db.Model):  # type: ignore
     option.
     """
 
-    hash: Column[str] = Column(
+    hash: Column[String] = Column(
         String(128), primary_key=True, unique=True, nullable=False
     )
-    filename: Column[str] = Column(String(128), nullable=False)
-    password: Column[str] = Column(String(128))
-    deep_analysis: Column[bool] = Column(Boolean, default=False)
-    status: Column[str] = Column(String(20), default="pending")
-    date: Column[Decimal] = Column(
+    filename: Column[String] = Column(String(128), nullable=False)
+    password: Column[String] = Column(String(128))
+    deep_analysis: Column[Boolean] = Column(Boolean, default=False)
+    status: Column[String] = Column(String(20), default="pending")
+    date: Column[Float] = Column(
         Float, nullable=False, default=lambda: datetime.now(timezone.utc)
     )
 
@@ -58,9 +57,9 @@ class Submission(db.Model):  # type: ignore
 class IHDR(db.Model):  # type: ignore
     """IHDR CRC lookup table"""
 
-    iid = Column(Integer, primary_key=True, autoincrement=True)
-    crc = Column(BigInteger, nullable=False)
-    packed = Column(BigInteger, nullable=False)
+    iid: Column[Integer] = Column(Integer, primary_key=True, autoincrement=True)
+    crc: Column[BigInteger] = Column(BigInteger, nullable=False)
+    packed: Column[BigInteger] = Column(BigInteger, nullable=False)
 
 
 def create_crc_db() -> None:

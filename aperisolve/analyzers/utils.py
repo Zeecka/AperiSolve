@@ -15,9 +15,6 @@ _thread_lock = threading.Lock()
 
 MAX_PENDING_TIME = int(os.getenv("MAX_PENDING_TIME", "600"))  # 10 minutes by default
 
-# PATH CONFIGURATION
-# Prioritize /data for Docker persistence, fallback to local directory for bare metal
-
 
 def update_data(
     output_dir: Path, new_data: dict[Any, Any], json_filename: str = "results.json"
@@ -56,7 +53,31 @@ def update_data(
 
 
 def get_resolutions():
-    BASE_WIDTHS = (
+    """
+    Generate a sorted list of common display and image resolutions.
+
+    Creates a comprehensive set of resolution tuples by combining various base widths
+    with standard aspect ratios used in screens, digital displays, photography, and
+    paper standards. Includes both portrait and landscape orientations.
+
+    Base widths range from 16px to 10000px, covering:
+    - Low resolution: 16-256px (16px increments)
+    - Standard: 320-1024px (32px increments)
+    - HD/Full HD: 1280-2560px (64px increments)
+    - 4K: 3000-4096px (128px increments)
+    - 5K-8K: 5120-8192px (256px increments)
+    - Upper bound: 10000px
+
+    Aspect ratios include common formats:
+    - Digital screens: 1:1, 4:3, 3:2, 16:10, 16:9, 21:9
+    - Photography/print: 5:4, 7:5, 2:3
+    - Paper standards: ISO A-series, US Letter, Legal, Tabloid
+
+    Returns:
+        list[tuple[int, int]]: Sorted list of (width, height) resolution tuples
+                               with heights constrained between 1 and 10000 pixels.
+    """
+    base_widths = (
         list(range(16, 257, 16))  # 16 → 256
         + list(range(320, 1025, 32))  # 320 → 1024
         + list(range(1280, 2561, 64))  # 1280 → 2560
@@ -64,7 +85,7 @@ def get_resolutions():
         + list(range(5120, 8193, 256))  # 5K–8K
         + [10000]  # upper bound
     )
-    ASPECT_RATIOS = [
+    aspect_ratios = [
         # Screens / digital
         (1, 1),  # square
         (4, 3),
@@ -84,8 +105,8 @@ def get_resolutions():
         (17, 11),  # Tabloid
     ]
     resolutions = set()
-    for w in BASE_WIDTHS:
-        for ar_w, ar_h in ASPECT_RATIOS:
+    for w in base_widths:
+        for ar_w, ar_h in aspect_ratios:
             h = math.floor(round(w * ar_h / ar_w))
             if 1 <= h <= 10000:
                 resolutions.add((w, h))
@@ -94,14 +115,25 @@ def get_resolutions():
 
 
 def get_valid_depth_color_pairs():
-    VALID_COLOR_DEPTHS = {
+    """
+    Generate valid combinations of color and bit depth values.
+
+    Yields tuples of (depth, color) representing valid color mode and bit depth
+    combinations. Supports grayscale (0), RGB (2, 3, 4, 6) color modes with
+    appropriate bit depths (1, 2, 4, 8, 16 bits).
+
+    Yields:
+        tuple: A tuple of (depth, color) where depth is an integer representing
+               bit depth and color is an integer representing the color mode.
+    """
+    valid_color_depth = {
         0: [1, 2, 4, 8, 16],
         2: [8, 16],
         3: [1, 2, 4, 8],
         4: [8, 16],
         6: [8, 16],
     }
-    for color, depths in VALID_COLOR_DEPTHS.items():
+    for color, depths in valid_color_depth.items():
         for depth in depths:
             yield depth, color
 
@@ -234,8 +266,8 @@ class PNG:
             IndexError: If the bytearray is shorter than expected for the PNG structure.
         """
 
-        PNG_SIGNATURE = b"\x89PNG\r\n\x1a\n"
-        if data[:8] != PNG_SIGNATURE:
+        png_signature = b"\x89PNG\r\n\x1a\n"
+        if data[:8] != png_signature:
             raise ValueError("Invalid PNG signature")
         offset = 8  # Read IHDR chunk
         length = struct.unpack(">I", data[offset : offset + 4])[0]
