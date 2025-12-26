@@ -1,11 +1,11 @@
 services:
   web:
-    image: ghcr.io/zeecka/aperisolve:latest
+    image: ghcr.io/zeecka/aperisolve:prod
     #build: .
     container_name: aperisolve-web
     restart: always
     ports:
-      - "5000:5000"
+      - "80:5000"
     volumes:
       - apresults:/aperisolve/results
     depends_on:
@@ -19,7 +19,7 @@ services:
       - .env
 
   worker:
-    image: ghcr.io/zeecka/aperisolve:latest
+    image: ghcr.io/zeecka/aperisolve:prod
     #build: .
     container_name: aperisolve-worker
     restart: always

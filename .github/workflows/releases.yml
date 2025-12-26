@@ -39,6 +39,5 @@ jobs:
           context: ./
           push: true
           tags: |
-                 ghcr.io/${{ env.lower_actor }}/aperisolve:latest
-                 ghcr.io/${{ env.lower_actor }}/aperisolve:${{ env.RELEASE_VERSION }}
+                 ghcr.io/${{ env.lower_actor }}/aperisolve:prod
   
