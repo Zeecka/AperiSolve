@@ -19,6 +19,10 @@ RUN apt-get update && apt-get install -y \
 
 COPY aperisolve/ /aperisolve/
 
+RUN mkdir -p /data
+
 RUN pip install --no-cache-dir -r /aperisolve/requirements.txt
 
-CMD ["gunicorn", "-w", "4", "-b", "0.0.0.0:5000", "aperisolve.wsgi:application"]
+ENV PYTHONUNBUFFERED=1
+
+CMD ["gunicorn", "-w", "4", "-b", "0.0.0.0:5000", "--access-logfile", "-", "--error-logfile", "-", "--log-level", "info", "--capture-output", "aperisolve.wsgi:application"]

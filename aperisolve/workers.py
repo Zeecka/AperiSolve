@@ -8,19 +8,43 @@ from .analyzers.binwalk import analyze_binwalk
 from .analyzers.decomposer import analyze_decomposer
 from .analyzers.exiftool import analyze_exiftool
 from .analyzers.foremost import analyze_foremost
+from .analyzers.image_resize import analyze_image_resize
 from .analyzers.outguess import analyze_outguess
+from .analyzers.pngcheck import analyze_pngcheck
 from .analyzers.steghide import analyze_steghide
 from .analyzers.strings import analyze_strings
 from .analyzers.zsteg import analyze_zsteg
-from .analyzers.pngcheck import analyze_pngcheck
-from .analyzers.image_resize import analyze_image_resize
 from .app import app, db
 from .config import RESULT_FOLDER
 from .models import Image, Submission
 
 
 def analyze_image(submission_hash: str) -> None:
-    """Analyze an image submission in separate threads."""
+    """
+    Analyze an image submission by running multiple analysis tools concurrently.
+
+    This function retrieves a submission and its associated image from the database,
+    then executes various image analysis tools in parallel threads. The analysis tools
+    include binwalk, decomposer, exiftool, foremost, strings, pngcheck, steghide,
+    zsteg, and image resize. If deep analysis is enabled, additional tools like
+    outguess are included.
+
+    Args:
+        submission_hash (str): The unique hash identifier of the submission to analyze.
+
+    Returns:
+        None
+
+    Raises:
+        Implicitly catches and handles exceptions during analysis, setting submission
+        status to "error" if an exception occurs.
+
+    Side Effects:
+        - Queries the database for the submission and associated image
+        - Updates submission status in the database ("running" -> "completed" or "error")
+        - Creates result directories and generates analysis output files
+        - Modifies the database session and commits changes
+    """
     with app.app_context():
         submission: Submission = Submission.query.get(submission_hash)  # type: ignore
         image = Image.query.get_or_404(submission.image_hash)  # type: ignore
@@ -29,7 +53,7 @@ def analyze_image(submission_hash: str) -> None:
             return
 
         submission.status = "running"  # type: ignore
-        db.session.commit()
+        db.session.commit()  # pylint: disable=no-member
 
         try:
             img_path: Path = Path(image.file)
@@ -77,4 +101,4 @@ def analyze_image(submission_hash: str) -> None:
         except Exception:
             submission.status = "error"
         finally:
-            db.session.commit()
+            db.session.commit()  # pylint: disable=no-member

@@ -7,7 +7,7 @@ from .utils import MAX_PENDING_TIME, update_data
 
 
 def analyze_pngcheck(input_img: Path, output_dir: Path) -> None:
-    """Analyze an image submission using strings."""
+    """Analyze an image submission using pngcheck."""
 
     try:
         data = subprocess.run(
@@ -24,15 +24,15 @@ def analyze_pngcheck(input_img: Path, output_dir: Path) -> None:
         #     )
         #     return
 
-        data_strings = data.stdout.split("\n") if data else []
-        data_strings = [s for s in data_strings if s]
+        data_pngcheck = data.stdout.split("\n") if data else []
+        data_pngcheck = [s for s in data_pngcheck if s]
 
         update_data(
             output_dir,
             {
                 "pngcheck": {
                     "status": "ok",
-                    "output": data_strings,
+                    "output": data_pngcheck,
                 }
             },
         )

@@ -1,4 +1,4 @@
-"""AperiSolve Flask application."""
+"""Aperi'Solve Flask application."""
 
 import hashlib
 import json
@@ -41,7 +41,7 @@ def too_large(_: Any) -> tuple[Response, int]:
 @app.errorhandler(404)
 def not_found(_: Any) -> str:
     """Error Handler for 404 not found."""
-    return render_template("error.html", message="Ressource not found", statuscode=404)
+    return render_template("error.html", message="Resource not found", statuscode=404)
 
 
 @app.route("/")
@@ -134,12 +134,12 @@ def upload_image() -> tuple[Response, int]:
             first_submission_date=datetime.now(timezone.utc),
             last_submission_date=datetime.now(timezone.utc),
         )
-        db.session.add(new_img)
-        db.session.commit()
+        db.session.add(new_img)  # pylint: disable=no-member
+        db.session.commit()  # pylint: disable=no-member
 
     sub_img = Image.query.filter_by(hash=img_hash).first()  # type: ignore
     sub_img.upload_count += 1
-    db.session.commit()
+    db.session.commit()  # pylint: disable=no-member
 
     # Create new Submission entry
     submission_path.mkdir(parents=True, exist_ok=True)
@@ -152,9 +152,9 @@ def upload_image() -> tuple[Response, int]:
         date=time.time(),
         image_hash=sub_img.hash,  # type: ignore
     )
-    db.session.add(submission)
+    db.session.add(submission)  # pylint: disable=no-member
 
-    db.session.commit()  # Commit to save the new Image and Submission
+    db.session.commit()  # pylint: disable=no-member
     # Start the analysis jobs
     queue.enqueue("aperisolve.workers.analyze_image", submission.hash, job_timeout=300)
 

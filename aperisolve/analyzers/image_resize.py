@@ -1,165 +1,117 @@
 """Image size bruteforcer for common PNG sizes."""
 
-import zlib
 from pathlib import Path
-from .utils import update_data
+from typing import Any, List
 
-# Full list of expected sizes
-EXPECTED_SIZES = [
-    # -------------------------
-    # ICONS (Square)
-    # -------------------------
-    (16, 16),
-    (20, 20),
-    (24, 24),
-    (28, 28),
-    (32, 32),
-    (48, 48),
-    (64, 64),
-    (72, 72),
-    (96, 96),
-    (128, 128),
-    (192, 192),
-    (256, 256),
-    (384, 384),
-    (512, 512),
-    (768, 768),
-    (1024, 1024),
-    (1536, 1536),
-    (2048, 2048),
-    (4096, 4096),
-    # -------------------------
-    # 1:1 Square (General)
-    # -------------------------
-    (300, 300),
-    (500, 500),
-    (800, 800),
-    (1000, 1000),
-    (1500, 1500),
-    (2000, 2000),
-    (2500, 2500),
-    (3000, 3000),
-    # -------------------------
-    # 4:3 Aspect (Classic Screens)
-    # -------------------------
-    (320, 240),
-    (640, 480),
-    (800, 600),
-    (960, 720),
-    (1024, 768),
-    (1280, 960),
-    (1600, 1200),
-    (2048, 1536),
-    (2560, 1920),
-    (3200, 2400),
-    (4096, 3072),
-    # -------------------------
-    # 3:2 Aspect (Photography)
-    # -------------------------
-    (600, 400),
-    (900, 600),
-    (1200, 800),
-    (1500, 1000),
-    (1800, 1200),
-    (2400, 1600),
-    (3000, 2000),
-    (3600, 2400),
-    (4500, 3000),
-    (6000, 4000),
-    # -------------------------
-    # 16:9 Aspect (Video / Web)
-    # -------------------------
-    (426, 240),
-    (640, 360),
-    (854, 480),
-    (960, 540),
-    (1280, 720),
-    (1366, 768),
-    (1600, 900),
-    (1920, 1080),
-    (2560, 1440),
-    (3200, 1800),
-    (3440, 1935),
-    (3840, 2160),
-    (5120, 2880),
-    (7680, 4320),
-    (10240, 5760),
-    # -------------------------
-    # 16:10 Aspect (Laptops)
-    # -------------------------
-    (1280, 800),
-    (1440, 900),
-    (1680, 1050),
-    (1920, 1200),
-    (2560, 1600),
-    (2880, 1800),
-    (3840, 2400),
-    (5120, 3200),
-    # -------------------------
-    # Mobile Portrait (9:16)
-    # -------------------------
-    (720, 1280),
-    (1080, 1920),
-    (1440, 2560),
-    (2160, 3840),
-    (1440, 2960),
-    (1080, 2400),
-    (1170, 2532),
-    (1284, 2778),
-    (1290, 2796),
-    # -------------------------
-    # Social Media Sizes
-    # -------------------------
-    # Instagram
-    (1080, 1080),
-    (1080, 1350),
-    (1080, 1920),
-    # Facebook
-    (1200, 628),
-    (1200, 1200),
-    # Twitter/X
-    (1200, 675),
-    (1500, 500),
-    # YouTube Thumbnails
-    (1280, 720),
-    (1920, 1080),
-    # -------------------------
-    # Banners / Headers
-    # -------------------------
-    (1600, 500),
-    (1920, 500),
-    (2560, 700),
-    (3000, 1000),
-    (3840, 1200),
-    # -------------------------
-    # Print-like Digital Sizes
-    # -------------------------
-    (2550, 3300),  # Letter @ 300 DPI
-    (2480, 3508),  # A4 @ 300 DPI
-    (3508, 4961),  # A3 @ 300 DPI
-    (4961, 7016),  # A2 @ 300 DPI
-    (7016, 9933),  # A1 @ 300 DPI
-]
+from ..app import app
+from ..models import IHDR
+from .utils import PNG, update_data
 
 
-def calc_checksum(
-    header_chunk: bytearray, width_bytes: bytearray, height_bytes: bytearray
-) -> bytearray:
+def write_recovered_png(
+    png_bytes: bytearray,
+    width: int,
+    height: int,
+    output_path: Path,
+) -> None:
     """
-    Calculates the CRC32 of the IHDR chunk with new dimensions.
-    header_chunk: The full IHDR chunk (Type + Data).
+    Rebuilds a PNG by patching IHDR width/height and writes it to disk.
     """
-    # Reconstruct IHDR: [Type(4)] + [New Width(4)] + [New Height(4)] + [Rest of Data(5)]
-    new_header = header_chunk[:4] + width_bytes + height_bytes + header_chunk[12:]
+    height_bytes = height.to_bytes(4, byteorder="big")
+    width_bytes = width.to_bytes(4, byteorder="big")
 
-    # Calculate CRC and return as 4 bytes (Big Endian)
-    return bytearray((zlib.crc32(new_header) & 0xFFFFFFFF).to_bytes(4, byteorder="big"))
+    full_png_data = (
+        png_bytes[:16]  # Splicing: [Start...IHDR+4] + [W] + [H] + [IHDR+12...End]
+        + width_bytes
+        + height_bytes
+        + png_bytes[24:]
+    )
+
+    with output_path.open("wb") as out_f:
+        out_f.write(full_png_data)
+
+
+def lookup_crc(png: PNG) -> List[PNG]:
+    """
+    Look up PNG images in the database by their CRC value.
+
+    Args:
+        png (PNG): A PNG object containing the CRC value to search for.
+
+    Returns:
+        List[PNG]: A list of PNG objects with matching CRC values, reconstructed from their packed
+                   representations.
+    """
+    with app.app_context():
+        imgs = IHDR.query.filter_by(crc=png.crc).all()
+        results = []
+        for img in imgs:
+            packed = img.packed
+            results.append(PNG.from_packed(packed, crc=png.crc))
+    return results
+
+
+def search_height_crc(png: PNG) -> List[PNG]:
+    """
+    Search for PNG images with matching CRC by iterating through possible heights.
+
+    This function attempts to find alternative PNG configurations that produce the same
+    CRC checksum as the input PNG by systematically varying the height parameter while
+    keeping all other properties constant.
+
+    Args:
+        png (PNG): The reference PNG object whose CRC checksum will be matched.
+
+    Returns:
+        List[PNG]: A list of PNG objects with matching CRC values. Returns an empty list
+                   if no matches are found.
+
+    Note:
+        The function iterates through heights from 100 to 3500 (inclusive).
+        This may be computationally expensive for large ranges.
+    """
+    results = []
+    for height in range(100, 3501):
+        candidate = PNG(
+            size=(png.width, height),
+            bit_depth=png.bit_depth,
+            color_type=png.color_type,
+            interlace=png.interlace,
+        )
+        if candidate.crc == png.crc:
+            results.append(candidate)
+    return results
 
 
 def analyze_image_resize(input_img: Path, output_dir: Path) -> None:
     """
-    Analyze an image submission using python-based resize bruteforce.
-    Attempts to recover PNGs with modified resolutions but valid CRCs.
+    Analyze a PNG image and recover resized versions based on CRC matching.
+
+    This function attempts to find matching image dimensions for a given PNG file
+    by looking up its CRC (Cyclic Redundancy Check) in a database. If matches are
+    found, it recovers and saves PNG images with the matched dimensions.
+
+    Args:
+        input_img (Path): Path to the input PNG image file to analyze.
+        output_dir (Path): Path to the directory where recovered PNG images will be saved.
+
+    Returns:
+        None
+
+    Raises:
+        Handles exceptions gracefully by updating output data with error status.
+
+    Side Effects:
+        - Creates output directory if it doesn't exist.
+        - Saves recovered PNG images to the output directory.
+        - Updates data in the output directory with analysis results via update_data().
+
+    Notes:
+        - If the PNG has invalid structure or IHDR chunk is not first, an error is logged.
+        - The function performs a two-step lookup: first by CRC, then by height/CRC if no matches
+          found.
+        - Recovered images are named as "recovered_{width}x{height}.png".
+        - Analysis results (logs, status, and image URLs) are persisted via update_data().
     """
 
     # 1. Setup Paths
@@ -168,81 +120,64 @@ def analyze_image_resize(input_img: Path, output_dir: Path) -> None:
 
     # 3. Initialize Logs
     logs = []
-    recovered_image = None
 
     try:
         with input_img.open("rb") as image:
-            f = image.read()
+            img_bytes = bytearray(image.read())
+            try:
+                png = PNG.from_bytearray(img_bytes)
+            except ValueError:
+                png = None
 
-        b = bytearray(f)
-
-        # Find IHDR start
-        ihdr = b.find(b"\x49\x48\x44\x52")
-        if ihdr == -1:
-            logs.append("Failure: PNG header (IHDR) not found.")
+        if png is None:
+            logs.append(
+                "Failure: IHDR chunk is not the first chunk, or PNG has invalid structure."
+            )
             update_data(
                 output_dir,
-                {"image_resize": {"status": "error", "error": "PNG header not found."}},
+                {
+                    "image_resize": {
+                        "status": "error",
+                        "error": "IHDR chunk is not the first chunk, or PNG has invalid structure.",
+                    }
+                },
             )
             return
 
-        # Calculate Chunk Length (The 4 bytes BEFORE IHDR tag)
-        chunk_length = int.from_bytes((b[ihdr - 4 : ihdr]), byteorder="big") + 4
+        logs.append(f"Target CRC found: 0x{png.crc:08x}")
 
-        # Extract Target CRC (The 4 bytes AFTER the chunk data)
-        target_crc = b[ihdr + chunk_length : ihdr + chunk_length + 4]
+        saved_img_urls = []
 
-        # Isolate the header chunk (Type + Data)
-        header_chunk = b[ihdr : ihdr + chunk_length]
+        db_matches = lookup_crc(png)
+        if not db_matches:
+            db_matches = search_height_crc(png)
+        if not db_matches:
+            logs.append("Failure: No matching dimensions found.")
+        else:
+            # Create parent directories if they don't exist
+            output_dir.mkdir(parents=True, exist_ok=True)
 
-        logs.append(f"Target CRC found: 0x{target_crc.hex()}")
-
-        match_found = False
-
-        # Brute-force Loop
-        for size in EXPECTED_SIZES:
-            width, height = size
-
-            # Convert dimensions to 4-byte Big Endian arrays
-            width_bytes = bytearray(width.to_bytes(4, byteorder="big"))
-            height_bytes = bytearray(height.to_bytes(4, byteorder="big"))
-
-            # Check if this size matches the file's CRC
-            if target_crc == calc_checksum(header_chunk, width_bytes, height_bytes):
-                match_found = True
-                logs.append(f"Success: Match found! Dimensions: {width}x{height}")
-
-                # Create Output Filename
-                img_name = f"recovered_{width}x{height}.png"
-
-                # Create parent directories if they don't exist
-                output_dir.mkdir(parents=True, exist_ok=True)
+            # Iterate through ALL candidates found
+            for im_match in db_matches:
+                img_name = f"recovered_{im_match.width}x{im_match.height}.png"
                 output_path = output_dir / img_name
-
-                # Splicing: [Start...IHDR+4] + [W] + [H] + [IHDR+12...End]
-                full_png_data = (
-                    b[: ihdr + 4] + width_bytes + height_bytes + b[ihdr + 12 :]
+                write_recovered_png(
+                    img_bytes, im_match.width, im_match.height, output_path
                 )
 
-                # Write the recovered file to disk
-                with output_path.open("wb") as out_f:
-                    out_f.write(full_png_data)
-
-                recovered_image = Path(output_dir.name) / img_name
-                break  # Stop looking after finding the match
-
-        if not match_found:
-            logs.append("Failure: No matching dimensions found.")
+                logs.append(f"Image saved: {img_name}")
+                # Append the formatted URL to our list
+                saved_img_urls.append("/image/" + str(Path(output_dir.name) / img_name))
 
         # 4. Final Data Update
-        output_data = {
-            "image_resize": {  # Key name must match your module name in AperiSolve
+        output_data: dict[str, Any] = {
+            "image_resize": {
                 "status": "ok",
                 "output": logs,
+                "png_images": saved_img_urls,
             }
         }
-        if recovered_image:
-            output_data["image_resize"]["image"] = "/image/" + str(recovered_image)
+
         update_data(output_dir, output_data)
 
     except Exception as e:

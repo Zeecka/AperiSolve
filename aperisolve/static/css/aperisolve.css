@@ -330,7 +330,7 @@ td {
 
 #cheatsheet li::before {
     content: "\f054";
-    font-family: "Font Awesome 6 Free";
+    font-family: "Font Awesome 7 Free";
     font-weight: 900;
     position: absolute;
     left: 0;
@@ -397,9 +397,15 @@ footer {
     }
 }
 
-
 footer a i {
     font-size: 32px;
+}
+
+#coffee {
+    height: 32px;
+    display: inline-block;
+    vertical-align: middle;
+    width: auto;
 }
 
 /* ======== Utility ======== */
