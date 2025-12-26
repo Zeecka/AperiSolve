@@ -9,7 +9,7 @@ import threading
 import zlib
 from functools import cached_property
 from pathlib import Path
-from typing import Any, Self
+from typing import Any, Iterable, Self
 
 _thread_lock = threading.Lock()
 
@@ -52,7 +52,7 @@ def update_data(
                 fcntl.flock(lock, fcntl.LOCK_UN)
 
 
-def get_resolutions():
+def get_resolutions() -> list[tuple[int, int]]:
     """
     Generate a sorted list of common display and image resolutions.
 
@@ -104,7 +104,7 @@ def get_resolutions():
         (14, 85),  # Legal
         (17, 11),  # Tabloid
     ]
-    resolutions = set()
+    resolutions: set[tuple[int, int]] = set()
     for w in base_widths:
         for ar_w, ar_h in aspect_ratios:
             h = math.floor(round(w * ar_h / ar_w))
@@ -114,7 +114,7 @@ def get_resolutions():
     return sorted(resolutions)
 
 
-def get_valid_depth_color_pairs():
+def get_valid_depth_color_pairs() -> Iterable[tuple[int, int]]:
     """
     Generate valid combinations of color and bit depth values.
 
@@ -154,20 +154,19 @@ class PNG:
     crc: int
     interlace: int = 0
 
-    def __init__(
+    def __init__(  # pylint: disable=R0913
         self,
-        width: int,
-        height: int,
+        size: tuple[int, int],
         bit_depth: int,
         color_type: int,
+        *,
         crc: int | None = None,
         interlace: int = 0,
     ):
         """Initialize a PNG IHDR (Image Header) chunk.
 
         Args:
-            width (int): The width of the image in pixels.
-            height (int): The height of the image in pixels.
+            size (tuple[int, int]): The width and height of the image in pixels.
             bit_depth (int): The number of bits per sample or per palette index (1, 2, 4, 8, or 16).
             color_type (int): The color type of the image (0=Grayscale, 2=RGB, 3=Indexed,
                               4=Grayscale+Alpha, 6=RGBA).
@@ -177,16 +176,16 @@ class PNG:
             interlace (int, optional): The interlace method (0=no interlace, 1=Adam7 interlace).
                                        Defaults to 0.
         """
-        self.width = width
-        self.height = height
+        self.width = size[0]
+        self.height = size[1]
         self.bit_depth = bit_depth
         self.color_type = color_type
         self.crc = (
             crc
             or zlib.crc32(
                 b"IHDR"
-                + width.to_bytes(4, "big")
-                + height.to_bytes(4, "big")
+                + self.width.to_bytes(4, "big")
+                + self.height.to_bytes(4, "big")
                 + bytes((bit_depth, color_type, 0, 0, interlace))
             )
             & 0xFFFFFFFF
@@ -214,8 +213,7 @@ class PNG:
         height = (packed >> 7) & 0xFFFF
         width = (packed >> 23) & 0xFFFF
         return cls(
-            width=width,
-            height=height,
+            size=(width, height),
             bit_depth=depth,
             color_type=color,
             crc=crc,
@@ -267,14 +265,14 @@ class PNG:
         """
 
         png_signature = b"\x89PNG\r\n\x1a\n"
-        if data[:8] != png_signature:
+        if bytes(data[:8]) != png_signature:
             raise ValueError("Invalid PNG signature")
         offset = 8  # Read IHDR chunk
         length = struct.unpack(">I", data[offset : offset + 4])[0]
         offset += 4
         chunk_type = data[offset : offset + 4]
         offset += 4
-        if chunk_type != b"IHDR":
+        if bytes(chunk_type) != b"IHDR":
             raise ValueError("IHDR chunk not found at expected position")
 
         ihdr_data = data[offset : offset + length]
@@ -288,8 +286,7 @@ class PNG:
         )
 
         return cls(
-            width=width,
-            height=height,
+            size=(width, height),
             bit_depth=depth,
             color_type=color,
             crc=crc,

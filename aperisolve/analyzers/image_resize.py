@@ -1,7 +1,7 @@
 """Image size bruteforcer for common PNG sizes."""
 
 from pathlib import Path
-from typing import List
+from typing import Any, List
 
 from ..app import app
 from ..models import IHDR
@@ -73,8 +73,7 @@ def search_height_crc(png: PNG) -> List[PNG]:
     results = []
     for height in range(100, 3501):
         candidate = PNG(
-            width=png.width,
-            height=height,
+            size=(png.width, height),
             bit_depth=png.bit_depth,
             color_type=png.color_type,
             interlace=png.interlace,
@@ -125,7 +124,10 @@ def analyze_image_resize(input_img: Path, output_dir: Path) -> None:
     try:
         with input_img.open("rb") as image:
             img_bytes = bytearray(image.read())
-            png = PNG.from_bytearray(img_bytes)
+            try:
+                png = PNG.from_bytearray(img_bytes)
+            except ValueError:
+                png = None
 
         if png is None:
             logs.append(
@@ -168,7 +170,7 @@ def analyze_image_resize(input_img: Path, output_dir: Path) -> None:
                 saved_img_urls.append("/image/" + str(Path(output_dir.name) / img_name))
 
         # 4. Final Data Update
-        output_data = {
+        output_data: dict[str, Any] = {
             "image_resize": {
                 "status": "ok",
                 "output": logs,

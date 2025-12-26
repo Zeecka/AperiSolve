@@ -15,21 +15,21 @@ db: SQLAlchemy = SQLAlchemy()
 class Image(db.Model):  # type: ignore
     """Model representing an image file in the database."""
 
-    hash: Column[String] = Column(
+    hash = Column(
         String(64), primary_key=True, unique=True, nullable=False
     )
-    file: Column[String] = Column(String(128), unique=True, nullable=False)
-    size: Column[Integer] = Column(Integer, nullable=False)
-    first_submission_date: Column[DateTime] = Column(
+    file = Column(String(128), unique=True, nullable=False)
+    size = Column(Integer, nullable=False)
+    first_submission_date = Column(
         DateTime, nullable=False, default=lambda: datetime.now(timezone.utc)
     )
-    last_submission_date: Column[DateTime] = Column(
+    last_submission_date = Column(
         DateTime,
         nullable=False,
         default=lambda: datetime.now(timezone.utc),
         onupdate=lambda: datetime.now(timezone.utc),
     )
-    upload_count: Column[Integer] = Column(Integer)
+    upload_count = Column(Integer)
     submissions = db.relationship("Submission", backref="image", lazy=True)
 
 
@@ -39,14 +39,14 @@ class Submission(db.Model):  # type: ignore
     option.
     """
 
-    hash: Column[String] = Column(
+    hash = Column(
         String(128), primary_key=True, unique=True, nullable=False
     )
-    filename: Column[String] = Column(String(128), nullable=False)
-    password: Column[String] = Column(String(128))
-    deep_analysis: Column[Boolean] = Column(Boolean, default=False)
-    status: Column[String] = Column(String(20), default="pending")
-    date: Column[Float] = Column(
+    filename = Column(String(128), nullable=False)
+    password = Column(String(128))
+    deep_analysis = Column(Boolean, default=False)
+    status = Column(String(20), default="pending")
+    date = Column(
         Float, nullable=False, default=lambda: datetime.now(timezone.utc)
     )
 
@@ -57,9 +57,9 @@ class Submission(db.Model):  # type: ignore
 class IHDR(db.Model):  # type: ignore
     """IHDR CRC lookup table"""
 
-    iid: Column[Integer] = Column(Integer, primary_key=True, autoincrement=True)
-    crc: Column[BigInteger] = Column(BigInteger, nullable=False)
-    packed: Column[BigInteger] = Column(BigInteger, nullable=False)
+    iid = Column(Integer, primary_key=True, autoincrement=True)
+    crc = Column(BigInteger, nullable=False)
+    packed = Column(BigInteger, nullable=False)
 
 
 def create_crc_db() -> None:
@@ -87,8 +87,8 @@ def create_crc_db() -> None:
     count = 0
 
     with db.session.no_autoflush:  # pylint: disable=no-member
-        for (w, h), (bd, ct), inter in combinations:
-            p = PNG(width=w, height=h, bit_depth=bd, color_type=ct, interlace=inter)
+        for size, (bd, ct), inter in combinations:
+            p = PNG(size=size, bit_depth=bd, color_type=ct, interlace=inter)
 
             exists = db.session.execute(  # pylint: disable=no-member
                 db.select(IHDR.iid).where(IHDR.packed == p.packed)
@@ -97,7 +97,9 @@ def create_crc_db() -> None:
             if exists:  # Skip if already present
                 continue
 
-            db.session.add(IHDR(packed=p.packed, crc=p.crc))  # pylint: disable=no-member
+            db.session.add(  # pylint: disable=no-member
+                IHDR(packed=p.packed, crc=p.crc)
+            )
             count += 1
 
             if count % 5000 == 0:
