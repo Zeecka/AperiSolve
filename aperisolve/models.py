@@ -15,9 +15,7 @@ db: SQLAlchemy = SQLAlchemy()
 class Image(db.Model):  # type: ignore
     """Model representing an image file in the database."""
 
-    hash = Column(
-        String(64), primary_key=True, unique=True, nullable=False
-    )
+    hash = Column(String(64), primary_key=True, unique=True, nullable=False)
     file = Column(String(128), unique=True, nullable=False)
     size = Column(Integer, nullable=False)
     first_submission_date = Column(
@@ -39,16 +37,12 @@ class Submission(db.Model):  # type: ignore
     option.
     """
 
-    hash = Column(
-        String(128), primary_key=True, unique=True, nullable=False
-    )
+    hash = Column(String(128), primary_key=True, unique=True, nullable=False)
     filename = Column(String(128), nullable=False)
     password = Column(String(128))
     deep_analysis = Column(Boolean, default=False)
     status = Column(String(20), default="pending")
-    date = Column(
-        Float, nullable=False, default=lambda: datetime.now(timezone.utc)
-    )
+    date = Column(Float, nullable=False, default=lambda: datetime.now(timezone.utc))
 
     # Foreign key to Image
     image_hash = Column(String, db.ForeignKey("image.hash"), nullable=False)
