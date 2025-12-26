@@ -1,4 +1,4 @@
-"""AperiSolve configuration variables."""
+"""Aperi'Solve configuration variables."""
 
 from pathlib import Path
 

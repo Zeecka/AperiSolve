@@ -279,6 +279,12 @@ function parseResult(result) {
         )}'/></div>`;
       }
 
+      if ("png_images" in result[tool]) {
+        for (const image of result[tool]["png_images"]) {
+             analyzer.innerHTML += `<div class='results_img'><img src='${escapeHtml(image)}'/></div>`;
+        }
+      }
+
       // Parse text output
   
 

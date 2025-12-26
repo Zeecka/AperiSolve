@@ -12,7 +12,7 @@ from .utils import MAX_PENDING_TIME, update_data
 def analyze_steghide(
     input_img: Path, output_dir: Path, password: Optional[str] = None
 ) -> None:
-    """Analyze an image submission using stehide."""
+    """Analyze an image submission using steghide."""
 
     image_name = input_img.name
     try:

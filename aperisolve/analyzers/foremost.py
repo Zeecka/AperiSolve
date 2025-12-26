@@ -24,7 +24,7 @@ def analyze_foremost(input_img: Path, output_dir: Path) -> None:
             timeout=MAX_PENDING_TIME,
         )
         # Note: foremost use stderr as standard output for results :o)
-        # So we can't use it as error dectection :
+        # So we can't use it as error detection :
         # stderr += data.stderr
 
         # Zip extracted files
