@@ -3,7 +3,6 @@
 import shutil
 import subprocess
 from pathlib import Path
-from typing import Optional
 
 from .utils import MAX_PENDING_TIME, update_data
 
