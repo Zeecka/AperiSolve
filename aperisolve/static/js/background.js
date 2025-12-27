@@ -13,7 +13,27 @@ const tmpQ = new THREE.Quaternion();
 const tmpM = new THREE.Matrix4();
 const currentM = new THREE.Matrix4();
 
-init();
+
+function isSoftwareRenderer() {
+  const canvas = document.createElement("canvas");
+  const gl =
+    canvas.getContext("webgl") ||
+    canvas.getContext("experimental-webgl");
+
+  if (!gl) return true;
+
+  const ext = gl.getExtension("WEBGL_debug_renderer_info");
+  if (!ext) return false;
+
+  const renderer = gl.getParameter(ext.UNMASKED_RENDERER_WEBGL);
+  return /swiftshader|software/i.test(renderer);
+}
+
+if (isSoftwareRenderer()) {
+  console.warn("Software rendering detected — disabling Three.js");
+} else {
+  init();
+}
 
 function init() {
   container = document.getElementById("three-bg");
@@ -163,5 +183,5 @@ function animate() {
 
   renderer.render(scene, camera);
 
-  stats.update();
+  //stats.update();
 }
