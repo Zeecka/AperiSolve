@@ -2,20 +2,34 @@ FROM python:3.14-slim AS build
 
 WORKDIR /
 
-# Install dependencies
+# Install build tools and dependencies
 RUN apt-get update && apt-get install -y \
+    wget \
+    default-jre \
+    ruby \
     zip \
-    7zip \
+    7zip
+
+# Install steganography and forensics tools
+RUN apt-get update && apt-get install -y \
     binwalk \
     foremost \
     exiftool \
     steghide \
-    ruby \
     binutils \
     outguess \
     pngcheck \
-    && gem install zsteg \
-    && apt-get clean
+    && gem install zsteg
+
+# Install OpenStego
+RUN wget https://github.com/syvaidya/openstego/releases/download/openstego-0.8.6/openstego_0.8.6-1_all.deb -O /tmp/openstego.deb && \
+    dpkg -i /tmp/openstego.deb && \
+    rm /tmp/openstego.deb
+
+# Clean up apt cache and remove useless packages
+RUN apt-get remove -y wget && \
+    apt-get clean && \
+    rm -rf /var/lib/apt/lists/*
 
 COPY aperisolve/ /aperisolve/
 

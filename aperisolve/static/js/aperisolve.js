@@ -6,6 +6,7 @@ const TOOL_ORDER = [
   "outguess",
   "pngcheck",
   "steghide",
+  "openstego",
   "zsteg",
   "strings",
   "image_resize",
@@ -286,7 +287,7 @@ function parseResult(result) {
       }
 
       // Parse text output
-  
+
 
       if (typeof result[tool]["output"] === "string") {
         analyzer.innerHTML += `<pre>${escapeHtml(

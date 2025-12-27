@@ -9,6 +9,7 @@ from .analyzers.decomposer import analyze_decomposer
 from .analyzers.exiftool import analyze_exiftool
 from .analyzers.foremost import analyze_foremost
 from .analyzers.image_resize import analyze_image_resize
+from .analyzers.openstego import analyze_openstego
 from .analyzers.outguess import analyze_outguess
 from .analyzers.pngcheck import analyze_pngcheck
 from .analyzers.steghide import analyze_steghide
@@ -77,6 +78,7 @@ def analyze_image(submission_hash: str) -> None:
                 (analyze_strings, img_path, result_path),
                 (analyze_pngcheck, img_path, result_path),
                 (analyze_steghide, img_path, result_path, submission.password),
+                (analyze_openstego, img_path, result_path, submission.password),
                 (analyze_zsteg, img_path, result_path),
                 (analyze_image_resize, img_path, result_path),
             ]
