@@ -44,6 +44,7 @@ Table of contents
   - zsteg (LSB text/data extraction)
   - steghide (extraction with password)
   - outguess (extraction with password)
+  - openstego (extraction with password)
   - exiftool (metadata and geolocation)
   - binwalk (embedded archives)
   - foremost (carved files)
@@ -197,4 +198,4 @@ CI will run these checks on each PR.
 ## Credits
 
 Acknowledgements:
-- Thanks to contributors and the open-source community for the tools integrated (zsteg, steghide, binwalk, foremost, exiftool).
+- Thanks to contributors and the open-source community for the tools integrated (zsteg, steghide, openstego, binwalk, foremost, exiftool, ...).
