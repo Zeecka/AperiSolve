@@ -18,21 +18,24 @@ def analyze_exiftool(input_img: Path, output_dir: Path) -> None:
             timeout=MAX_PENDING_TIME,
         )
 
-        if data.stderr:
-            update_data(
-                output_dir, {"exiftool": {"status": "error", "error": data.stderr}}
-            )
-            return
-
         metadata: dict[str, str] = {}
         for line in data.stdout.split("\n"):
             if ":" in line:
                 key, value = line.split(":", 1)
                 metadata[key.strip()] = value.strip()
 
-        # exiftool_dir = output_dir / "exiftool"
-        # exiftool_dir.mkdir(parents=True, exist_ok=True)
-        # update_data(exiftool_dir, metadata, "data.json")
+        if data.stderr:
+            update_data(
+                output_dir,
+                {
+                    "exiftool": {
+                        "status": "error",
+                        "output": metadata,
+                        "error": data.stderr,
+                    }
+                },
+            )
+            return
 
         update_data(
             output_dir,
