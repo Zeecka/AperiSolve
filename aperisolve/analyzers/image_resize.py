@@ -146,6 +146,17 @@ def analyze_image_resize(input_img: Path, output_dir: Path) -> None:
 
         logs.append(f"Target CRC found: 0x{png.crc:08x}")
 
+        if png.crc == png.compute_crc():
+            logs.append(
+                f"PNG is already valid with dimensions {png.width}x{png.height} "
+                f"and crc 0x{png.crc:08x}."
+            )
+            output_data: dict[str, Any] = {
+                "image_resize": {"status": "ok", "output": logs}
+            }
+            update_data(output_dir, output_data)
+            return
+
         saved_img_urls = []
 
         db_matches = lookup_crc(png)
