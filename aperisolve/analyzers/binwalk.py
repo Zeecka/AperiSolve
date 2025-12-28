@@ -3,6 +3,7 @@
 import shutil
 import subprocess
 from pathlib import Path
+from typing import Any
 
 from .utils import MAX_PENDING_TIME, update_data
 
@@ -17,7 +18,7 @@ def analyze_binwalk(input_img: Path, output_dir: Path) -> None:
         stderr = ""
         # Run binwalk
         data = subprocess.run(
-            ["binwalk", "-e", "../" + str(image_name), "--run-as=root"],
+            ["binwalk", "--matryoshka", "-e", "../" + str(image_name), "--run-as=root"],
             cwd=output_dir,
             capture_output=True,
             text=True,
@@ -45,16 +46,17 @@ def analyze_binwalk(input_img: Path, output_dir: Path) -> None:
             shutil.rmtree(extracted_dir)
 
         if len(stderr) > 0:
-            err = {
+            err: dict[str, dict[str, Any]] = {
                 "binwalk": {
                     "status": "error",
+                    "output": data.stdout.split("\n") if data else [],
                     "error": stderr,
                 }
             }
             update_data(output_dir, err)
             return None
 
-        output_data = {
+        output_data: dict[str, dict[str, Any]] = {
             "binwalk": {
                 "status": "ok",
                 "output": data.stdout.split("\n") if data else [],
