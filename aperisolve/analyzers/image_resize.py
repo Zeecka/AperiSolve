@@ -151,10 +151,10 @@ def analyze_image_resize(input_img: Path, output_dir: Path) -> None:
                 f"PNG is already valid with dimensions {png.width}x{png.height} "
                 f"and crc 0x{png.crc:08x}."
             )
-            output_data: dict[str, Any] = {
+            output_no_compute: dict[str, Any] = {
                 "image_resize": {"status": "ok", "output": logs}
             }
-            update_data(output_dir, output_data)
+            update_data(output_dir, output_no_compute)
             return
 
         saved_img_urls = []
