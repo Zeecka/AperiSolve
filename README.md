@@ -171,11 +171,17 @@ This separation keeps heavy tools (binwalk, foremost, zsteg, etc.) isolated and 
 
 ## Roadmap
 
-- [ ] zsteg: full extraction (--all) and download of discovered files (mp3, etc.)
-- [ ] Mobile-friendly UI / test on mobile
-- [ ] i18n (internationalization)
-- [ ] Rootless / unprivileged analyzers
-- [ ] Improve analyzer sandboxing (e.g., per-analyzer containers)
+- [ ] **[Bug]** Error 500 when file already exist on disc
+- [ ] **[Bug]** Multiple bug on buggy Jpeg filebugSomething isn't working
+- [ ] **[Bug]** Binwalk Extractor errorbugSomething isn't working
+- [ ] **[Bug]** Grayscale on a RGB image ?bugSomething isn't working
+- [ ] **[Feature]** Implement healthcheck and auto reboot
+- [ ] **[Feature]** Implement Sentry for better error handling
+- [ ] **[Feature]** Zsteg: full extraction (--all) and download of discovered files (mp3, etc.)
+- [ ] **[Feature]** Mobile-friendly UI / test on mobile
+- [ ] **[Feature]** i18n (internationalization)
+- [ ] **[Feature]** Rootless / unprivileged analyzers
+- [ ] **[Feature]** Improve analyzer sandboxing (e.g., per-analyzer containers)
 
 ## Contributing
 
