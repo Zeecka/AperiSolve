@@ -180,17 +180,24 @@ class PNG:
         self.height = size[1]
         self.bit_depth = bit_depth
         self.color_type = color_type
-        self.crc = (
-            crc
-            or zlib.crc32(
+        self.interlace = interlace
+        self.crc = crc or self.compute_crc()
+
+    def compute_crc(self) -> int:
+        """Compute the CRC checksum for the PNG IHDR chunk.
+
+        Returns:
+            int: The computed CRC checksum.
+        """
+        return (
+            zlib.crc32(
                 b"IHDR"
                 + self.width.to_bytes(4, "big")
                 + self.height.to_bytes(4, "big")
-                + bytes((bit_depth, color_type, 0, 0, interlace))
+                + bytes((self.bit_depth, self.color_type, 0, 0, self.interlace))
             )
             & 0xFFFFFFFF
         )
-        self.interlace = interlace
 
     @classmethod
     def from_packed(cls, packed: int, crc: int | None = None) -> Self:

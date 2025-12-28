@@ -11,6 +11,12 @@ from .utils import update_data
 def analyze_decomposer(input_img: Path, output_dir: Path) -> None:
     """Analyze an image submission using bits decomposition."""
     img = Image.open(input_img)
+    converted = False
+
+    if img.mode == "P":
+        img = img.convert("RGB")
+        converted = True
+
     img_np = np.array(img)
 
     # Handle grayscale, RGB, RGBA, etc.
@@ -58,12 +64,15 @@ def analyze_decomposer(input_img: Path, output_dir: Path) -> None:
             bit_img.save(out_path)
         image_json[channel_label] = channel_json
 
-    update_data(
-        output_dir,
-        {
-            "decomposer": {
-                "status": "ok",
-                "images": image_json,
-            }
-        },
-    )
+    output = {
+        "decomposer": {
+            "status": "ok",
+            "images": image_json,
+        }
+    }
+    if converted:
+        output["decomposer"][
+            "note"
+        ] = "Image contains a color palette and was converted to RGB for processing."
+
+    update_data(output_dir, output)
