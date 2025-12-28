@@ -41,15 +41,15 @@ Table of contents
 - Visualize each bit layer (LSB and other layers) per image channel (R/G/B/Alpha).
 - Browse and download each bit-layer image.
 - Integrates and displays outputs from:
-  - zsteg (LSB text/data extraction)
-  - steghide (extraction with password)
-  - outguess (extraction with password)
-  - openstego (extraction with password)
-  - exiftool (metadata and geolocation)
-  - binwalk (embedded archives)
-  - foremost (carved files)
-  - pngcheck
-  - strings
+  - [zsteg](https://github.com/zed-0xff/zsteg) (LSB text/data extraction)
+  - [steghide](https://steghide.sourceforge.net/) (extraction with password)
+  - [outguess](https://www.rbcafe.com/software/outguess/) (extraction with password)
+  - [openstego](https://www.openstego.com/) (extraction with password)
+  - [exiftool](https://exiftool.org/) (metadata and geolocation)
+  - [binwalk](https://github.com/ReFirmLabs/binwalk) (embedded archives)
+  - [foremost](https://foremost.sourceforge.net/) (carved files)
+  - [pngcheck](https://www.libpng.org/pub/png/apps/pngcheck.html)
+  - [strings](https://pubs.opengroup.org/onlinepubs/9799919799/utilities/strings.html)
 - Worker queue architecture for offloading heavy/slow analyzers (Redis + background workers).
 - Results stored for later browsing and download.
 
@@ -198,4 +198,4 @@ CI will run these checks on each PR.
 ## Credits
 
 Acknowledgements:
-- Thanks to contributors and the open-source community for the tools integrated (zsteg, steghide, openstego, binwalk, foremost, exiftool, ...).
+- Thanks to contributors and the open-source community for the tools integrated ([zsteg](https://github.com/zed-0xff/zsteg), [steghide](https://steghide.sourceforge.net/), [outguess](https://www.rbcafe.com/software/outguess/), [openstego](https://www.openstego.com/), [exiftool](https://exiftool.org/), [binwalk](https://github.com/ReFirmLabs/binwalk), [foremost](https://foremost.sourceforge.net/), [pngcheck](https://www.libpng.org/pub/png/apps/pngcheck.html), [strings](https://pubs.opengroup.org/onlinepubs/9799919799/utilities/strings.html), ...).
