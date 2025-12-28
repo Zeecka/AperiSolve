@@ -20,7 +20,6 @@ Support Aperi'Solve:
   <img src="https://cdn.buymeacoffee.com/buttons/v2/default-yellow.png" height="40" />
 </a>
 
-
 ---
 
 Aperi'Solve is an open-source steganalysis web platform that performs automated analysis on images to detect and extract hidden data using common steganography tools and techniques.
@@ -87,10 +86,12 @@ docker exec -it aperisolve-web bash
 docker exec -it postgres psql -U aperiuser -d aperisolve
 ```
 
-Note: If switching between dev and production compose files, remove the `results` directory or mounted volume to avoid conflicts:
-```bash
-rm -rf aperisolve/results
-```
+> [!WARNING]
+> If switching between dev and production compose files, remove the `results` directory or mounted volume to avoid conflicts:
+> ```bash
+> rm -rf aperisolve/results
+> ```
+
 ### Adding a new analyzer
 
 Adding a custom analyzer is straightforward:
@@ -129,9 +130,9 @@ Adding a custom analyzer is straightforward:
 
 4. Test locally: run the worker and submit jobs to ensure outputs are produced and displayed.
 
-Tips:
-- Keep analyzers idempotent and write outputs to the provided `results_dir`.
-- Return structured JSON so the frontend can render links/downloads automatically.
+> [!TIP]
+> - Keep analyzers idempotent and write outputs to the provided `results_dir`.
+> - Return structured JSON so the frontend can render links/downloads automatically.
 
 ## Configuration & environment variables
 
@@ -147,7 +148,8 @@ Main environment variables (examples):
 - SECRET_KEY=change_me
 - FLASK_ENV=production/development
 
-If using Docker Compose, defaults are set in the compose files. For production deployments, set secure secrets via your orchestrator or environment.
+> [!NOTE]
+> If using Docker Compose, defaults are set in the compose files. For production deployments, set secure secrets via your orchestrator or environment.
 
 ## Architecture
 
@@ -182,18 +184,19 @@ Contributions are welcome! Please:
 2. Create a feature branch
 3. Open a pull request describing your change
 
-Please follow the code style and run linters before submitting.
-The project adheres to:
-- Black
-- Flake8 (ignoring E203, E501, W503)
-- Pylint (ignoring W0718, R0903, R0801)
-- Mypy (ignoring unused-awaitable)
+> [!IMPORTANT]
+> Please follow the code style and run linters before submitting. The project adheres to:
+> - Black
+> - Flake8 (ignoring E203, E501, W503)
+> - Pylint (ignoring W0718, R0903, R0801)
+> - Mypy (ignoring unused-awaitable)
 
 CI will run these checks on each PR.
 
 ## Security
 
-- If you discover a security issue, please report it privately to the repository owner instead of opening a public issue.
+> [!WARNING]
+> If you discover a security issue, please report it privately to the repository owner instead of opening a public issue.
 
 ## Credits
 
