@@ -12,6 +12,7 @@ import sentry_sdk
 from sentry_sdk.integrations.flask import FlaskIntegration
 from sentry_sdk.integrations.sqlalchemy import SqlalchemyIntegration
 from sentry_sdk.integrations.rq import RqIntegration
+from sentry_sdk.integrations.threading import ThreadingIntegration
 
 from flask import Flask, Response, abort, jsonify, render_template, request, send_file
 from redis import Redis
@@ -31,6 +32,7 @@ if SENTRY_DSN:
             FlaskIntegration(),
             SqlalchemyIntegration(),
             RqIntegration(),
+            ThreadingIntegration(propagate_hub=True),
         ],
         # Set traces_sample_rate to 1.0 to capture 100% of transactions for performance monitoring.
         # Adjust this value in production (e.g., 0.1 for 10%)
