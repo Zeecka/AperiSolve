@@ -6,6 +6,7 @@ import os
 import time
 from datetime import datetime, timezone
 from pathlib import Path
+from shutil import rmtree
 from typing import Any, Optional
 
 from flask import Flask, Response, abort, jsonify, render_template, request, send_file
@@ -112,34 +113,33 @@ def upload_image() -> tuple[Response, int]:
     submission_hash = hashlib.md5(submission_data).hexdigest()
     submission_path = RESULT_FOLDER / img_hash / submission_hash
 
-    # Check if hash is present on the DB
-    submission: Submission = Submission.query.filter_by(
-        hash=submission_hash
-    ).first()
+    # If submission already exists, return submission hash
+    if submission_path.exists():
+        submission: Submission = Submission.query.filter_by(
+            hash=submission_hash
+        ).first()
 
-    # Only return if BOTH the file exists AND the DB entry exists
-    if submission_path.exists() and submission is not None:
-        return jsonify({"submission_hash": submission.hash}), 200
-    
+        if submission is not None:  # File exist but not in DB (should not happen),
+            rmtree(submission_path)  # Removing file and continue processing as new
+            db.session.delete(submission)  # pylint: disable=no-member
+            db.session.commit()  # pylint: disable=no-member
+        else:
+            return jsonify({"submission_hash": submission.hash}), 200
 
-    # Self-Healing Logic
+    # If image is new, create a new Image entry
     new_img_path = RESULT_FOLDER / img_hash / image_name
+    sub_img = Image.query.filter_by(hash=img_hash).first()  # type: ignore
 
-    # Try to find image in DB by hash
-    sub_img = Image.query.filter_by(
-        hash=img_hash
-    ).first()
+    if new_img_path.parent.exists() and sub_img is None:
+        # Inconsistent state: image file exists but no DB entry
+        rmtree(new_img_path.parent)  # Remove the existing files and continue
 
-    # If DB entry is missing (even if file exists on disk), create it!
-    if sub_img is None:
-        if not new_img_path.parent.exists() or not new_img_path.exists():
-            new_img_path.parent.mkdir(parents=True, exist_ok=True)
-            with open(new_img_path, "wb") as f:
-                f.write(image_data)
+    if not new_img_path.parent.exists():
+        new_img_path.parent.mkdir(parents=True, exist_ok=True)
+        with open(new_img_path, "wb") as f:  # Write file to disk
+            f.write(image_data)
 
-
-        # Recreate the missing Database Entry
-        sub_img = Image(
+        new_img = Image(
             file=str(new_img_path),
             hash=img_hash,
             size=len(image_data),
@@ -147,37 +147,31 @@ def upload_image() -> tuple[Response, int]:
             first_submission_date=datetime.now(timezone.utc),
             last_submission_date=datetime.now(timezone.utc),
         )
-        db.session.add(sub_img)
-        db.session.commit()
+        db.session.add(new_img)  # pylint: disable=no-member
+        db.session.commit()  # pylint: disable=no-member
 
-    # Increment upload count for the image
+    sub_img = Image.query.filter_by(hash=img_hash).first()  # type: ignore
     sub_img.upload_count += 1
-    db.session.commit()
+    db.session.commit()  # pylint: disable=no-member
 
     # Create new Submission entry
     submission_path.mkdir(parents=True, exist_ok=True)
+    submission = Submission(
+        filename=image.filename,
+        password=password,
+        deep_analysis=deep_analysis,
+        hash=submission_hash,
+        status="pending",
+        date=time.time(),
+        image_hash=sub_img.hash,  # type: ignore
+    )
+    db.session.add(submission)  # pylint: disable=no-member
 
-    # Only create a new submission if it does not already exist
-    # New submission for new image
-    if not submission:
-        submission = Submission(
-            filename=image.filename,
-            password=password,
-            deep_analysis=deep_analysis,
-            hash=submission_hash,
-            status="pending",
-            date=time.time(),
-            image_hash=sub_img.hash,
-        )
-        db.session.add(submission)
-        db.session.commit()
-
+    db.session.commit()  # pylint: disable=no-member
     # Start the analysis jobs
     queue.enqueue("aperisolve.workers.analyze_image", submission.hash, job_timeout=300)
 
-    # Return submission identifier
     return jsonify({"submission_hash": submission.hash}), 200
-
 
 
 @app.route("/status/<hash_val>", methods=["GET"])

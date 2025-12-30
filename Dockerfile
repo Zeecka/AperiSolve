@@ -26,17 +26,20 @@ RUN wget https://github.com/syvaidya/openstego/releases/download/openstego-0.8.6
     dpkg -i /tmp/openstego.deb && \
     rm /tmp/openstego.deb
 
-# Clean up apt cache and remove useless packages
-RUN apt-get remove -y wget && \
-    apt-get clean && \
-    rm -rf /var/lib/apt/lists/*
-
+# Copy application
 COPY aperisolve/ /aperisolve/
 
 RUN mkdir -p /data
 
+# Install Python dependencies
 RUN pip install --no-cache-dir -r /aperisolve/requirements.txt
 
 ENV PYTHONUNBUFFERED=1
+
+# Auto clean after build
+RUN apt-get remove -y wget && \
+    apt-get autoremove -y && \
+    apt-get clean && \
+    rm -rf /var/lib/apt/lists/*
 
 CMD ["gunicorn", "-w", "4", "-b", "0.0.0.0:5000", "--access-logfile", "-", "--error-logfile", "-", "--log-level", "info", "--capture-output", "aperisolve.wsgi:application"]
