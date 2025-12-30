@@ -119,7 +119,7 @@ def upload_image() -> tuple[Response, int]:
 
     # Only return if BOTH the file exists AND the DB entry exists
     if submission_path.exists() and submission is not None:
-        return jsonify({"submission_hash": submission.hash}),200
+        return jsonify({"submission_hash": submission.hash}), 200
     
 
     # Self-Healing Logic
