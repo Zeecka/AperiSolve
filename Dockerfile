@@ -3,14 +3,22 @@ FROM python:3.14-slim AS build
 WORKDIR /
 
 # Install build tools and dependencies
+RUN apt-get update && apt-get install -y \
+    wget \
+    default-jdk \
+    ruby \
+    zip \
+    7zip
 
-
-RUN apt-get update && apt-get install -y --no-install-recommends \
-    wget default-jre ruby \
-    bzip2 xz-utils gzip lzip lzma lzop tar unzip p7zip-full squashfs-tools \
-    file qpdf cpio arj cabextract sharutils lz4 ccache mtd-utils \
-    python3-lxml upx-ucl zlib1g-dev liblzma-dev \
-    binwalk foremost exiftool steghide binutils outguess pngcheck \
+# Install steganography and forensics tools
+RUN apt-get update && apt-get install -y \
+    binwalk \
+    foremost \
+    exiftool \
+    steghide \
+    binutils \
+    outguess \
+    pngcheck \
     && gem install zsteg
 
 # Install OpenStego
