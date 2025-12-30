@@ -6,6 +6,7 @@ import os
 import time
 from datetime import datetime, timezone
 from pathlib import Path
+from shutil import rmtree
 from typing import Any, Optional
 
 from flask import Flask, Response, abort, jsonify, render_template, request, send_file
@@ -117,10 +118,22 @@ def upload_image() -> tuple[Response, int]:
         submission: Submission = Submission.query.filter_by(
             hash=submission_hash
         ).first()
-        return jsonify({"submission_hash": submission.hash}), 200
+
+        if submission is not None:  # File exist but not in DB (should not happen),
+            rmtree(submission_path)  # Removing file and continue processing as new
+            db.session.delete(submission)  # pylint: disable=no-member
+            db.session.commit()  # pylint: disable=no-member
+        else:
+            return jsonify({"submission_hash": submission.hash}), 200
 
     # If image is new, create a new Image entry
     new_img_path = RESULT_FOLDER / img_hash / image_name
+    sub_img = Image.query.filter_by(hash=img_hash).first()  # type: ignore
+
+    if new_img_path.parent.exists() and sub_img is None:
+        # Inconsistent state: image file exists but no DB entry
+        rmtree(new_img_path.parent)  # Remove the existing files and continue
+
     if not new_img_path.parent.exists():
         new_img_path.parent.mkdir(parents=True, exist_ok=True)
         with open(new_img_path, "wb") as f:  # Write file to disk
