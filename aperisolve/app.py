@@ -134,7 +134,7 @@ def upload_image() -> tuple[Response, int]:
     if sub_img is None:
         if not new_img_path.parent.exists() or not new_img_path.exists():
             new_img_path.parent.mkdir(parents=True, exist_ok=True)
-            with open(new_img_path,"wb") as f:
+            with open(new_img_path, "wb") as f:
                 f.write(image_data)
 
 
