@@ -44,7 +44,9 @@ def analyze_binwalk(input_img: Path, output_dir: Path) -> None:
         if extracted_dir.exists():
             shutil.rmtree(extracted_dir)
 
-        if len(stderr) > 0:
+        # Only report error if stderr exists AND extraction failed.
+        # If zip_exist is True, binwalk worked (despite warnings), so we proceed.
+        if len(stderr) > 0 and not zip_exist:
             err = {
                 "binwalk": {
                     "status": "error",

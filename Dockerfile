@@ -5,7 +5,7 @@ WORKDIR /
 # Install build tools and dependencies
 RUN apt-get update && apt-get install -y \
     wget \
-    default-jre \
+    default-jdk \
     ruby \
     zip \
     7zip
