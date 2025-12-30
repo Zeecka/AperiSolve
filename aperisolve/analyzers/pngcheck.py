@@ -24,6 +24,19 @@ def analyze_pngcheck(input_img: Path, output_dir: Path) -> None:
         #     )
         #     return
 
+        if "this is neither a PNG or JNG image nor a MNG stream" in data.stdout:
+            update_data(
+                output_dir,
+                {
+                    "pngcheck": {
+                        "status": "error",
+                        "error": "ERRORS DETECTED: this is neither a PNG or JNG image nor a "
+                        "MNG stream.",
+                    }
+                },
+            )
+            return
+
         data_pngcheck = data.stdout.split("\n") if data else []
         data_pngcheck = [s for s in data_pngcheck if s]
 

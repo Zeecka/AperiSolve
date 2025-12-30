@@ -20,7 +20,6 @@ Support Aperi'Solve:
   <img src="https://cdn.buymeacoffee.com/buttons/v2/default-yellow.png" height="40" />
 </a>
 
-
 ---
 
 Aperi'Solve is an open-source steganalysis web platform that performs automated analysis on images to detect and extract hidden data using common steganography tools and techniques.
@@ -41,15 +40,15 @@ Table of contents
 - Visualize each bit layer (LSB and other layers) per image channel (R/G/B/Alpha).
 - Browse and download each bit-layer image.
 - Integrates and displays outputs from:
-  - zsteg (LSB text/data extraction)
-  - steghide (extraction with password)
-  - outguess (extraction with password)
-  - openstego (extraction with password)
-  - exiftool (metadata and geolocation)
-  - binwalk (embedded archives)
-  - foremost (carved files)
-  - pngcheck
-  - strings
+  - [zsteg](https://github.com/zed-0xff/zsteg) (LSB text/data extraction)
+  - [steghide](https://steghide.sourceforge.net/) (extraction with password)
+  - [outguess](https://www.rbcafe.com/software/outguess/) (extraction with password)
+  - [openstego](https://www.openstego.com/) (extraction with password)
+  - [exiftool](https://exiftool.org/) (metadata and geolocation)
+  - [binwalk](https://github.com/ReFirmLabs/binwalk) (embedded archives)
+  - [foremost](https://foremost.sourceforge.net/) (carved files)
+  - [pngcheck](https://www.libpng.org/pub/png/apps/pngcheck.html)
+  - [strings](https://pubs.opengroup.org/onlinepubs/9799919799/utilities/strings.html)
 - Worker queue architecture for offloading heavy/slow analyzers (Redis + background workers).
 - Results stored for later browsing and download.
 
@@ -87,10 +86,12 @@ docker exec -it aperisolve-web bash
 docker exec -it postgres psql -U aperiuser -d aperisolve
 ```
 
-Note: If switching between dev and production compose files, remove the `results` directory or mounted volume to avoid conflicts:
-```bash
-rm -rf aperisolve/results
-```
+> [!WARNING]
+> If switching between dev and production compose files, remove the `results` directory or mounted volume to avoid conflicts:
+> ```bash
+> rm -rf aperisolve/results
+> ```
+
 ### Adding a new analyzer
 
 Adding a custom analyzer is straightforward:
@@ -129,9 +130,9 @@ Adding a custom analyzer is straightforward:
 
 4. Test locally: run the worker and submit jobs to ensure outputs are produced and displayed.
 
-Tips:
-- Keep analyzers idempotent and write outputs to the provided `results_dir`.
-- Return structured JSON so the frontend can render links/downloads automatically.
+> [!TIP]
+> - Keep analyzers idempotent and write outputs to the provided `results_dir`.
+> - Return structured JSON so the frontend can render links/downloads automatically.
 
 ## Configuration & environment variables
 
@@ -147,7 +148,8 @@ Main environment variables (examples):
 - SECRET_KEY=change_me
 - FLASK_ENV=production/development
 
-If using Docker Compose, defaults are set in the compose files. For production deployments, set secure secrets via your orchestrator or environment.
+> [!NOTE]
+> If using Docker Compose, defaults are set in the compose files. For production deployments, set secure secrets via your orchestrator or environment.
 
 ## Architecture
 
@@ -169,11 +171,16 @@ This separation keeps heavy tools (binwalk, foremost, zsteg, etc.) isolated and 
 
 ## Roadmap
 
-- [ ] zsteg: full extraction (--all) and download of discovered files (mp3, etc.)
-- [ ] Mobile-friendly UI / test on mobile
-- [ ] i18n (internationalization)
-- [ ] Rootless / unprivileged analyzers
-- [ ] Improve analyzer sandboxing (e.g., per-analyzer containers)
+- [ ] **[Bug]** Error 500 when file already exist on disc
+- [ ] **[Bug]** Duplicate key value violates unique constraint "submission_pkey"
+- [ ] **[Bug]** Binwalk Extractor error
+- [ ] **[Feature]** Implement healthcheck and auto reboot
+- [ ] **[Feature]** Implement Sentry for better error handling
+- [ ] **[Feature]** Zsteg: full extraction (--all) and download of discovered files (mp3, etc.)
+- [ ] **[Feature]** Mobile-friendly UI / test on mobile
+- [ ] **[Feature]** i18n (internationalization)
+- [ ] **[Feature]** Rootless / unprivileged analyzers
+- [ ] **[Feature]** Improve analyzer sandboxing (e.g., per-analyzer containers)
 
 ## Contributing
 
@@ -182,20 +189,21 @@ Contributions are welcome! Please:
 2. Create a feature branch
 3. Open a pull request describing your change
 
-Please follow the code style and run linters before submitting.
-The project adheres to:
-- Black
-- Flake8 (ignoring E203, E501, W503)
-- Pylint (ignoring W0718, R0903, R0801)
-- Mypy (ignoring unused-awaitable)
+> [!IMPORTANT]
+> Please follow the code style and run linters before submitting. The project adheres to:
+> - Black
+> - Flake8 (ignoring E203, E501, W503)
+> - Pylint (ignoring W0718, R0903, R0801)
+> - Mypy (ignoring unused-awaitable)
 
 CI will run these checks on each PR.
 
 ## Security
 
-- If you discover a security issue, please report it privately to the repository owner instead of opening a public issue.
+> [!WARNING]
+> If you discover a security issue, please report it privately to the repository owner instead of opening a public issue.
 
 ## Credits
 
 Acknowledgements:
-- Thanks to contributors and the open-source community for the tools integrated (zsteg, steghide, openstego, binwalk, foremost, exiftool, ...).
+- Thanks to contributors and the open-source community for the tools integrated ([zsteg](https://github.com/zed-0xff/zsteg), [steghide](https://steghide.sourceforge.net/), [outguess](https://www.rbcafe.com/software/outguess/), [openstego](https://www.openstego.com/), [exiftool](https://exiftool.org/), [binwalk](https://github.com/ReFirmLabs/binwalk), [foremost](https://foremost.sourceforge.net/), [pngcheck](https://www.libpng.org/pub/png/apps/pngcheck.html), [strings](https://pubs.opengroup.org/onlinepubs/9799919799/utilities/strings.html), ...).

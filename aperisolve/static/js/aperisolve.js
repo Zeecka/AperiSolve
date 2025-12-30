@@ -326,9 +326,12 @@ function parseResult(result) {
       }
     }
 
-    // Parse errors
-    if (result[tool]["status"] === "error") {
+    if (result[tool]["error"] && (/[^\s]/.test(result[tool]["error"]))) {
       showDanger(result[tool]["error"]);
+    }
+
+    if (result[tool]["note"] && (/[^\s]/.test(result[tool]["note"]))) {
+      showInfo(result[tool]["note"]);
     }
   }
 }
