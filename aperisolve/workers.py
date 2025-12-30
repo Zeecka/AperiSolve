@@ -1,8 +1,30 @@
 """Asynchronous worker for analyzing image submissions."""
 
+import os
 import threading
 from pathlib import Path
 from typing import Any
+
+import sentry_sdk
+from sentry_sdk.integrations.rq import RqIntegration
+from sentry_sdk.integrations.threading import ThreadingIntegration
+from sentry_sdk.integrations.sqlalchemy import SqlalchemyIntegration
+
+# Initialize Sentry for workers (separate process from Flask app)
+SENTRY_DSN = os.environ.get("SENTRY_DSN")
+if SENTRY_DSN:
+    sentry_sdk.init(
+        dsn=SENTRY_DSN,
+        integrations=[
+            RqIntegration(),
+            ThreadingIntegration(propagate_hub=True),  # Capture exceptions in threads
+            SqlalchemyIntegration(),
+        ],
+        traces_sample_rate=float(os.environ.get("SENTRY_TRACES_SAMPLE_RATE", "0.1")),
+        environment=os.environ.get("ENVIRONMENT", "development"),
+        release=os.environ.get("SENTRY_RELEASE", "1.0.0"),
+        send_default_pii=False,
+    )
 
 from .analyzers.binwalk import analyze_binwalk
 from .analyzers.decomposer import analyze_decomposer
@@ -51,6 +73,10 @@ def analyze_image(submission_hash: str) -> None:
         image = Image.query.get_or_404(submission.image_hash)  # type: ignore
 
         if not submission or not image:  # No submission found
+            sentry_sdk.capture_message(
+                f"Submission or image not found: {submission_hash}",
+                level="warning"
+            )
             return
 
         submission.status = "running"  # type: ignore
@@ -69,6 +95,7 @@ def analyze_image(submission_hash: str) -> None:
                     analyzer_func(*args)
                 except Exception as e:
                     print(f"Error in {analyzer_func.__name__}: {e}")
+                    sentry_sdk.capture_exception(e)
 
             analyzers = [
                 (analyze_binwalk, img_path, result_path),
@@ -100,7 +127,10 @@ def analyze_image(submission_hash: str) -> None:
                 thread.join()
 
             submission.status = "completed"
-        except Exception:
+        except Exception as e:
+            sentry_sdk.capture_exception(e)
             submission.status = "error"
         finally:
             db.session.commit()  # pylint: disable=no-member
+            # Flush Sentry events - wait up to 5 seconds for events to be sent
+            sentry_sdk.flush(timeout=5)

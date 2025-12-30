@@ -8,3 +8,4 @@ types-Flask-SQLAlchemy
 sqlalchemy-stubs
 Pillow
 gunicorn
+sentry-sdk[flask,sqlalchemy,rq]
