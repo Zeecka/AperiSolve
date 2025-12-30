@@ -112,21 +112,26 @@ def upload_image() -> tuple[Response, int]:
     submission_hash = hashlib.md5(submission_data).hexdigest()
     submission_path = RESULT_FOLDER / img_hash / submission_hash
 
-    # If submission already exists, return submission hash
-    if submission_path.exists():
-        submission: Submission = Submission.query.filter_by(
-            hash=submission_hash
-        ).first()
-        return jsonify({"submission_hash": submission.hash}), 200
+    submission: Submission = Submission.query.filter_by(
+        hash=submission_hash
+    ).first()
 
-    # If image is new, create a new Image entry
+    if submission_path.exists() and submission is not None:
+        return jsonify({"submission_hash": submission.hash}),200
+    
     new_img_path = RESULT_FOLDER / img_hash / image_name
-    if not new_img_path.parent.exists():
-        new_img_path.parent.mkdir(parents=True, exist_ok=True)
-        with open(new_img_path, "wb") as f:  # Write file to disk
-            f.write(image_data)
 
-        new_img = Image(
+    sub_img = Image.query.filter_by(
+        hash=img_hash
+    ).first()
+
+    if sub_img is None:
+        if not new_img_path.parent.exists() or not new_img_path.exists():
+            new_img_path.parent.mkdir(parents=True, exist_ok=True)
+            with open(new_img_path,"wb") as f:
+                f.write(image_data)
+
+        sub_img = Image(
             file=str(new_img_path),
             hash=img_hash,
             size=len(image_data),
@@ -134,31 +139,82 @@ def upload_image() -> tuple[Response, int]:
             first_submission_date=datetime.now(timezone.utc),
             last_submission_date=datetime.now(timezone.utc),
         )
-        db.session.add(new_img)  # pylint: disable=no-member
-        db.session.commit()  # pylint: disable=no-member
+        db.session.add(sub_img)
+        db.session.commit()
 
-    sub_img = Image.query.filter_by(hash=img_hash).first()  # type: ignore
+    
     sub_img.upload_count += 1
-    db.session.commit()  # pylint: disable=no-member
+    db.session.commit()
 
-    # Create new Submission entry
     submission_path.mkdir(parents=True, exist_ok=True)
-    submission = Submission(
-        filename=image.filename,
-        password=password,
-        deep_analysis=deep_analysis,
-        hash=submission_hash,
-        status="pending",
-        date=time.time(),
-        image_hash=sub_img.hash,  # type: ignore
-    )
-    db.session.add(submission)  # pylint: disable=no-member
 
-    db.session.commit()  # pylint: disable=no-member
-    # Start the analysis jobs
+    if not submission:
+        submission = Submission(
+            filename=image.filename,
+            password=password,
+            deep_analysis=deep_analysis,
+            hash=submission_hash,
+            status="pending",
+            date=time.time(),
+            image_hash=sub_img.hash,
+        )
+        db.session.add(submission)
+        db.session.commit()
+
     queue.enqueue("aperisolve.workers.analyze_image", submission.hash, job_timeout=300)
 
-    return jsonify({"submission_hash": submission.hash}), 200
+    return jsonify({"submission_hash": submission.hash}), 20
+
+
+
+
+    # # If submission already exists, return submission hash
+    # if submission_path.exists():
+    #     submission: Submission = Submission.query.filter_by(
+    #         hash=submission_hash
+    #     ).first()
+    #     return jsonify({"submission_hash": submission.hash}), 200
+
+    # # If image is new, create a new Image entry
+    # new_img_path = RESULT_FOLDER / img_hash / image_name
+    # if not new_img_path.parent.exists():
+    #     new_img_path.parent.mkdir(parents=True, exist_ok=True)
+    #     with open(new_img_path, "wb") as f:  # Write file to disk
+    #         f.write(image_data)
+
+    #     new_img = Image(
+    #         file=str(new_img_path),
+    #         hash=img_hash,
+    #         size=len(image_data),
+    #         upload_count=0,
+    #         first_submission_date=datetime.now(timezone.utc),
+    #         last_submission_date=datetime.now(timezone.utc),
+    #     )
+    #     db.session.add(new_img)  # pylint: disable=no-member
+    #     db.session.commit()  # pylint: disable=no-member
+
+    # sub_img = Image.query.filter_by(hash=img_hash).first()  # type: ignore
+    # sub_img.upload_count += 1
+    # db.session.commit()  # pylint: disable=no-member
+
+    # # Create new Submission entry
+    # submission_path.mkdir(parents=True, exist_ok=True)
+    # submission = Submission(
+    #     filename=image.filename,
+    #     password=password,
+    #     deep_analysis=deep_analysis,
+    #     hash=submission_hash,
+    #     status="pending",
+    #     date=time.time(),
+    #     image_hash=sub_img.hash,  # type: ignore
+    # )
+    # db.session.add(submission)  # pylint: disable=no-member
+
+    # db.session.commit()  # pylint: disable=no-member
+    # # Start the analysis jobs
+    # queue.enqueue("aperisolve.workers.analyze_image", submission.hash, job_timeout=300)
+
+    # return jsonify({"submission_hash": submission.hash}), 200
 
 
 @app.route("/status/<hash_val>", methods=["GET"])
