@@ -150,7 +150,7 @@ def upload_image() -> tuple[Response, int]:
         db.session.add(sub_img)
         db.session.commit()
 
-    # Recreate the missing Database Entry
+    # Increment upload count for the image
     sub_img.upload_count += 1
     db.session.commit()
 
