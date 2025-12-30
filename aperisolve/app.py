@@ -163,7 +163,7 @@ def upload_image() -> tuple[Response, int]:
 
     queue.enqueue("aperisolve.workers.analyze_image", submission.hash, job_timeout=300)
 
-    return jsonify({"submission_hash": submission.hash}), 20
+    return jsonify({"submission_hash": submission.hash}), 200
 
 
 
