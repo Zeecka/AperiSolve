@@ -62,7 +62,7 @@ class IHDR(db.Model):  # type: ignore
     packed = Column(BigInteger, nullable=False)
 
 
-def create_crc_db() -> None:
+def fill_ihdr_db() -> None:
     """
     Creates a database of common PNG IHDR (Image Header) entries by generating
     combinations of standard PNG parameters such as resolutions, bit depths,
@@ -132,18 +132,16 @@ def init_db(app: Flask) -> None:
     with app.app_context():
         if getenv("CLEAR_AT_RESTART", "0") == "1":  # Force clear if CLEAR_AT_RESTART
             print("Clearing database and file system at restart...")
-            db.drop_all()  # Clear existing tables if configured
-            db.session.commit()  # pylint: disable=no-member
+            db.session.remove()  # pylint: disable=no-member
+            db.drop_all()
             rmtree(Path("./results"), ignore_errors=True)  # Clear results folder
 
-        if not db.engine.dialect.has_table(
-            db.engine.connect(), "image"
-        ):  # If not configured
-            db.create_all()
-            print("Database structure created successfully.")
-            if getenv("SKIP_IHDR_FILL", "0") == "1":
-                print("Skipping IHDR lookup table fill as per configuration.")
-            else:
-                print("Filling IHDR lookup table...")
-                create_crc_db()
-                print("IHDR table filled successfully.")
+        db.create_all()
+        print("Database structure created successfully.")
+
+        if getenv("SKIP_IHDR_FILL", "0") == "1":
+            print("Skipping IHDR lookup table fill as per configuration.")
+        else:
+            print("Filling IHDR lookup table...")
+            fill_ihdr_db()
+            print("IHDR table filled successfully.")

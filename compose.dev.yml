@@ -41,6 +41,7 @@ services:
     environment:
       - FLASK_DEBUG=true
       - FLASK_ENV=development
+      - CLEAR_AT_RESTART=0  # Always false for worker to prevent double clearing
 
   redis:
     image: redis:8
