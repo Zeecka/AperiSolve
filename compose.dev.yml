@@ -17,7 +17,7 @@ services:
       worker:
         condition: service_started
     env_file:
-      - .env
+      - .env.example
     environment:
       - FLASK_DEBUG=true
       - FLASK_ENV=development
@@ -34,7 +34,7 @@ services:
       - redis
       - postgres
     env_file:
-      - .env
+      - .env.example
     environment:
       - FLASK_DEBUG=true
       - FLASK_ENV=development
@@ -44,7 +44,7 @@ services:
     container_name: redis
     restart: always
     env_file:
-      - .env
+      - .env.example
 
   postgres:
     image: postgres:14
@@ -58,7 +58,7 @@ services:
       timeout: 5s
       retries: 5
     env_file:
-      - .env
+      - .env.example
 
 
   rqdashboard:
@@ -70,7 +70,7 @@ services:
     depends_on:
       - redis
     env_file:
-      - .env
+      - .env.example
       
 volumes:
   pgdata:
