@@ -6,7 +6,6 @@ import os
 import time
 from datetime import datetime, timezone
 from pathlib import Path
-from shutil import rmtree
 from typing import Any, Optional
 
 import sentry_sdk
@@ -152,33 +151,32 @@ def upload_image() -> tuple[Response, int]:
     submission_hash = hashlib.md5(submission_data).hexdigest()
     submission_path = RESULT_FOLDER / img_hash / submission_hash
 
-    # If submission already exists, return submission hash
-    if submission_path.exists():
-        submission: Submission = Submission.query.filter_by(
-            hash=submission_hash
-        ).first()
+    # Check if hash is present on the DB
+    submission: Submission = Submission.query.filter_by(
+        hash=submission_hash
+    ).first()
 
-        if submission is not None:  # File exist but not in DB (should not happen),
-            rmtree(submission_path)  # Removing file and continue processing as new
-            db.session.delete(submission)  # pylint: disable=no-member
-            db.session.commit()  # pylint: disable=no-member
-        else:
-            return jsonify({"submission_hash": submission.hash}), 200
+    # Only return if BOTH the file exists AND the DB entry exists
+    if submission_path.exists() and submission is not None:
+        return jsonify({"submission_hash": submission.hash}), 200
 
-    # If image is new, create a new Image entry
+    # Self-Healing Logic
     new_img_path = RESULT_FOLDER / img_hash / image_name
-    sub_img = Image.query.filter_by(hash=img_hash).first()  # type: ignore
 
-    if new_img_path.parent.exists() and sub_img is None:
-        # Inconsistent state: image file exists but no DB entry
-        rmtree(new_img_path.parent)  # Remove the existing files and continue
-
-    if not new_img_path.parent.exists():
+    # This fixes the "Ghost File" issue (DB exists, but file is missing)
+    if not new_img_path.exists():
         new_img_path.parent.mkdir(parents=True, exist_ok=True)
-        with open(new_img_path, "wb") as f:  # Write file to disk
+        with open(new_img_path, "wb") as f:
             f.write(image_data)
 
-        new_img = Image(
+    # Try to find image in DB by hash
+    sub_img = Image.query.filter_by(
+        hash=img_hash
+    ).first()
+
+    # If DB entry is missing (even if file exists on disk), create it!
+    if sub_img is None:
+        sub_img = Image(
             file=str(new_img_path),
             hash=img_hash,
             size=len(image_data),
@@ -186,30 +184,39 @@ def upload_image() -> tuple[Response, int]:
             first_submission_date=datetime.now(timezone.utc),
             last_submission_date=datetime.now(timezone.utc),
         )
-        db.session.add(new_img)  # pylint: disable=no-member
+        db.session.add(sub_img)  # pylint: disable=no-member
         db.session.commit()  # pylint: disable=no-member
 
-    sub_img = Image.query.filter_by(hash=img_hash).first()  # type: ignore
+    # Increment upload count for the image
     sub_img.upload_count += 1
     db.session.commit()  # pylint: disable=no-member
 
     # Create new Submission entry
     submission_path.mkdir(parents=True, exist_ok=True)
-    submission = Submission(
-        filename=image.filename,
-        password=password,
-        deep_analysis=deep_analysis,
-        hash=submission_hash,
-        status="pending",
-        date=time.time(),
-        image_hash=sub_img.hash,  # type: ignore
-    )
-    db.session.add(submission)  # pylint: disable=no-member
 
+    # Only create a new submission if it does not already exist
+    # New submission for new image
+    if not submission:
+        submission = Submission(
+            filename=image.filename,
+            password=password,
+            deep_analysis=deep_analysis,
+            hash=submission_hash,
+            status="pending",
+            date=time.time(),
+            image_hash=sub_img.hash,
+        )
+        db.session.add(submission)  # pylint: disable=no-member
+        db.session.commit()  # pylint: disable=no-member
+
+    # Re-analysis case to prevent early return
+    submission.status = "pending"  # type: ignore
     db.session.commit()  # pylint: disable=no-member
+
     # Start the analysis jobs
     queue.enqueue("aperisolve.workers.analyze_image", submission.hash, job_timeout=300)
 
+    # Return submission identifier
     return jsonify({"submission_hash": submission.hash}), 200
 
 

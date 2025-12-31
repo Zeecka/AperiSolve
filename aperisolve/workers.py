@@ -94,6 +94,7 @@ def analyze_image(submission_hash: str) -> None:
                 try:
                     analyzer_func(*args)
                 except Exception as e:
+                    sentry_sdk.capture_exception(e)
                     print(f"Error in {analyzer_func.__name__}: {e}")
                     sentry_sdk.capture_exception(e)
 
