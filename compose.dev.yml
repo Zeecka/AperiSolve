@@ -4,13 +4,12 @@ services:
     build: .
     container_name: aperisolve-web
     restart: always
-    command: ["/bin/sh", "-c", "rm -rf /aperisolve/results/* && flask --app aperisolve.app run --host=0.0.0.0 --port=5000"]
-    #command: ["/bin/sh", "-c", "flask --app aperisolve.app run --host=0.0.0.0 --port=5000"]
+    command: ["/bin/sh", "-c", "flask --app aperisolve.app run --host=0.0.0.0 --port=5000"]
     ports:
       - "5000:5000"
     volumes:
       - ./aperisolve:/aperisolve
-      - apresults:/aperisolve/results  # Shared named volume (renamed)
+      - apresults:/aperisolve/results
     depends_on:
       postgres:
         condition: service_healthy
@@ -29,8 +28,7 @@ services:
     build: .
     container_name: aperisolve-worker
     restart: always
-    command: ["/bin/sh", "-c", "rm -rf /aperisolve/results/* && rq worker default --url redis://redis:6379/0"]
-    #command: ["/bin/sh", "-c", "rq worker default --url redis://redis:6379/0"]
+    command: ["/bin/sh", "-c", "rq worker default --url redis://redis:6379/0"]
     volumes:
       - ./aperisolve:/aperisolve
       - apresults:/aperisolve/results  # Shared named volume (renamed)
@@ -54,7 +52,6 @@ services:
     image: postgres:18
     container_name: postgres
     restart: always
-    entrypoint: ["/bin/sh", "-c", "rm -rf /var/lib/postgresql/* && docker-entrypoint.sh postgres"]
     volumes:
       - pgdata:/var/lib/postgresql
     healthcheck:

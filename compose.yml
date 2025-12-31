@@ -6,8 +6,8 @@ services:
     restart: always
     ports:
       - "5000:5000"
-    tmpfs:
-      - /aperisolve/results
+    volumes:
+      - apresults:/aperisolve/results
     depends_on:
       postgres:
         condition: service_healthy
@@ -30,8 +30,8 @@ services:
     container_name: aperisolve-worker
     restart: always
     command: rq worker default --url redis://redis:6379/0
-    tmpfs:
-      - /aperisolve/results
+    volumes:
+      - apresults:/aperisolve/results
     depends_on:
       - redis
       - postgres
@@ -42,7 +42,6 @@ services:
     image: postgres:18
     container_name: postgres
     restart: always
-    entrypoint: ["/bin/sh", "-c", "rm -rf /var/lib/postgresql/* && docker-entrypoint.sh postgres"]
     volumes:
       - pgdata:/var/lib/postgresql
     healthcheck:
