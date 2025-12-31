@@ -60,7 +60,6 @@ services:
     env_file:
       - .env.example
 
-
   rqdashboard:
     image: eoranged/rq-dashboard
     container_name: rq-dashboard
@@ -71,6 +70,6 @@ services:
       - redis
     env_file:
       - .env.example
-      
+
 volumes:
   pgdata:
