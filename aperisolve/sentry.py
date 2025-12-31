@@ -14,8 +14,11 @@ from sentry_sdk.integrations.threading import ThreadingIntegration
 SENTRY_DSN = os.environ.get("SENTRY_DSN")
 SENTRY_ENVIRONMENT = os.environ.get("SENTRY_ENVIRONMENT", "development")
 SENTRY_TRACES_SAMPLE_RATE = float(os.environ.get("SENTRY_TRACES_SAMPLE_RATE", "0.1"))
-SENTRY_PROFILES_SAMPLE_RATE = float(os.environ.get("SENTRY_PROFILES_SAMPLE_RATE", "0.1"))
+SENTRY_PROFILES_SAMPLE_RATE = float(
+    os.environ.get("SENTRY_PROFILES_SAMPLE_RATE", "0.1")
+)
 SENTRY_RELEASE = os.environ.get("SENTRY_RELEASE", "1.0.0")
+
 
 def initialize_sentry() -> None:
     """Initialize Sentry SDK once, safely."""

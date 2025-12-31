@@ -136,7 +136,9 @@ def init_db(app: Flask) -> None:
             db.session.commit()  # pylint: disable=no-member
             rmtree(Path("./results"), ignore_errors=True)  # Clear results folder
 
-        if not db.engine.dialect.has_table(db.engine.connect(), "image"):  # If not configured
+        if not db.engine.dialect.has_table(
+            db.engine.connect(), "image"
+        ):  # If not configured
             db.create_all()
             print("Database structure created successfully.")
             if getenv("SKIP_IHDR_FILL", "0") == "1":
