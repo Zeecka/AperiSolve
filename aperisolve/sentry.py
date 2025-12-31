@@ -25,18 +25,23 @@ def initialize_sentry() -> None:
     if not SENTRY_DSN or sentry_sdk.Hub.current.client is not None:
         return
 
-    sentry_sdk.init(
-        dsn=SENTRY_DSN,
-        integrations=[
-            FlaskIntegration(),
-            SqlalchemyIntegration(),
-            RqIntegration(),
-            ThreadingIntegration(propagate_hub=True),
-        ],
-        traces_sample_rate=SENTRY_TRACES_SAMPLE_RATE,
-        profiles_sample_rate=SENTRY_PROFILES_SAMPLE_RATE,
-        environment=SENTRY_ENVIRONMENT,
-        release=SENTRY_RELEASE,
-        send_default_pii=False,
-        enable_tracing=True,
-    )
+    try:
+        sentry_sdk.init(
+            dsn=SENTRY_DSN,
+            integrations=[
+                FlaskIntegration(),
+                SqlalchemyIntegration(),
+                RqIntegration(),
+                ThreadingIntegration(propagate_hub=True),
+            ],
+            traces_sample_rate=SENTRY_TRACES_SAMPLE_RATE,
+            profiles_sample_rate=SENTRY_PROFILES_SAMPLE_RATE,
+            environment=SENTRY_ENVIRONMENT,
+            release=SENTRY_RELEASE,
+            send_default_pii=False,
+            enable_tracing=True,
+        )
+    except sentry_sdk.utils.BadDsn as e:
+        print(f"Sentry DSN is invalid, skipping Sentry initialization: {e}")
+    except Exception as e:
+        print(f"Sentry initialization failed: {e}")
