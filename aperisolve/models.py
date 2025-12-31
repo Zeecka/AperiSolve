@@ -5,6 +5,9 @@
 
 import itertools
 from datetime import datetime, timezone
+from os import getenv
+from pathlib import Path
+from shutil import rmtree
 
 from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
@@ -128,9 +131,16 @@ def init_db(app: Flask) -> None:
     """
     with app.app_context():
         if not db.engine.dialect.has_table(db.engine.connect(), "image"):
-            print("Creating database...")
+            print(f"CLEAR_AT_RESTART={getenv('CLEAR_AT_RESTART', '0')}")
+            if getenv("CLEAR_AT_RESTART", "0") == "1":
+                print("Clearing database and file system at restart...")
+                db.drop_all()  # Clear existing tables if configured
+                rmtree(Path("./results"), ignore_errors=True)  # Clear results folder
             db.create_all()
             print("Database structure created successfully.")
-            print("Filling IHDR lookup table...")
-            create_crc_db()
-            print("IHDR table filled successfully.")
+            if getenv("SKIP_IHDR_FILL", "0") == "1":
+                print("Skipping IHDR lookup table fill as per configuration.")
+            else:
+                print("Filling IHDR lookup table...")
+                create_crc_db()
+                print("IHDR table filled successfully.")

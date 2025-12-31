@@ -22,6 +22,7 @@ services:
     environment:
       - FLASK_DEBUG=true
       - FLASK_ENV=development
+      - SKIP_IHDR_FILL=1
 
   worker:
     #image: ghcr.io/zeecka/aperisolve:latest
