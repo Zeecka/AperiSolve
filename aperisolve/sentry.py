@@ -12,35 +12,39 @@ from sentry_sdk.integrations.sqlalchemy import SqlalchemyIntegration
 from sentry_sdk.integrations.threading import ThreadingIntegration
 
 SENTRY_DSN = os.environ.get("SENTRY_DSN")
-ENVIRONMENT = os.environ.get("ENVIRONMENT", "development")
+SENTRY_ENVIRONMENT = os.environ.get("SENTRY_ENVIRONMENT", "development")
+SENTRY_TRACES_SAMPLE_RATE = float(os.environ.get("SENTRY_TRACES_SAMPLE_RATE", "0.1"))
+SENTRY_PROFILES_SAMPLE_RATE = float(
+    os.environ.get("SENTRY_PROFILES_SAMPLE_RATE", "0.1")
+)
+SENTRY_RELEASE = os.environ.get("SENTRY_RELEASE", "1.0.0")
 
 
 def initialize_sentry() -> None:
     """Initialize Sentry SDK once, safely."""
 
     # No DSN → do nothing
-    dsn = os.environ.get("SENTRY_DSN")
-    if not dsn:
-        return
-
     # Prevent double initialization (Flask + RQ, CLI, tests, etc.)
-    if sentry_sdk.Hub.current.client is not None:
+    if not SENTRY_DSN or sentry_sdk.Hub.current.client is not None:
         return
 
-    sentry_sdk.init(
-        dsn=dsn,
-        integrations=[
-            FlaskIntegration(),
-            SqlalchemyIntegration(),
-            RqIntegration(),
-            ThreadingIntegration(propagate_hub=True),
-        ],
-        traces_sample_rate=float(os.environ.get("SENTRY_TRACES_SAMPLE_RATE", "0.1")),
-        profiles_sample_rate=float(
-            os.environ.get("SENTRY_PROFILES_SAMPLE_RATE", "0.1")
-        ),
-        environment=os.environ.get("ENVIRONMENT", "development"),
-        release=os.environ.get("SENTRY_RELEASE", "1.0.0"),
-        send_default_pii=False,
-        enable_tracing=True,
-    )
+    try:
+        sentry_sdk.init(
+            dsn=SENTRY_DSN,
+            integrations=[
+                FlaskIntegration(),
+                SqlalchemyIntegration(),
+                RqIntegration(),
+                ThreadingIntegration(propagate_hub=True),
+            ],
+            traces_sample_rate=SENTRY_TRACES_SAMPLE_RATE,
+            profiles_sample_rate=SENTRY_PROFILES_SAMPLE_RATE,
+            environment=SENTRY_ENVIRONMENT,
+            release=SENTRY_RELEASE,
+            send_default_pii=False,
+            enable_tracing=True,
+        )
+    except sentry_sdk.utils.BadDsn as e:
+        print(f"Sentry DSN is invalid, skipping Sentry initialization: {e}")
+    except Exception as e:
+        print(f"Sentry initialization failed: {e}")
