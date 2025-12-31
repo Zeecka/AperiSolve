@@ -9,7 +9,6 @@ services:
       - "5000:5000"
     volumes:
       - ./aperisolve:/aperisolve
-      - apresults:/aperisolve/results
     depends_on:
       postgres:
         condition: service_healthy
@@ -32,7 +31,6 @@ services:
     command: ["/bin/sh", "-c", "rq worker default --url redis://redis:6379/0"]
     volumes:
       - ./aperisolve:/aperisolve
-      - apresults:/aperisolve/results  # Shared named volume (renamed)
     depends_on:
       - redis
       - postgres

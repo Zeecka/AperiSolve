@@ -98,7 +98,10 @@ docker cp aperisolve-web:/aperisolve/results/filename.ext /path/to/backup/filena
 ```
 
 > [!WARNING]
-> Uploaded files are stored in a tmpfs. This means that they are stored in memory and will be lost if the server is restarted. Ensure that you back up any important files before the server is stopped or restarted.
+> If switching between dev and production compose files, remove the `results` directory or mounted volume to avoid conflicts:
+> ```bash
+> rm -rf aperisolve/results
+> ```
 
 ### Adding a new analyzer
 
