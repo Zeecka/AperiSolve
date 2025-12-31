@@ -1,32 +1,19 @@
+# flake8: noqa: E203,E501,W503
+# pylint: disable=C0413,W0718,R0903,R0801
+# mypy: disable-error-code=unused-awaitable
 """Asynchronous worker for analyzing image submissions."""
 
-import os
 import threading
 from pathlib import Path
 from typing import Any
 
 import sentry_sdk
-from sentry_sdk.integrations.rq import RqIntegration
-from sentry_sdk.integrations.threading import ThreadingIntegration
-from sentry_sdk.integrations.sqlalchemy import SqlalchemyIntegration
 
-# Initialize Sentry for workers (separate process from Flask app)
-SENTRY_DSN = os.environ.get("SENTRY_DSN")
-if SENTRY_DSN:
-    sentry_sdk.init(
-        dsn=SENTRY_DSN,
-        integrations=[
-            RqIntegration(),
-            ThreadingIntegration(propagate_hub=True),  # Capture exceptions in threads
-            SqlalchemyIntegration(),
-        ],
-        traces_sample_rate=float(os.environ.get("SENTRY_TRACES_SAMPLE_RATE", "0.1")),
-        environment=os.environ.get("ENVIRONMENT", "development"),
-        release=os.environ.get("SENTRY_RELEASE", "1.0.0"),
-        send_default_pii=False,
-    )
+from .sentry import initialize_sentry
 
-from .analyzers.binwalk import analyze_binwalk
+initialize_sentry()
+
+from .analyzers.binwalk import analyze_binwalk  # pylint: disable=C0413
 from .analyzers.decomposer import analyze_decomposer
 from .analyzers.exiftool import analyze_exiftool
 from .analyzers.foremost import analyze_foremost
@@ -74,8 +61,7 @@ def analyze_image(submission_hash: str) -> None:
 
         if not submission or not image:  # No submission found
             sentry_sdk.capture_message(
-                f"Submission or image not found: {submission_hash}",
-                level="warning"
+                f"Submission or image not found: {submission_hash}", level="warning"
             )
             return
 
@@ -127,10 +113,10 @@ def analyze_image(submission_hash: str) -> None:
             for thread in threads:
                 thread.join()
 
-            submission.status = "completed"
+            submission.status = "completed"  # type: ignore
         except Exception as e:
             sentry_sdk.capture_exception(e)
-            submission.status = "error"
+            submission.status = "error"  # type: ignore
         finally:
             db.session.commit()  # pylint: disable=no-member
             # Flush Sentry events - wait up to 5 seconds for events to be sent

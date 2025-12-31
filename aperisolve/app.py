@@ -1,3 +1,6 @@
+# flake8: noqa: E203,E501,W503
+# pylint: disable=C0413,W0718,R0903,R0801
+# mypy: disable-error-code=unused-awaitable
 """Aperi'Solve Flask application."""
 
 import hashlib
@@ -9,45 +12,17 @@ from pathlib import Path
 from typing import Any, Optional
 
 import sentry_sdk
-from sentry_sdk.integrations.flask import FlaskIntegration
-from sentry_sdk.integrations.sqlalchemy import SqlalchemyIntegration
-from sentry_sdk.integrations.rq import RqIntegration
-from sentry_sdk.integrations.threading import ThreadingIntegration
-
 from flask import Flask, Response, abort, jsonify, render_template, request, send_file
 from redis import Redis
 from rq import Queue
 
+from .sentry import initialize_sentry
+
+initialize_sentry()
+
 from .cleanup import cleanup_old_entries
 from .config import IMAGE_EXTENSIONS, RESULT_FOLDER, WORKER_FILES
 from .models import Image, Submission, db, init_db
-
-SENTRY_DSN = os.environ.get("SENTRY_DSN")
-ENVIRONMENT = os.environ.get("ENVIRONMENT", "development")
-
-if SENTRY_DSN:
-    sentry_sdk.init(
-        dsn=SENTRY_DSN,
-        integrations=[
-            FlaskIntegration(),
-            SqlalchemyIntegration(),
-            RqIntegration(),
-            ThreadingIntegration(propagate_hub=True),
-        ],
-        # Set traces_sample_rate to 1.0 to capture 100% of transactions for performance monitoring.
-        # Adjust this value in production (e.g., 0.1 for 10%)
-        traces_sample_rate=float(os.environ.get("SENTRY_TRACES_SAMPLE_RATE", "0.1")),
-        # Set profiles_sample_rate to 1.0 to profile 100% of sampled transactions.
-        profiles_sample_rate=float(os.environ.get("SENTRY_PROFILES_SAMPLE_RATE", "0.1")),
-        # Environment tag (production, staging, development)
-        environment=ENVIRONMENT,
-        # Release version (use git commit hash or version number)
-        release=os.environ.get("SENTRY_RELEASE", "1.0.0"),
-        # Send default PII (user IPs, etc.) - set to False for privacy
-        send_default_pii=False,
-        # Enable automatic breadcrumb tracking
-        enable_tracing=True,
-    )
 
 app: Flask = Flask(__name__)
 app.json.sort_keys = False  # type: ignore
