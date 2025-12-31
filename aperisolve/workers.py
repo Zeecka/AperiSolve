@@ -99,8 +99,8 @@ def analyze_image(submission_hash: str) -> None:
             for thread in threads:
                 thread.join()
 
-            submission.status = "completed"
+            submission.status = "completed"  # type: ignore
         except Exception:
-            submission.status = "error"
+            submission.status = "error"  # type: ignore
         finally:
             db.session.commit()  # pylint: disable=no-member

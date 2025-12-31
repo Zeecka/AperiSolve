@@ -120,7 +120,7 @@ def upload_image() -> tuple[Response, int]:
     # Only return if BOTH the file exists AND the DB entry exists
     if submission_path.exists() and submission is not None:
         return jsonify({"submission_hash": submission.hash}), 200
-    
+
     # Self-Healing Logic
     new_img_path = RESULT_FOLDER / img_hash / image_name
 
@@ -129,7 +129,7 @@ def upload_image() -> tuple[Response, int]:
         new_img_path.parent.mkdir(parents=True, exist_ok=True)
         with open(new_img_path, "wb") as f:
             f.write(image_data)
-    
+
     # Try to find image in DB by hash
     sub_img = Image.query.filter_by(
         hash=img_hash
@@ -145,12 +145,12 @@ def upload_image() -> tuple[Response, int]:
             first_submission_date=datetime.now(timezone.utc),
             last_submission_date=datetime.now(timezone.utc),
         )
-        db.session.add(sub_img)
-        db.session.commit()
-    
+        db.session.add(sub_img)  # pylint: disable=no-member
+        db.session.commit()  # pylint: disable=no-member
+
     # Increment upload count for the image
     sub_img.upload_count += 1
-    db.session.commit()
+    db.session.commit()  # pylint: disable=no-member
 
     # Create new Submission entry
     submission_path.mkdir(parents=True, exist_ok=True)
@@ -167,12 +167,12 @@ def upload_image() -> tuple[Response, int]:
             date=time.time(),
             image_hash=sub_img.hash,
         )
-        db.session.add(submission)
-        db.session.commit()
+        db.session.add(submission)  # pylint: disable=no-member
+        db.session.commit()  # pylint: disable=no-member
 
     # Re-analysis case to prevent early return
-    submission.status = "pending"
-    db.session.commit()
+    submission.status = "pending"  # type: ignore
+    db.session.commit()  # pylint: disable=no-member
 
     # Start the analysis jobs
     queue.enqueue("aperisolve.workers.analyze_image", submission.hash, job_timeout=300)
