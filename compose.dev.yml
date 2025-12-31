@@ -58,7 +58,7 @@ services:
     restart: always
     # Commented tmpfs for development to allow persistent results during code changes
     tmpfs:
-      - /var/lib/postgresql/data
+      - /var/lib/postgresql
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U aperiuser -d aperisolve"]
       interval: 5s
