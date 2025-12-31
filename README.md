@@ -25,6 +25,7 @@ Support Aperi'Solve:
 Aperi'Solve is an open-source steganalysis web platform that performs automated analysis on images to detect and extract hidden data using common steganography tools and techniques.
 
 Table of contents
+
 - [Key features](#key-features)
 - [Quick start (Docker)](#quick-start-docker)
 - [Development](#development)
@@ -59,6 +60,7 @@ In case you want to host your own version of https://www.aperisolve.com/.
 Recommended: Docker + Docker Compose.
 
 Clone and start the full stack (production-like):
+
 ```bash
 git clone https://github.com/Zeecka/AperiSolve.git
 cd AperiSolve
@@ -68,13 +70,16 @@ docker compose up -d
 Default: http://localhost:5000/
 
 ## Development
+
 Development compose:
+
 ```bash
 # development environment (hot reload and local volumes)
 docker compose -f compose.dev.yml up --build
 ```
 
 Useful commands:
+
 ```bash
 # Stop and remove containers, networks and volumes (results are stored in a volume)
 docker compose down -v
@@ -84,21 +89,26 @@ docker exec -it aperisolve-web bash
 
 # Enter Postgres shell (from host)
 docker exec -it postgres psql -U aperiuser -d aperisolve
+
+# Backup all uploaded files
+docker cp -r aperisolve-web:/aperisolve/results /path/to/backup/location
+
+# Backup a single uploaded file
+docker cp aperisolve-web:/aperisolve/results/filename.ext /path/to/backup/filename.ext
 ```
 
 > [!WARNING]
-> If switching between dev and production compose files, remove the `results` directory or mounted volume to avoid conflicts:
-> ```bash
-> rm -rf aperisolve/results
-> ```
+> Uploaded files are stored in a tmpfs. This means that they are stored in memory and will be lost if the server is restarted. Ensure that you back up any important files before the server is stopped or restarted.
 
 ### Adding a new analyzer
 
 Adding a custom analyzer is straightforward:
 
 1. Create your analyzer file:
+
    - Copy `aperisolve/analyzers/template_analyzer.py` -> `aperisolve/analyzers/myanalyzer.py`
    - Implement function signature similar to:
+
    ```python
    # aperisolve/analyzers/myanalyzer.py
    def analyze_myanalyzer(image_path: str, results_dir: str) -> dict:
@@ -111,7 +121,9 @@ Adding a custom analyzer is straightforward:
    ```
 
 2. Register the analyzer in the worker pipeline:
+
    - Edit `aperisolve/workers.py`:
+
    ```python
    # import
    from .analyzers.myanalyzer import analyze_myanalyzer
@@ -126,23 +138,27 @@ Adding a custom analyzer is straightforward:
    ```
 
 3. Add your analyzer to the UI order:
+
    - Edit `aperisolve/static/js/aperisolve.js` and append `myanalyzer` to `TOOL_ORDER` so it appears in the frontend.
 
 4. Test locally: run the worker and submit jobs to ensure outputs are produced and displayed.
 
 > [!TIP]
+>
 > - Keep analyzers idempotent and write outputs to the provided `results_dir`.
 > - Return structured JSON so the frontend can render links/downloads automatically.
 
 ## Configuration & environment variables
 
 Typical services:
+
 - Web app (Flask)
 - Workers (Python)
 - Redis (RQ)
 - PostgreSQL
 
 Main environment variables (examples):
+
 - DATABASE_URL=postgresql://aperiuser:password@postgres:5432/aperisolve
 - REDIS_URL=redis://redis:6379/0
 - SECRET_KEY=change_me
@@ -185,12 +201,14 @@ This separation keeps heavy tools (binwalk, foremost, zsteg, etc.) isolated and 
 ## Contributing
 
 Contributions are welcome! Please:
+
 1. Fork the repository
 2. Create a feature branch
 3. Open a pull request describing your change
 
 > [!IMPORTANT]
 > Please follow the code style and run linters before submitting. The project adheres to:
+>
 > - Black
 > - Flake8 (ignoring E203, E501, W503)
 > - Pylint (ignoring W0718, R0903, R0801)
@@ -206,4 +224,5 @@ CI will run these checks on each PR.
 ## Credits
 
 Acknowledgements:
+
 - Thanks to contributors and the open-source community for the tools integrated ([zsteg](https://github.com/zed-0xff/zsteg), [steghide](https://steghide.sourceforge.net/), [outguess](https://www.rbcafe.com/software/outguess/), [openstego](https://www.openstego.com/), [exiftool](https://exiftool.org/), [binwalk](https://github.com/ReFirmLabs/binwalk), [foremost](https://foremost.sourceforge.net/), [pngcheck](https://www.libpng.org/pub/png/apps/pngcheck.html), [strings](https://pubs.opengroup.org/onlinepubs/9799919799/utilities/strings.html), ...).

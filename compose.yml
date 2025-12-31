@@ -6,8 +6,8 @@ services:
     restart: always
     ports:
       - "5000:5000"
-    volumes:
-      - apresults:/aperisolve/results
+    tmpfs:
+      - /aperisolve/results
     depends_on:
       postgres:
         condition: service_healthy
@@ -17,6 +17,12 @@ services:
         condition: service_started
     env_file:
       - .env
+    healthcheck:
+      test: ["CMD-SHELL", "dd if=/dev/urandom of=/tmp/healthcheck.png bs=1 count=1000000 && curl -X POST -F 'image=@/tmp/healthcheck.png' http://localhost:5000/upload -s -o /dev/null -w '%{http_code}' | grep -q 200"]
+      interval: 3600s
+      timeout: 30s
+      retries: 3
+      start_period: 900s
 
   worker:
     image: ghcr.io/zeecka/aperisolve:latest
@@ -24,8 +30,8 @@ services:
     container_name: aperisolve-worker
     restart: always
     command: rq worker default --url redis://redis:6379/0
-    volumes:
-      - apresults:/aperisolve/results
+    tmpfs:
+      - /aperisolve/results
     depends_on:
       - redis
       - postgres
@@ -36,8 +42,8 @@ services:
     image: postgres:14
     container_name: postgres
     restart: always
-    volumes:
-      - pgdata:/var/lib/postgresql/data
+    tmpfs:
+      - /var/lib/postgresql/data
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U aperiuser -d aperisolve"]
       interval: 5s
@@ -63,7 +69,3 @@ services:
       - redis
     env_file:
       - .env
-      
-volumes:
-  apresults:
-  pgdata:

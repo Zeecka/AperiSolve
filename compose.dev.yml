@@ -9,6 +9,9 @@ services:
       - "5000:5000"
     volumes:
       - ./aperisolve:/aperisolve
+    # Commented tmpfs for development to allow persistent results during code changes
+    tmpfs:
+      - /aperisolve/results
     depends_on:
       postgres:
         condition: service_healthy
@@ -30,6 +33,9 @@ services:
     command: rq worker default --url redis://redis:6379/0
     volumes:
       - ./aperisolve:/aperisolve
+    # Commented tmpfs for development to allow persistent results during code changes
+    tmpfs:
+      - /aperisolve/results
     depends_on:
       - redis
       - postgres
@@ -40,18 +46,19 @@ services:
       - FLASK_ENV=development
 
   redis:
-    image: redis:7
+    image: redis:8
     container_name: redis
     restart: always
     env_file:
       - .env
 
   postgres:
-    image: postgres:14
+    image: postgres:18
     container_name: postgres
     restart: always
-    volumes:
-      - pgdata:/var/lib/postgresql/data
+    # Commented tmpfs for development to allow persistent results during code changes
+    tmpfs:
+      - /var/lib/postgresql/data
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U aperiuser -d aperisolve"]
       interval: 5s
@@ -71,6 +78,3 @@ services:
       - redis
     env_file:
       - .env
-      
-volumes:
-  pgdata:
