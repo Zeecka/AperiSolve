@@ -4,14 +4,13 @@ services:
     build: .
     container_name: aperisolve-web
     restart: always
-    command: ["flask", "--app", "aperisolve.app", "run", "--host=0.0.0.0", "--port=5000"]
+    command: ["/bin/sh", "-c", "rm -rf /aperisolve/results/* && flask --app aperisolve.app run --host=0.0.0.0 --port=5000"]
+    #command: ["/bin/sh", "-c", "flask --app aperisolve.app run --host=0.0.0.0 --port=5000"]
     ports:
       - "5000:5000"
     volumes:
       - ./aperisolve:/aperisolve
-    # Commented tmpfs for development to allow persistent results during code changes
-    tmpfs:
-      - /aperisolve/results
+      - apresults:/aperisolve/results  # Shared named volume (renamed)
     depends_on:
       postgres:
         condition: service_healthy
@@ -30,12 +29,11 @@ services:
     build: .
     container_name: aperisolve-worker
     restart: always
-    command: rq worker default --url redis://redis:6379/0
+    command: ["/bin/sh", "-c", "rm -rf /aperisolve/results/* && rq worker default --url redis://redis:6379/0"]
+    #command: ["/bin/sh", "-c", "rq worker default --url redis://redis:6379/0"]
     volumes:
       - ./aperisolve:/aperisolve
-    # Commented tmpfs for development to allow persistent results during code changes
-    tmpfs:
-      - /aperisolve/results
+      - apresults:/aperisolve/results  # Shared named volume (renamed)
     depends_on:
       - redis
       - postgres
@@ -56,9 +54,9 @@ services:
     image: postgres:18
     container_name: postgres
     restart: always
-    # Commented tmpfs for development to allow persistent results during code changes
-    tmpfs:
-      - /var/lib/postgresql
+    entrypoint: ["/bin/sh", "-c", "rm -rf /var/lib/postgresql/* && docker-entrypoint.sh postgres"]
+    volumes:
+      - pgdata:/var/lib/postgresql
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U aperiuser -d aperisolve"]
       interval: 5s
@@ -66,7 +64,6 @@ services:
       retries: 5
     env_file:
       - .env
-
 
   rqdashboard:
     image: eoranged/rq-dashboard
@@ -78,3 +75,7 @@ services:
       - redis
     env_file:
       - .env
+
+volumes:
+  apresults:
+  pgdata:

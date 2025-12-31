@@ -486,7 +486,9 @@ if (browseBtn) {
           } catch (e) {
             showDanger("❌ Invalid server response.", true);
           }
-        } else {
+        } else if (xhr.status == 413) {
+          showDanger("❌ File too large. Please upload a smaller file.", true);
+        }else {
           showDanger(`❌ HTTP error ${xhr.status}`, true);
         }
         progressBar.style.width = "100%";

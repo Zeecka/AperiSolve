@@ -42,4 +42,4 @@ RUN apt-get remove -y wget && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/*
 
-CMD ["gunicorn", "-w", "4", "-b", "0.0.0.0:5000", "--access-logfile", "-", "--error-logfile", "-", "--log-level", "info", "--capture-output", "aperisolve.wsgi:application"]
+CMD ["sh", "-c", "rm -rf /aperisolve/results/* && gunicorn -w 4 -b 0.0.0.0:5000 --access-logfile - --error-logfile - --log-level info --capture-output aperisolve.wsgi:application"]
