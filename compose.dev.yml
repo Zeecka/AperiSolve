@@ -4,7 +4,7 @@ services:
     build: .
     container_name: aperisolve-web
     restart: always
-    command: ["/bin/sh", "-c", "flask --app aperisolve.app run --host=0.0.0.0 --port=5000"]
+    command: ["flask", "--app", "aperisolve.app", "run", "--host=0.0.0.0", "--port=5000"]
     ports:
       - "5000:5000"
     volumes:
@@ -17,50 +17,48 @@ services:
       worker:
         condition: service_started
     env_file:
-      - .env
+      - .env.example
     environment:
       - FLASK_DEBUG=true
       - FLASK_ENV=development
-      - SKIP_IHDR_FILL=1
 
   worker:
     #image: ghcr.io/zeecka/aperisolve:latest
     build: .
     container_name: aperisolve-worker
     restart: always
-    command: ["/bin/sh", "-c", "rq worker default --url redis://redis:6379/0"]
+    command: rq worker default --url redis://redis:6379/0
     volumes:
       - ./aperisolve:/aperisolve
     depends_on:
       - redis
       - postgres
     env_file:
-      - .env
+      - .env.example
     environment:
       - FLASK_DEBUG=true
       - FLASK_ENV=development
-      - CLEAR_AT_RESTART=0  # Always false for worker to prevent double clearing
 
   redis:
-    image: redis:8
+    image: redis:7
     container_name: redis
     restart: always
     env_file:
-      - .env
+      - .env.example
 
   postgres:
-    image: postgres:18
+    image: postgres:14
     container_name: postgres
     restart: always
     volumes:
-      - pgdata:/var/lib/postgresql
+      - pgdata:/var/lib/postgresql/data
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U aperiuser -d aperisolve"]
       interval: 5s
       timeout: 5s
       retries: 5
     env_file:
-      - .env
+      - .env.example
 
   rqdashboard:
     image: eoranged/rq-dashboard
@@ -71,8 +69,7 @@ services:
     depends_on:
       - redis
     env_file:
-      - .env
+      - .env.example
 
 volumes:
-  apresults:
   pgdata:
