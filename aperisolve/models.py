@@ -130,12 +130,13 @@ def init_db(app: Flask) -> None:
         - Prints status messages to console during initialization
     """
     with app.app_context():
-        if not db.engine.dialect.has_table(db.engine.connect(), "image"):
-            print(f"CLEAR_AT_RESTART={getenv('CLEAR_AT_RESTART', '0')}")
-            if getenv("CLEAR_AT_RESTART", "0") == "1":
-                print("Clearing database and file system at restart...")
-                db.drop_all()  # Clear existing tables if configured
-                rmtree(Path("./results"), ignore_errors=True)  # Clear results folder
+        if getenv("CLEAR_AT_RESTART", "0") == "1":  # Force clear if CLEAR_AT_RESTART
+            print("Clearing database and file system at restart...")
+            db.drop_all()  # Clear existing tables if configured
+            db.session.commit()  # pylint: disable=no-member
+            rmtree(Path("./results"), ignore_errors=True)  # Clear results folder
+
+        if not db.engine.dialect.has_table(db.engine.connect(), "image"):  # If not configured
             db.create_all()
             print("Database structure created successfully.")
             if getenv("SKIP_IHDR_FILL", "0") == "1":
