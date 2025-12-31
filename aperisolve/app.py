@@ -43,10 +43,13 @@ queue = Queue(connection=redis_conn)
 @app.errorhandler(413)
 def too_large(_: Any) -> tuple[Response, int]:
     """Error Handler for Max File Size."""
-    sentry_sdk.set_context("upload", {
-        "content_length": request.content_length,
-        "max_allowed": app.config["MAX_CONTENT_LENGTH"],
-    })
+    sentry_sdk.set_context(
+        "upload",
+        {
+            "content_length": request.content_length,
+            "max_allowed": app.config["MAX_CONTENT_LENGTH"],
+        },
+    )
     sentry_sdk.capture_message("Upload failed: 413 Payload Too Large", level="warning")
     return jsonify({"error": "Image size exceeded"}), 413
 
@@ -56,7 +59,9 @@ def not_found(_: Any) -> str:
     """Error Handler for 404 not found."""
     return render_template("error.html", message="Resource not found", statuscode=404)
 
+
 # Sentry automatically captures 500 errors
+
 
 @app.route("/")
 def index() -> str:
@@ -127,9 +132,7 @@ def upload_image() -> tuple[Response, int]:
     submission_path = RESULT_FOLDER / img_hash / submission_hash
 
     # Check if hash is present on the DB
-    submission: Submission = Submission.query.filter_by(
-        hash=submission_hash
-    ).first()
+    submission: Submission = Submission.query.filter_by(hash=submission_hash).first()
 
     # Only return if BOTH the file exists AND the DB entry exists
     if submission_path.exists() and submission is not None:
@@ -145,9 +148,7 @@ def upload_image() -> tuple[Response, int]:
             f.write(image_data)
 
     # Try to find image in DB by hash
-    sub_img = Image.query.filter_by(
-        hash=img_hash
-    ).first()
+    sub_img = Image.query.filter_by(hash=img_hash).first()
 
     # If DB entry is missing (even if file exists on disk), create it!
     if sub_img is None:
