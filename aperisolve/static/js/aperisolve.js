@@ -264,6 +264,7 @@ function parseResult(result) {
         for (const line of result[tool]["output"]) {
           texarea_content += escapeHtml(`${line}\n`);
         }
+        texarea_content = texarea_content.trim();
         texarea_content += `</textarea>`;
         texarea_content += `<i class="fas fa-copy copy-icon"></i>`;
         texarea_content += `</div>`;
