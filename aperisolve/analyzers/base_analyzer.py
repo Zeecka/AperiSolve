@@ -3,13 +3,18 @@
 # mypy: disable-error-code=unused-awaitable
 """Base Analyzer class for image analysis tools."""
 
+import fcntl
+import json
+import os
 import subprocess
+import threading
 from abc import ABC
 from pathlib import Path
 from shutil import rmtree
 from typing import Any, Optional, overload
 
-from .utils import MAX_PENDING_TIME, update_data
+_thread_lock = threading.Lock()
+MAX_PENDING_TIME = int(os.getenv("MAX_PENDING_TIME", "600"))  # 10 minutes by default
 
 
 class SubprocessAnalyzer(ABC):
@@ -21,6 +26,7 @@ class SubprocessAnalyzer(ABC):
     has_archive: bool
     cmd: list[str] | None = None
     img: str
+    make_folder: bool = True
 
     def __init__(self, name: str, input_img: Path, output_dir: Path, has_archive: bool = False):
         self.name = name
@@ -49,8 +55,38 @@ class SubprocessAnalyzer(ABC):
         return zip_data.stderr
 
     def update_result(self, result: dict[str, Any]) -> None:
-        """Update the results.json with the analysis result."""
-        update_data(self.output_dir, {self.name: result})
+        """Thread-safe and process-safe JSON update using lock file and atomic replace."""
+        json_file = self.output_dir / "results.json"
+        new_data = {self.name: result}
+        lock_file = json_file.with_suffix(json_file.suffix + ".lock")
+        tmp_file = json_file.with_suffix(json_file.suffix + ".tmp")
+
+        json_file.parent.mkdir(parents=True, exist_ok=True)
+
+        with _thread_lock:  # synchronizes across threads
+            with open(lock_file, "w", encoding="utf-8") as lock:
+                fcntl.flock(lock, fcntl.LOCK_EX)  # synchronizes across processes
+
+                try:
+                    # Read existing JSON
+                    data: dict[Any, Any] = {}
+                    if json_file.exists():
+                        try:
+                            with open(json_file, "r", encoding="utf-8") as f:
+                                data = json.load(f)
+                        except json.JSONDecodeError:
+                            data = {}
+
+                    # Update with new data
+                    data.update(new_data)
+
+                    # Write safely to a temp file
+                    with open(tmp_file, "w", encoding="utf-8") as f:
+                        json.dump(data, f, sort_keys=False)
+
+                    os.replace(tmp_file, json_file)  # ensures file write is atomic
+                finally:
+                    fcntl.flock(lock, fcntl.LOCK_UN)
 
     def get_extracted_dir(self) -> Path:
         """Get the extracted directory path. Can be overridden but work as it is."""
@@ -81,7 +117,8 @@ class SubprocessAnalyzer(ABC):
             extracted_dir = None
             if self.has_archive:
                 extracted_dir = self.get_extracted_dir()
-                extracted_dir.mkdir(parents=True, exist_ok=True)
+                if self.make_folder:
+                    extracted_dir.mkdir(parents=True, exist_ok=True)
 
             if password:
                 cmd = self.build_cmd(password)
@@ -107,7 +144,7 @@ class SubprocessAnalyzer(ABC):
                     "status": "ok",
                     "output": self.process_output(stdout, stderr),
                 }
-                note = self.process_note(stdout, stderr)
+                note: Optional[str] = self.process_note(stdout, stderr)
                 if note:
                     result["note"] = note
                 if zip_exist:
@@ -128,6 +165,6 @@ class SubprocessAnalyzer(ABC):
         """Process the stderr."""
         return stderr
 
-    def process_note(self, stdout: str, stderr: str) -> str:
+    def process_note(self, stdout: str, stderr: str) -> Optional[str]:
         """Process the stdout for informational purposes."""
-        return stdout
+        return None
