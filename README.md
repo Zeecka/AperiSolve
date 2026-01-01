@@ -208,10 +208,13 @@ Contributions are welcome! Please:
 > [!IMPORTANT]
 > Please follow the code style and run linters before submitting. The project adheres to:
 >
-> - Black
+> - Black (line length 100)
+> - Isort (profile black)
 > - Flake8 (ignoring E203, E501, W503)
 > - Pylint (ignoring W0718, R0903, R0801)
 > - Mypy (ignoring unused-awaitable)
+>
+> See [.pre-commit-config.yaml](.pre-commit-config.yaml) file.
 
 CI will run these checks on each PR.
 
