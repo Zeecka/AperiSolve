@@ -18,6 +18,11 @@ class PngcheckAnalyzer(SubprocessAnalyzer):
     def is_error(self, returncode: int, stdout: str, stderr: str, zip_exist: bool) -> bool:
         return "this is neither a PNG or JNG image nor a MNG stream" in stdout
 
+    def process_error(self, stdout: str, stderr: str) -> str:
+        """Process the stderr."""
+        if "this is neither a PNG or JNG image nor a MNG stream" in stdout:
+            return "The file format of the file is not supported (PNG or JNG only)."
+        return stdout
 
 def analyze_pngcheck(input_img: Path, output_dir: Path) -> None:
     """Analyze an image submission using pngcheck."""

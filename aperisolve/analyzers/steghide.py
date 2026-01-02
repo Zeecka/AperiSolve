@@ -36,16 +36,19 @@ class SteghideAnalyzer(SubprocessAnalyzer):
     def is_error(self, returncode: int, stdout: str, stderr: str, zip_exist: bool) -> bool:
         """Check if the result is an error."""
 
-        match = re.search(r'embedded file "([^"]+)"', stdout)
+        match = re.search(r'embedded file "([^"]+)".*', stdout + stderr)
         embedded_filename = match.group(1) if match else None
 
+        match = re.search(r'wrote extracted data to "([^"]+)".*', stdout + stderr)
+        extracted_filename = match.group(1) if match else None
+
         # if bad file format or wrong password, raise an error
-        return returncode != 0 or embedded_filename is None
+        return embedded_filename is None and extracted_filename is None
 
     def process_output(self, stdout: str, stderr: str) -> str | list[str] | dict[str, str]:
         """Process the stdout into a list of lines."""
         out = []
-        for line in stderr.split("\n"):
+        for line in (stdout + '\n' + stderr).split("\n"):
             if line.startswith('wrote extracted data to "'):
                 out.append(line)
         return out
@@ -54,11 +57,7 @@ class SteghideAnalyzer(SubprocessAnalyzer):
         """Process stderr."""
         if "the file format of the file" in stderr and "not supported" in stderr:
             return "The file format of the file is not supported (JPEG or BMP only)."
-        out = ""
-        for line in stderr.split("\n"):
-            if line and not line.startswith('wrote extracted data to "'):
-                out += line + "\n"
-        return out
+        return stderr
 
 
 def analyze_steghide(input_img: Path, output_dir: Path, password: Optional[str] = None) -> None:
