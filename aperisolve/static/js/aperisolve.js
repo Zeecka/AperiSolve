@@ -254,9 +254,8 @@ function parseResult(result) {
 
     // Parse text output
     if (typeof result[tool]["output"] === "string") {
-      analyzer.innerHTML += `<pre>${escapeHtml(
-        result[tool]["output"]
-      )}</pre>`;
+      output = escapeHtml(result[tool]["output"]);
+      analyzer.innerHTML += `<div class="alert alert-success" role="alert">${output}</div>`;
     } else if (Array.isArray(result[tool]["output"])) {
       if (result[tool]["output"].length > 0) {
         var texarea_content = `<div class="textarea-container">`;
