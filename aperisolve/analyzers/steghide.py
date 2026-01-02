@@ -29,8 +29,9 @@ class SteghideAnalyzer(SubprocessAnalyzer):
 
         match = re.search(r'embedded file "([^"]+)"', data.stdout)
         assert match is not None
-        hidden = match.group(1)
-        cmd = ["steghide", "extract", "-sf", self.img, "-xf", hidden, "-p", password]
+        hidden_file = match.group(1)
+        outfile = str(self.get_extracted_dir() / hidden_file)
+        cmd = ["steghide", "extract", "-sf", self.img, "-xf", outfile, "-p", password]
         return cmd
 
     def is_error(self, returncode: int, stdout: str, stderr: str, zip_exist: bool) -> bool:
@@ -49,7 +50,7 @@ class SteghideAnalyzer(SubprocessAnalyzer):
         """Process the stdout into a list of lines."""
         out = []
         for line in (stdout + '\n' + stderr).split("\n"):
-            if line.startswith('wrote extracted data to "'):
+            if 'wrote extracted data to' in line:
                 out.append(line)
         return out
 
