@@ -127,4 +127,5 @@ def analyze_steghide(
 
     except Exception as e:
         update_data(output_dir, {"steghide": {"status": "error", "error": str(e)}})
+        raise  # Re-raise to let workers.py capture and send to Sentry
     return None

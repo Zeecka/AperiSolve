@@ -96,4 +96,5 @@ def analyze_outguess(
 
     except Exception as e:
         update_data(output_dir, {"outguess": {"status": "error", "error": str(e)}})
+        raise  # Re-raise to let workers.py capture and send to Sentry
     return None
