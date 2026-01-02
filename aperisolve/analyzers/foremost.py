@@ -4,7 +4,6 @@
 """Foremost Analyzer for Image Submissions."""
 
 from pathlib import Path
-from typing import Any
 
 from .base_analyzer import SubprocessAnalyzer
 

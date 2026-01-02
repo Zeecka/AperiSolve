@@ -5,7 +5,7 @@
 
 import re
 from pathlib import Path
-from typing import Any, Optional
+from typing import Optional
 
 from .base_analyzer import SubprocessAnalyzer
 
