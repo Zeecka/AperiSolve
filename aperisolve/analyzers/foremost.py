@@ -20,7 +20,7 @@ def analyze_foremost(input_img: Path, output_dir: Path) -> None:
         stderr = ""
         # Run foremost
         data = subprocess.run(
-            ["foremost", "-o", foremost_dir, "-lol", input_img],
+            ["foremost", "-o", foremost_dir, "-i", input_img],
             capture_output=True,
             text=True,
             check=True,
