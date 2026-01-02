@@ -115,53 +115,50 @@ class ResizeAnalyzer(SubprocessAnalyzer):
         """
         logs = []
 
-        try:
-            with self.input_img.open("rb") as image:
-                img_bytes = bytearray(image.read())
-                try:
-                    self.png = PNG.from_bytearray(img_bytes)
-                except ValueError:
-                    return {
-                        "status": "error",
-                        "error": "IHDR chunk is not the first chunk, or PNG has invalid structure.",
-                    }
-
-            # Already correct
-            if self.png.crc == self.png.compute_crc():
-                return {
-                    "status": "ok",
-                    "note": f"PNG is already valid with dimensions "
-                    f"{self.png.width}x{self.png.height} and crc 0x{self.png.crc:08x}.",
-                }
-
-            saved_img_urls = []
-
-            # No match found
-            if not (db_matches := self._lookup_crc()) and not (
-                db_matches := self._search_height_crc()
-            ):
+        with self.input_img.open("rb") as image:
+            img_bytes = bytearray(image.read())
+            try:
+                self.png = PNG.from_bytearray(img_bytes)
+            except ValueError:
                 return {
                     "status": "error",
-                    "error": "Failure: No matching dimensions found.",
+                    "error": "IHDR chunk is not the first chunk, or PNG has invalid structure.",
                 }
 
-            # Match found, saving image(s)
-            logs.append(f"Target CRC found: 0x{self.png.crc:08x}")
-            self.output_dir.mkdir(parents=True, exist_ok=True)
-            for png_match in db_matches:
-                img_name = self._write_recovered_png(img_bytes, png_match)
-                logs.append(f"Image saved: {img_name}")
-                # Append the formatted URL to our list
-                saved_img_urls.append("/image/" + str(Path(self.output_dir.name) / img_name))
-
+        # Already correct
+        if self.png.crc == self.png.compute_crc():
             return {
                 "status": "ok",
-                "output": logs,
-                "png_images": saved_img_urls,
+                "note": f"PNG is already valid with dimensions "
+                f"{self.png.width}x{self.png.height} and crc 0x{self.png.crc:08x}.",
             }
 
-        except Exception as e:
-            return {"status": "error", "error": str(e)}
+        saved_img_urls = []
+
+        # No match found
+        if not (db_matches := self._lookup_crc()) and not (
+            db_matches := self._search_height_crc()
+        ):
+            return {
+                "status": "error",
+                "error": "Failure: No matching dimensions found.",
+            }
+
+        # Match found, saving image(s)
+        logs.append(f"Target CRC found: 0x{self.png.crc:08x}")
+        self.output_dir.mkdir(parents=True, exist_ok=True)
+        for png_match in db_matches:
+            img_name = self._write_recovered_png(img_bytes, png_match)
+            logs.append(f"Image saved: {img_name}")
+            # Append the formatted URL to our list
+            saved_img_urls.append("/image/" + str(Path(self.output_dir.name) / img_name))
+
+        return {
+            "status": "ok",
+            "output": logs,
+            "png_images": saved_img_urls,
+        }
+
 
 
 def analyze_image_resize(input_img: Path, output_dir: Path) -> None:

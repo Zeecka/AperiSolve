@@ -161,6 +161,7 @@ class SubprocessAnalyzer(ABC):
             self.update_result(result)
         except Exception as e:
             self.update_result({"status": "error", "error": str(e)})
+            raise
 
     def is_error(self, returncode: int, stdout: str, stderr: str, zip_exist: bool) -> bool:
         """Check if the result is an error."""
