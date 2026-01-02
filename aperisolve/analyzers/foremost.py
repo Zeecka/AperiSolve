@@ -23,7 +23,7 @@ def analyze_foremost(input_img: Path, output_dir: Path) -> None:
             ["foremost", "-o", foremost_dir, "-i", input_img],
             capture_output=True,
             text=True,
-            check=True,
+            check=False,
             timeout=MAX_PENDING_TIME,
         )
         # Note: foremost use stderr as standard output for results :o)
