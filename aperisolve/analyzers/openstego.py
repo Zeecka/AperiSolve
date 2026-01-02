@@ -44,6 +44,7 @@ class OpenStegoAnalyzer(SubprocessAnalyzer):
             self.update_result(result)
         except Exception as e:
             self.update_result({"status": "error", "error": str(e)})
+            raise
 
     def process_output(self, stdout: str, stderr: str) -> str | list[str] | dict[str, str]:
         """Process the stdout/stderr."""
