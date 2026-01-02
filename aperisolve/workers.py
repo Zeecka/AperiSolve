@@ -79,7 +79,6 @@ def analyze_image(submission_hash: str) -> None:
                 """Run an analyzer function in a separate thread."""
                 analyzer_name = analyzer_func.__name__.replace("analyze_", "")
                 try:
-                    # raise ValueError("Simulated Worker error")
                     analyzer_func(*args)
                 except Exception as e:
                     print(f"Error in {analyzer_name}: {e}")
