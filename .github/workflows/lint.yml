@@ -34,6 +34,7 @@ jobs:
         uses: wearerequired/lint-action@v2
         with:
           black: true
+          black_args: "--line-length=100"
           flake8: true
           flake8_args: "--ignore=E203,E501,W503"
           pylint: true
