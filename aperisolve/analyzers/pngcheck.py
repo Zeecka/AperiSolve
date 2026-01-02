@@ -12,7 +12,7 @@ from .base_analyzer import SubprocessAnalyzer
 class PngcheckAnalyzer(SubprocessAnalyzer):
     """Analyzer for pngcheck."""
 
-    def __init__(self, input_img, output_dir: Any) -> None:
+    def __init__(self, input_img: Path, output_dir: Path) -> None:
         super().__init__("pngcheck", input_img, output_dir)
         self.cmd = ["pngcheck", "-v", self.img]
 

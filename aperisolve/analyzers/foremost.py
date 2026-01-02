@@ -12,7 +12,7 @@ from .base_analyzer import SubprocessAnalyzer
 class ForemostAnalyzer(SubprocessAnalyzer):
     """Analyzer for foremost."""
 
-    def __init__(self, input_img, output_dir: Any) -> None:
+    def __init__(self, input_img: Path, output_dir: Path) -> None:
         super().__init__("foremost", input_img, output_dir, has_archive=True)
         self.cmd = ["foremost", "-o", str(self.get_extracted_dir()), "-i", self.img]
 

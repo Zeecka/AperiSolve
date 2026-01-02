@@ -12,7 +12,7 @@ from .base_analyzer import SubprocessAnalyzer
 class ExiftoolAnalyzer(SubprocessAnalyzer):
     """Analyzer for exiftool."""
 
-    def __init__(self, input_img, output_dir: Any) -> None:
+    def __init__(self, input_img: Path, output_dir: Path) -> None:
         super().__init__("exiftool", input_img, output_dir)
         self.cmd = ["exiftool", "-a", "-u", "-g1", self.img]
 

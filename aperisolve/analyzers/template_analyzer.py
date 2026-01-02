@@ -12,7 +12,7 @@ from .base_analyzer import SubprocessAnalyzer
 class TemplateAnalyze(SubprocessAnalyzer):
     """Analyzer for <toolname>."""
 
-    def __init__(self, input_img, output_dir: Any) -> None:
+    def __init__(self, input_img: Path, output_dir: Path) -> None:
         super().__init__("<toolname>", input_img, output_dir, has_archive=True)
 
     def build_cmd(self, password: Optional[str] = None) -> list[str]:

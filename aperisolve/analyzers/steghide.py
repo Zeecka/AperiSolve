@@ -13,7 +13,7 @@ from .base_analyzer import SubprocessAnalyzer
 class SteghideAnalyzer(SubprocessAnalyzer):
     """Analyzer for steghide."""
 
-    def __init__(self, input_img, output_dir: Any) -> None:
+    def __init__(self, input_img: Path, output_dir: Path) -> None:
         super().__init__("steghide", input_img, output_dir, has_archive=True)
 
     def build_cmd(self, password: Optional[str] = None) -> list[str]:

@@ -12,7 +12,7 @@ from .base_analyzer import SubprocessAnalyzer
 class OpenStegoAnalyzer(SubprocessAnalyzer):
     """Analyzer for openstego."""
 
-    def __init__(self, input_img, output_dir: Any) -> None:
+    def __init__(self, input_img: Path, output_dir: Path) -> None:
         super().__init__("openstego", input_img, output_dir, has_archive=True)
         self.algo = 0
 

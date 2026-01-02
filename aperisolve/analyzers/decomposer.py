@@ -15,7 +15,7 @@ from .base_analyzer import SubprocessAnalyzer
 class DecomposerAnalyzer(SubprocessAnalyzer):
     """Analyzer for bits decomposer."""
 
-    def __init__(self, input_img, output_dir: Any) -> None:
+    def __init__(self, input_img: Path, output_dir: Path) -> None:
         super().__init__("decomposer", input_img, output_dir)
 
     def get_results(self, _: Optional[str] = None) -> dict[str, Any]:
