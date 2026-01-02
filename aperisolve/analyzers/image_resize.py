@@ -136,9 +136,7 @@ class ResizeAnalyzer(SubprocessAnalyzer):
         saved_img_urls = []
 
         # No match found
-        if not (db_matches := self._lookup_crc()) and not (
-            db_matches := self._search_height_crc()
-        ):
+        if not (db_matches := self._lookup_crc()) and not (db_matches := self._search_height_crc()):
             return {
                 "status": "error",
                 "error": "Failure: No matching dimensions found.",
@@ -158,7 +156,6 @@ class ResizeAnalyzer(SubprocessAnalyzer):
             "output": logs,
             "png_images": saved_img_urls,
         }
-
 
 
 def analyze_image_resize(input_img: Path, output_dir: Path) -> None:
