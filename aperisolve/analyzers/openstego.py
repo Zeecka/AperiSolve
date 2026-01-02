@@ -114,4 +114,5 @@ def analyze_openstego(input_img: Path, output_dir: Path, password: str = "") -> 
 
     except Exception as e:
         update_data(output_dir, {"openstego": {"status": "error", "error": str(e)}})
+        raise  # Re-raise to let workers.py capture and send to Sentry
     return None
