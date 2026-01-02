@@ -30,7 +30,8 @@ class SteghideAnalyzer(SubprocessAnalyzer):
         match = re.search(r'embedded file "([^"]+)"', data.stdout)
         assert match is not None
         hidden_file = match.group(1)
-        outfile = str(self.get_extracted_dir() / hidden_file)
+        safe_hidden_file = Path(hidden_file).name
+        outfile = str(self.get_extracted_dir() / safe_hidden_file)
         cmd = ["steghide", "extract", "-sf", self.img, "-xf", outfile, "-p", password]
         return cmd
 

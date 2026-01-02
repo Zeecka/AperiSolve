@@ -9,7 +9,7 @@ from typing import Optional
 from .base_analyzer import SubprocessAnalyzer
 
 
-class TemplateAnalyze(SubprocessAnalyzer):
+class TemplateAnalyzer(SubprocessAnalyzer):
     """Analyzer for <toolname>."""
 
     def __init__(self, input_img: Path, output_dir: Path) -> None:
@@ -23,7 +23,7 @@ class TemplateAnalyze(SubprocessAnalyzer):
 
 def analyze_template(input_img: Path, output_dir: Path, password: Optional[str] = None) -> None:
     """Analyze an image submission using <toolname>."""
-    analyzer = TemplateAnalyze(input_img, output_dir)
+    analyzer = TemplateAnalyzer(input_img, output_dir)
     if password:
         analyzer.analyze(password)
     else:

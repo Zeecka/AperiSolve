@@ -20,7 +20,7 @@ class BinwalkAnalyzer(SubprocessAnalyzer):
         return self.output_dir / f"_{self.input_img.name}.extracted"
 
     def is_error(self, returncode: int, stdout: str, stderr: str, zip_exist: bool) -> bool:
-        return len(stderr) > 0 and not zip_exist and False
+        return len(stderr) > 0 and not zip_exist
 
 
 def analyze_binwalk(input_img: Path, output_dir: Path) -> None:

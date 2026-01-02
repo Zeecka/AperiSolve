@@ -96,7 +96,7 @@ class ResizeAnalyzer(SubprocessAnalyzer):
         found, it recovers and saves PNG images with the matched dimensions.
 
         Returns:
-            None
+            dict[str, Any]: A dictionary containing the analysis status, any error message,
 
         Raises:
             Handles exceptions gracefully by updating output data with error status.
@@ -165,6 +165,6 @@ class ResizeAnalyzer(SubprocessAnalyzer):
 
 
 def analyze_image_resize(input_img: Path, output_dir: Path) -> None:
-    """Analyze an image submission using outguess."""
+    """Analyze an image submission using ResizeAnalyzer."""
     analyzer = ResizeAnalyzer(input_img, output_dir)
     analyzer.analyze()
