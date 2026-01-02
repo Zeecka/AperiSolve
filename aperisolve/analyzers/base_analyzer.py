@@ -28,7 +28,9 @@ class SubprocessAnalyzer(ABC):
     img: str
     make_folder: bool = True
 
-    def __init__(self, name: str, input_img: Path, output_dir: Path, has_archive: bool = False):
+    def __init__(
+        self, name: str, input_img: Path, output_dir: Path, has_archive: bool = False
+    ) -> None:
         self.name = name
         self.input_img = input_img
         self.img = f"../{self.input_img.name}"

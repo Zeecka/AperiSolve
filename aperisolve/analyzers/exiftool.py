@@ -4,6 +4,7 @@
 """Exiftool Analyzer for Image Submissions."""
 
 from pathlib import Path
+from typing import Any
 
 from .base_analyzer import SubprocessAnalyzer
 
@@ -11,7 +12,7 @@ from .base_analyzer import SubprocessAnalyzer
 class ExiftoolAnalyzer(SubprocessAnalyzer):
     """Analyzer for exiftool."""
 
-    def __init__(self, *args):
+    def __init__(self, *args: Any) -> None:
         super().__init__("exiftool", *args)
         self.cmd = ["exiftool", "-a", "-u", "-g1", self.img]
 

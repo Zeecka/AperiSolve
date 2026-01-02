@@ -4,6 +4,7 @@
 """Strings Analyzer for Image Submissions."""
 
 from pathlib import Path
+from typing import Any
 
 from .base_analyzer import SubprocessAnalyzer
 
@@ -11,8 +12,8 @@ from .base_analyzer import SubprocessAnalyzer
 class ZstegAnalyzer(SubprocessAnalyzer):
     """Analyzer for zsteg."""
 
-    def __init__(self, *args, **kwargs):
-        super().__init__("zsteg", *args, **kwargs)
+    def __init__(self, *args: Any) -> None:
+        super().__init__("zsteg", *args)
         self.cmd = ["zsteg", self.img]
 
     def is_error(self, returncode: int, stdout: str, stderr: str, zip_exist: bool) -> bool:

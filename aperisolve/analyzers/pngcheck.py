@@ -4,6 +4,7 @@
 """Pngcheck Analyzer for Image Submissions."""
 
 from pathlib import Path
+from typing import Any
 
 from .base_analyzer import SubprocessAnalyzer
 
@@ -11,7 +12,7 @@ from .base_analyzer import SubprocessAnalyzer
 class PngcheckAnalyzer(SubprocessAnalyzer):
     """Analyzer for pngcheck."""
 
-    def __init__(self, *args):
+    def __init__(self, *args: Any) -> None:
         super().__init__("pngcheck", *args)
         self.cmd = ["pngcheck", "-v", self.img]
 

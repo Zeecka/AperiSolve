@@ -4,7 +4,7 @@
 """Outguess Analyzer for Image Submissions."""
 
 from pathlib import Path
-from typing import Optional
+from typing import Any, Optional
 
 from .base_analyzer import SubprocessAnalyzer
 
@@ -12,7 +12,7 @@ from .base_analyzer import SubprocessAnalyzer
 class OutguessAnalyzer(SubprocessAnalyzer):
     """Analyzer for outguess."""
 
-    def __init__(self, *args):
+    def __init__(self, *args: Any) -> None:
         super().__init__("outguess", *args, has_archive=True)
 
     def build_cmd(self, password: Optional[str] = None) -> list[str]:

@@ -4,6 +4,7 @@
 """Foremost Analyzer for Image Submissions."""
 
 from pathlib import Path
+from typing import Any
 
 from .base_analyzer import SubprocessAnalyzer
 
@@ -11,7 +12,7 @@ from .base_analyzer import SubprocessAnalyzer
 class ForemostAnalyzer(SubprocessAnalyzer):
     """Analyzer for foremost."""
 
-    def __init__(self, *args):
+    def __init__(self, *args: Any) -> None:
         super().__init__("foremost", *args, has_archive=True)
         self.cmd = ["foremost", "-o", str(self.get_extracted_dir()), "-i", self.img]
 
