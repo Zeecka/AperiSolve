@@ -12,8 +12,8 @@ from .base_analyzer import SubprocessAnalyzer
 class OutguessAnalyzer(SubprocessAnalyzer):
     """Analyzer for outguess."""
 
-    def __init__(self, *args: Any) -> None:
-        super().__init__("outguess", *args, has_archive=True)
+    def __init__(self, input_img, output_dir: Any) -> None:
+        super().__init__("outguess", input_img, output_dir, has_archive=True)
 
     def build_cmd(self, password: Optional[str] = None) -> list[str]:
         extracted_dir = self.get_extracted_dir()

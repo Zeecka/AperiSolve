@@ -12,8 +12,8 @@ from .base_analyzer import SubprocessAnalyzer
 class TemplateAnalyze(SubprocessAnalyzer):
     """Analyzer for <toolname>."""
 
-    def __init__(self, *args: Any) -> None:
-        super().__init__("<toolname>", *args, has_archive=True)
+    def __init__(self, input_img, output_dir: Any) -> None:
+        super().__init__("<toolname>", input_img, output_dir, has_archive=True)
 
     def build_cmd(self, password: Optional[str] = None) -> list[str]:
         if password:

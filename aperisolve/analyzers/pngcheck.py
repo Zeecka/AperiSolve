@@ -12,8 +12,8 @@ from .base_analyzer import SubprocessAnalyzer
 class PngcheckAnalyzer(SubprocessAnalyzer):
     """Analyzer for pngcheck."""
 
-    def __init__(self, *args: Any) -> None:
-        super().__init__("pngcheck", *args)
+    def __init__(self, input_img, output_dir: Any) -> None:
+        super().__init__("pngcheck", input_img, output_dir)
         self.cmd = ["pngcheck", "-v", self.img]
 
     def is_error(self, returncode: int, stdout: str, stderr: str, zip_exist: bool) -> bool:

@@ -12,8 +12,8 @@ from .base_analyzer import SubprocessAnalyzer
 class StringsAnalyzer(SubprocessAnalyzer):
     """Analyzer for strings."""
 
-    def __init__(self, *args: Any) -> None:
-        super().__init__("strings", *args)
+    def __init__(self, input_img, output_dir: Any) -> None:
+        super().__init__("strings", input_img, output_dir)
         self.cmd = ["strings", self.img]
 
 

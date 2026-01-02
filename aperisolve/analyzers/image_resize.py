@@ -17,8 +17,8 @@ class ResizeAnalyzer(SubprocessAnalyzer):
 
     png: PNG
 
-    def __init__(self, *args: Any) -> None:
-        super().__init__("image_resize", *args, has_archive=True)
+    def __init__(self, input_img, output_dir: Any) -> None:
+        super().__init__("image_resize", input_img, output_dir, has_archive=True)
 
     def _lookup_crc(self) -> List[PNG]:
         """

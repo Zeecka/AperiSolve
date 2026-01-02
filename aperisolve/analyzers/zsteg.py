@@ -12,8 +12,8 @@ from .base_analyzer import SubprocessAnalyzer
 class ZstegAnalyzer(SubprocessAnalyzer):
     """Analyzer for zsteg."""
 
-    def __init__(self, *args: Any) -> None:
-        super().__init__("zsteg", *args)
+    def __init__(self, input_img, output_dir: Any) -> None:
+        super().__init__("zsteg", input_img, output_dir)
         self.cmd = ["zsteg", self.img]
 
     def is_error(self, returncode: int, stdout: str, stderr: str, zip_exist: bool) -> bool:

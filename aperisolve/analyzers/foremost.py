@@ -12,8 +12,8 @@ from .base_analyzer import SubprocessAnalyzer
 class ForemostAnalyzer(SubprocessAnalyzer):
     """Analyzer for foremost."""
 
-    def __init__(self, *args: Any) -> None:
-        super().__init__("foremost", *args, has_archive=True)
+    def __init__(self, input_img, output_dir: Any) -> None:
+        super().__init__("foremost", input_img, output_dir, has_archive=True)
         self.cmd = ["foremost", "-o", str(self.get_extracted_dir()), "-i", self.img]
 
     def is_error(self, returncode: int, stdout: str, stderr: str, zip_exist: bool) -> bool:

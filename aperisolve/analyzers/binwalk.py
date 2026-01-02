@@ -11,8 +11,8 @@ from .base_analyzer import SubprocessAnalyzer
 class BinwalkAnalyzer(SubprocessAnalyzer):
     """Analyzer for binwalk."""
 
-    def __init__(self, *args) -> None:
-        super().__init__("binwalk", *args, has_archive=True)
+    def __init__(self, input_img, output_dir) -> None:
+        super().__init__("binwalk", input_img, output_dir, has_archive=True)
         self.cmd = ["binwalk", "--matryoshka", "-e", self.img, "--run-as=root"]
         self.make_folder = False  # Binwalk already create its own folder
 
