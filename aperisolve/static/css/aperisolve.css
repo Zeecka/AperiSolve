@@ -379,6 +379,10 @@ td {
     height: 400px;
 }
 
+.a-foremost textarea {
+    height: 100px;
+}
+
 /* ======== Footer ======== */
 
 footer {

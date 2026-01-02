@@ -97,9 +97,7 @@ def fill_ihdr_db() -> None:
             if exists:  # Skip if already present
                 continue
 
-            db.session.add(  # pylint: disable=no-member
-                IHDR(packed=p.packed, crc=p.crc)
-            )
+            db.session.add(IHDR(packed=p.packed, crc=p.crc))  # pylint: disable=no-member
             count += 1
 
             if count % 5000 == 0:

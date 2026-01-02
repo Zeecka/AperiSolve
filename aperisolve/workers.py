@@ -89,12 +89,12 @@ def analyze_image(submission_hash: str) -> None:
                 (analyze_decomposer, img_path, result_path),
                 (analyze_exiftool, img_path, result_path),
                 (analyze_foremost, img_path, result_path),
-                (analyze_strings, img_path, result_path),
-                (analyze_pngcheck, img_path, result_path),
-                (analyze_steghide, img_path, result_path, submission.password),
-                (analyze_openstego, img_path, result_path, submission.password),
-                (analyze_zsteg, img_path, result_path),
                 (analyze_image_resize, img_path, result_path),
+                (analyze_openstego, img_path, result_path, submission.password),
+                (analyze_pngcheck, img_path, result_path),
+                (analyze_strings, img_path, result_path),
+                (analyze_steghide, img_path, result_path, submission.password),
+                (analyze_zsteg, img_path, result_path),
             ]
 
             # Deep analysis only

@@ -254,9 +254,8 @@ function parseResult(result) {
 
     // Parse text output
     if (typeof result[tool]["output"] === "string") {
-      analyzer.innerHTML += `<pre>${escapeHtml(
-        result[tool]["output"]
-      )}</pre>`;
+      output = escapeHtml(result[tool]["output"]);
+      analyzer.innerHTML += `<div class="alert alert-success" role="alert">${output}</div>`;
     } else if (Array.isArray(result[tool]["output"])) {
       if (result[tool]["output"].length > 0) {
         var texarea_content = `<div class="textarea-container">`;
@@ -264,6 +263,7 @@ function parseResult(result) {
         for (const line of result[tool]["output"]) {
           texarea_content += escapeHtml(`${line}\n`);
         }
+        texarea_content = texarea_content.trim();
         texarea_content += `</textarea>`;
         texarea_content += `<i class="fas fa-copy copy-icon"></i>`;
         texarea_content += `</div>`;

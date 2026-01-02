@@ -3,46 +3,29 @@
 # mypy: disable-error-code=unused-awaitable
 """Exiftool Analyzer for Image Submissions."""
 
-import subprocess
 from pathlib import Path
 
-from .utils import MAX_PENDING_TIME, update_data
+from .base_analyzer import SubprocessAnalyzer
+
+
+class ExiftoolAnalyzer(SubprocessAnalyzer):
+    """Analyzer for exiftool."""
+
+    def __init__(self, input_img: Path, output_dir: Path) -> None:
+        super().__init__("exiftool", input_img, output_dir)
+        self.cmd = ["exiftool", "-a", "-u", "-g1", self.img]
+
+    def process_output(self, stdout: str, stderr: str) -> dict[str, str]:
+        """Process the stdout into a list of lines."""
+        metadata: dict[str, str] = {}
+        for line in stdout.split("\n"):
+            if ":" in line:
+                key, value = line.split(":", 1)
+                metadata[key.strip()] = value.strip()
+        return metadata
 
 
 def analyze_exiftool(input_img: Path, output_dir: Path) -> None:
     """Analyze an image submission using exiftool."""
-
-    try:
-        data = subprocess.run(
-            ["exiftool", input_img],
-            capture_output=True,
-            text=True,
-            check=True,
-            timeout=MAX_PENDING_TIME,
-        )
-
-        metadata: dict[str, str] = {}
-        for line in data.stdout.split("\n"):
-            if ":" in line:
-                key, value = line.split(":", 1)
-                metadata[key.strip()] = value.strip()
-
-        if data.stderr:
-            update_data(
-                output_dir,
-                {
-                    "exiftool": {
-                        "status": "error",
-                        "output": metadata,
-                        "error": data.stderr,
-                    }
-                },
-            )
-            return
-
-        update_data(
-            output_dir,
-            {"exiftool": {"status": "ok", "output": metadata}},
-        )
-    except Exception as e:
-        update_data(output_dir, {"exiftool": {"status": "error", "error": str(e)}})
+    analyzer = ExiftoolAnalyzer(input_img, output_dir)
+    analyzer.analyze()

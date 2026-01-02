@@ -3,41 +3,29 @@
 # mypy: disable-error-code=unused-awaitable
 """Zsteg Analyzer for Image Submissions."""
 
-import subprocess
 from pathlib import Path
 
-from .utils import MAX_PENDING_TIME, update_data
+from .base_analyzer import SubprocessAnalyzer
+
+
+class ZstegAnalyzer(SubprocessAnalyzer):
+    """Analyzer for zsteg."""
+
+    def __init__(self, input_img: Path, output_dir: Path) -> None:
+        super().__init__("zsteg", input_img, output_dir)
+        self.cmd = ["zsteg", self.img]
+
+    def is_error(self, returncode: int, stdout: str, stderr: str, zip_exist: bool) -> bool:
+        return bool(stderr) or "PNG::NotSupported" in stdout[:100]
+
+    def process_error(self, stdout: str, stderr: str) -> str:
+        """Process the stderr."""
+        if "PNG::NotSupported" in stdout[:100]:
+            return "The file format of the file is not supported (PNG only)."
+        return stderr
 
 
 def analyze_zsteg(input_img: Path, output_dir: Path) -> None:
     """Analyze an image submission using zsteg."""
-
-    try:
-        data = subprocess.run(
-            ["zsteg", input_img],
-            capture_output=True,
-            text=True,
-            check=False,
-            timeout=MAX_PENDING_TIME,
-        )
-        if data.stderr or "PNG::NotSupported" in data.stdout[:100]:
-            error_msg = data.stderr or data.stdout
-            update_data(output_dir, {"zsteg": {"status": "error", "error": error_msg}})
-            return
-
-        # zsteg_dir = output_dir / "zsteg"
-        # zsteg_dir.mkdir(parents=True, exist_ok=True)
-        # with open(zsteg_dir / "zsteg.txt", "w", encoding="utf-8") as f:
-        #     subprocess.run(["zsteg", input_img], stdout=f, check=True)
-
-        update_data(
-            output_dir,
-            {
-                "zsteg": {
-                    "status": "ok",
-                    "output": data.stdout.split("\n") if data else [],
-                }
-            },
-        )
-    except Exception as e:
-        update_data(output_dir, {"zsteg": {"status": "error", "error": str(e)}})
+    analyzer = ZstegAnalyzer(input_img, output_dir)
+    analyzer.analyze()
