@@ -49,6 +49,12 @@ class OpenStegoAnalyzer(SubprocessAnalyzer):
         """Process the stdout/stderr."""
         return stderr
 
+    def process_error(self, stdout: str, stderr: str) -> str:
+        """Process the stderr."""
+        if "OpenStego is a steganography application" in stderr:
+            return "OpenStego needs a password to work."
+        return stderr
+
 
 def analyze_openstego(input_img: Path, output_dir: Path, password: str = "") -> None:
     """Analyze an image submission using openstego."""
