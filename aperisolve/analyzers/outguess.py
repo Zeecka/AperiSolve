@@ -21,8 +21,7 @@ class OutguessAnalyzer(SubprocessAnalyzer):
         out = str(extracted_dir / "outguess.data")
         if password:
             return ["outguess", "-k", password, "-r", self.img, out]
-        else:
-            return ["outguess", "-r", self.img, out]
+        return ["outguess", "-r", self.img, out]
 
 
 def analyze_outguess(input_img: Path, output_dir: Path, password: Optional[str] = None) -> None:

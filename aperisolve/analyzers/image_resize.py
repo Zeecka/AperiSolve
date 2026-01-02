@@ -4,7 +4,7 @@
 """Image size bruteforcer for common PNG sizes."""
 
 from pathlib import Path
-from typing import Any, List
+from typing import Any, List, Optional
 
 from ..app import app
 from ..models import IHDR
