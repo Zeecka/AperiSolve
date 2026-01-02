@@ -74,4 +74,5 @@ def analyze_binwalk(input_img: Path, output_dir: Path) -> None:
 
     except Exception as e:
         update_data(output_dir, {"binwalk": {"status": "error", "error": str(e)}})
+        raise  # Re-raise to let workers.py capture and send to Sentry
     return None
