@@ -49,8 +49,8 @@ class SteghideAnalyzer(SubprocessAnalyzer):
     def process_output(self, stdout: str, stderr: str) -> str | list[str] | dict[str, str]:
         """Process the stdout into a list of lines."""
         out = []
-        for line in (stdout + '\n' + stderr).split("\n"):
-            if 'wrote extracted data to' in line:
+        for line in (stdout + "\n" + stderr).split("\n"):
+            if "wrote extracted data to" in line:
                 out.append(line)
         return out
 

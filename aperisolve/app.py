@@ -28,9 +28,7 @@ app: Flask = Flask(__name__)
 app.json.sort_keys = False  # type: ignore
 app.config["SQLALCHEMY_DATABASE_URI"] = os.environ.get("DB_URI")
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
-app.config["MAX_CONTENT_LENGTH"] = int(
-    os.environ.get("MAX_CONTENT_LENGTH", 1024 * 1024)
-)
+app.config["MAX_CONTENT_LENGTH"] = int(os.environ.get("MAX_CONTENT_LENGTH", 1024 * 1024))
 RESULT_FOLDER.mkdir(parents=True, exist_ok=True)
 
 db.init_app(app)
@@ -112,10 +110,7 @@ def upload_image() -> tuple[Response, int]:
     if image.filename is None or image.filename == "":
         return jsonify({"error": "No image provided"}), 400
 
-    if (
-        "." not in image.filename
-        or Path(image.filename).suffix.lower() not in IMAGE_EXTENSIONS
-    ):
+    if "." not in image.filename or Path(image.filename).suffix.lower() not in IMAGE_EXTENSIONS:
         return jsonify({"error": "Unsupported file type"}), 400
 
     # Compute hashes and prepare submission
@@ -230,9 +225,7 @@ def get_result(hash_val: str) -> tuple[Response, int]:
     submission = Submission.query.get_or_404(hash_val)
     image = Image.query.get_or_404(submission.image_hash)  # type: ignore
 
-    result_path = (
-        RESULT_FOLDER / str(image.hash) / str(submission.hash) / "results.json"
-    )
+    result_path = RESULT_FOLDER / str(image.hash) / str(submission.hash) / "results.json"
 
     if not result_path.exists():
         return jsonify({"error": "Results not ready yet..."}), 425
@@ -261,9 +254,7 @@ def download_output(hash_val: str, tool: str) -> Response:
 
 @app.route("/image/<img_name>")
 @app.route("/image/<hash_val>/<img_name>")
-def get_image(
-    hash_val: Optional[str] = None, img_name: Optional[str] = None
-) -> Response:
+def get_image(hash_val: Optional[str] = None, img_name: Optional[str] = None) -> Response:
     """
     Download the image with a specific name (usually ones generated with
     decomposer) for a given submission hash.
@@ -283,9 +274,7 @@ def get_image(
         image = Image.query.filter_by(hash=hash_val).first_or_404()
         output_file = Path(image.file)  # type: ignore
 
-    if (not output_file.exists()) or (
-        output_file.suffix.lower() not in IMAGE_EXTENSIONS
-    ):
+    if (not output_file.exists()) or (output_file.suffix.lower() not in IMAGE_EXTENSIONS):
         return abort(404, description="Image not found or unsupported format")
 
     return send_file(output_file, as_attachment=True)

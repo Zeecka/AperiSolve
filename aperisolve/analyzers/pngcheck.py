@@ -24,6 +24,7 @@ class PngcheckAnalyzer(SubprocessAnalyzer):
             return "The file format of the file is not supported (PNG or JNG only)."
         return stdout
 
+
 def analyze_pngcheck(input_img: Path, output_dir: Path) -> None:
     """Analyze an image submission using pngcheck."""
     analyzer = PngcheckAnalyzer(input_img, output_dir)
