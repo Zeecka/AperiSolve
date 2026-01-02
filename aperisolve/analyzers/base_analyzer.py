@@ -104,6 +104,47 @@ class SubprocessAnalyzer(ABC):
             raise NotImplementedError("cmd must be set or build_cmd overridden")
         return self.cmd
 
+    def get_results(self, password: Optional[str] = None) -> dict[str, Any]:
+        """Get results of command before returning."""
+        result: dict[str, Any]
+        extracted_dir = None
+        if self.has_archive:
+            extracted_dir = self.get_extracted_dir()
+            if self.make_folder:
+                extracted_dir.mkdir(parents=True, exist_ok=True)
+
+        cmd: list[str]
+        if password:
+            cmd = list(map(str, self.build_cmd(password)))
+        else:
+            cmd = list(map(str, self.build_cmd()))
+        data = self.run_command(cmd, cwd=self.output_dir)
+        returncode = data.returncode
+        stderr = data.stderr
+        stdout = data.stdout
+
+        zip_exist = False
+        if extracted_dir and extracted_dir.exists() and any(extracted_dir.iterdir()):
+            self.generate_archive(self.output_dir, extracted_dir)  # keep archive
+            zip_exist = True
+
+        if self.is_error(returncode, stdout, stderr, zip_exist):
+            result = {
+                "status": "error",
+            }
+            result["error"] = self.process_error(stdout, stderr)
+        else:
+            result = {
+                "status": "ok",
+                "output": self.process_output(stdout, stderr),
+            }
+            note: Optional[str] = self.process_note(stdout, stderr)
+            if note:
+                result["note"] = note
+            if zip_exist:
+                result["download"] = f"/download/{self.output_dir.name}/{self.name}"
+        return result
+
     @overload
     def analyze(self) -> None: ...
 
@@ -114,41 +155,7 @@ class SubprocessAnalyzer(ABC):
         """Run the subprocess command and handle results."""
         result: dict[str, Any]
         try:
-            extracted_dir = None
-            if self.has_archive:
-                extracted_dir = self.get_extracted_dir()
-                if self.make_folder:
-                    extracted_dir.mkdir(parents=True, exist_ok=True)
-
-            if password:
-                cmd = self.build_cmd(password)
-            else:
-                cmd = self.build_cmd()
-            data = self.run_command(cmd, cwd=self.output_dir)
-            returncode = data.returncode
-            stderr = data.stderr
-            stdout = data.stdout
-
-            zip_exist = False
-            if extracted_dir and extracted_dir.exists() and any(extracted_dir.iterdir()):
-                self.generate_archive(self.output_dir, extracted_dir)  # keep archive
-                zip_exist = True
-
-            if self.is_error(returncode, stdout, stderr, zip_exist):
-                result = {
-                    "status": "error",
-                }
-                result["error"] = self.process_error(stdout, stderr)
-            else:
-                result = {
-                    "status": "ok",
-                    "output": self.process_output(stdout, stderr),
-                }
-                note: Optional[str] = self.process_note(stdout, stderr)
-                if note:
-                    result["note"] = note
-                if zip_exist:
-                    result["download"] = f"/download/{self.output_dir.name}/{self.name}"
+            result = self.get_results(password)
             self.update_result(result)
         except Exception as e:
             self.update_result({"status": "error", "error": str(e)})
