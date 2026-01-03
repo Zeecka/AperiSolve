@@ -28,10 +28,7 @@ Table of contents
 
 - [Key features](#key-features)
 - [Quick start (Docker)](#quick-start-docker)
-- [Development](#development)
-- [Configuration & environment variables](#configuration--environment-variables)
 - [Architecture](#architecture)
-- [Troubleshooting & tips](#troubleshooting--tips)
 - [Roadmap](#roadmap)
 - [Contributing](#contributing)
 
@@ -40,15 +37,15 @@ Table of contents
 - Visualize each bit layer (LSB and other layers) per image channel (R/G/B/Alpha).
 - Browse and download each bit-layer image.
 - Integrates and displays outputs from:
-  - [zsteg](https://github.com/zed-0xff/zsteg) (LSB text/data extraction)
-  - [steghide](https://steghide.sourceforge.net/) (extraction with password)
-  - [outguess](https://www.rbcafe.com/software/outguess/) (extraction with password)
-  - [openstego](https://www.openstego.com/) (extraction with password)
-  - [exiftool](https://exiftool.org/) (metadata and geolocation)
   - [binwalk](https://github.com/ReFirmLabs/binwalk) (embedded archives)
+  - [exiftool](https://exiftool.org/) (metadata and geolocation)
   - [foremost](https://foremost.sourceforge.net/) (carved files)
+  - [openstego](https://www.openstego.com/) (extraction with password)
+  - [outguess](https://www.rbcafe.com/software/outguess/) (extraction with password)
   - [pngcheck](https://www.libpng.org/pub/png/apps/pngcheck.html)
+  - [steghide](https://steghide.sourceforge.net/) (extraction with password)
   - [strings](https://pubs.opengroup.org/onlinepubs/9799919799/utilities/strings.html)
+  - [zsteg](https://github.com/zed-0xff/zsteg) (LSB text/data extraction)
 - Worker queue architecture for offloading heavy/slow analyzers (Redis + background workers).
 - Results stored for later browsing and download.
 
@@ -56,9 +53,7 @@ Table of contents
 
 In case you want to host your own version of https://www.aperisolve.com/.
 
-Recommended: Docker + Docker Compose.
-
-Clone and start the full stack (production-like):
+> Required: Docker + Docker Compose.
 
 ```bash
 git clone https://github.com/Zeecka/AperiSolve.git
@@ -67,77 +62,7 @@ cp .env.example .env
 docker compose up -d
 ```
 
-Default: http://localhost:5000/
-
-## Development
-
-Development compose:
-
-```bash
-# development environment (hot reload and local volumes)
-docker compose -f compose.dev.yml up --build
-```
-
-Useful commands:
-
-```bash
-# Stop and remove containers, networks and volumes (results are stored in a volume)
-docker compose down -v
-
-# Enter web container shell
-docker exec -it aperisolve-web bash
-
-# Enter Postgres shell (from host)
-docker exec -it postgres psql -U aperiuser -d aperisolve
-
-# Backup all uploaded files
-docker cp -r aperisolve-web:/aperisolve/results /path/to/backup/location
-
-# Backup a single uploaded file
-docker cp aperisolve-web:/aperisolve/results/filename.ext /path/to/backup/filename.ext
-```
-
-> [!WARNING]
-> If switching between dev and production compose files, remove the `results` directory or mounted volume to avoid conflicts:
-> ```bash
-> rm -rf aperisolve/results
-> ```
-
-## Configuration & environment variables
-
-The application can be configured with the `.env` file:
-
-```shell
-# Application configuration
-MAX_CONTENT_LENGTH=1048576  # Max uploaded image size (bytes)
-MAX_PENDING_TIME=600  # Timeout for analyzer (seconds)
-MAX_STORE_TIME=259200  # Delay until deleted from server
-CLEAR_AT_RESTART=1  # Reset database and results at application restart/crash
-SKIP_IHDR_FILL=0  # Skip IHDR database fill (gain times at startup but reduce results)
-
-# Flask configuration
-FLASK_DEBUG=0
-FLASK_ENV=development
-
-# Redis configuration
-RQ_DASHBOARD_REDIS_URL=redis://redis:6379/0
-
-# Database configuration
-POSTGRES_DB=aperisolve
-POSTGRES_USER=aperiuser
-POSTGRES_PASSWORD=aperipass
-DB_URI=postgresql://aperiuser:aperipass@postgres:5432/aperisolve
-
-# Sentry configuration
-SENTRY_DSN=https://your-dsn@sentry.io/project-id
-SENTRY_TRACES_SAMPLE_RATE=0.1
-SENTRY_PROFILES_SAMPLE_RATE=0.1
-SENTRY_RELEASE=1.0.0
-SENTRY_ENVIRONMENT=development
-```
-
-> [!NOTE]
-> If using Docker Compose, defaults are set in the compose files. For production deployments, set secure secrets via your orchestrator or environment.
+Then browse url: http://localhost:5000/
 
 ## Architecture
 
@@ -148,25 +73,9 @@ SENTRY_ENVIRONMENT=development
 
 This separation keeps heavy tools (binwalk, foremost, zsteg, etc.) isolated and avoids blocking the web worker.
 
-## Troubleshooting & tips
-
-- If analyzers don't produce output, check worker logs:
-  ```bash
-  docker compose logs -f aperisolve-worker
-  ```
-- To force re-analysis, remove results for the image (both file and in database) and re-submit the job.
-- Ensure system packages needed by native tools (binwalk, foremost) are available in the analyzer containers or host image.
-
 ## Roadmap
 
-- [ ] **[Bug]** Duplicate key value violates unique constraint "submission_pkey"
-- [ ] **[Enhancement]** Server continuous deployment
-- [ ] **[Feature]** Zsteg: full extraction (--all) and download of discovered files (mp3, etc.)
-- [ ] **[Feature]** Mobile-friendly UI / test on mobile
-- [ ] **[Feature]** i18n (internationalization)
-- [ ] **[Feature]** Rootless / unprivileged analyzers
-
-See [Issues](../../issues) for more!
+See [Issues](../../issues).
 
 ## Contributing
 
@@ -179,6 +88,21 @@ See [CONTRIBUTING.md](CONTRIBUTING.md).
 
 ## Credits
 
-Acknowledgements:
+Thanks to donors:
+- [Philip Zimmermann](https://github.com/Philip-Zimmermann)
 
-- Thanks to contributors and the open-source community for the tools integrated ([zsteg](https://github.com/zed-0xff/zsteg), [steghide](https://steghide.sourceforge.net/), [outguess](https://www.rbcafe.com/software/outguess/), [openstego](https://www.openstego.com/), [exiftool](https://exiftool.org/), [binwalk](https://github.com/ReFirmLabs/binwalk), [foremost](https://foremost.sourceforge.net/), [pngcheck](https://www.libpng.org/pub/png/apps/pngcheck.html), [strings](https://pubs.opengroup.org/onlinepubs/9799919799/utilities/strings.html), ...).
+Thanks to contributors:
+- [Zeecka](https://www.zeecka.fr/) - **(author)**
+- [aradhyacp](https://github.com/aradhyacp)
+- [Philip Zimmermann](https://github.com/Philip-Zimmermann)
+
+Thanks to the open-source community
+- [binwalk](https://github.com/ReFirmLabs/binwalk)
+- [exiftool](https://exiftool.org/)
+- [foremost](https://foremost.sourceforge.net/)
+- [openstego](https://www.openstego.com/)
+- [outguess](https://www.rbcafe.com/software/outguess/)
+- [pngcheck](https://www.libpng.org/pub/png/apps/pngcheck.html)
+- [steghide](https://steghide.sourceforge.net/)
+- [strings](https://pubs.opengroup.org/onlinepubs/9799919799/utilities/strings.html)
+- [zsteg](https://github.com/zed-0xff/zsteg)

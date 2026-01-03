@@ -131,6 +131,35 @@ If your contribution needs new dependencies:
 3. **Explain why** in your PR description
 4. **Keep dependencies minimal** - avoid adding large libraries for small features
 
+
+## Useful commands
+
+```bash
+# development environment (hot reload and local volumes)
+docker compose -f compose.dev.yml up --build
+
+# Stop and remove containers, networks and volumes (results are stored in a volume)
+docker compose down -v
+
+# Enter web container shell
+docker exec -it aperisolve-web bash
+
+# Enter Postgres shell (from host)
+docker exec -it postgres psql -U aperiuser -d aperisolve
+
+# Backup all uploaded files
+docker cp -r aperisolve-web:/aperisolve/results /path/to/backup/location
+
+# Backup a single uploaded file
+docker cp aperisolve-web:/aperisolve/results/filename.ext /path/to/backup/filename.ext
+```
+
+> [!WARNING]
+> If switching between dev and production compose files, remove the `results` directory or mounted volume to avoid conflicts:
+> ```bash
+> rm -rf aperisolve/results
+> ```
+
 ## Docker and Tool Installation
 
 When adding a new analyzer that requires a new tool:
