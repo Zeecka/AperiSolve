@@ -134,7 +134,8 @@ def init_db(app: Flask) -> None:
         - Prints status messages to console during initialization
     """
     # Detect if running as RQ worker (not wsgi/web)
-    is_worker = len(sys.argv) > 0 and ("rq" in sys.argv[0] or "rq.worker" in sys.modules)
+    # rq.worker module is loaded when RQ runs a worker process
+    is_worker = "rq.worker" in sys.modules
     
     if is_worker:
         print("Running as worker, skipping database initialization.")
