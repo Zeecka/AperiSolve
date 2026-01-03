@@ -412,6 +412,7 @@ footer {
     margin: 0 20px 20px 0;
     justify-content: flex-end !important;
 }
+
 @media screen and (min-width: 1800px) {
     footer {
         position: fixed;
@@ -445,4 +446,50 @@ footer a i {
 }
 #httperror h1, #httperror h2{
     text-align: center;
+}
+
+/* ======== Responsive Design ======== */
+
+/* Large tablets and small desktops */
+@media screen and (max-width: 1200px) {
+    .results_img {
+        width: 33.333%;
+    }
+    
+    .browse-images {
+        width: 33.333%;
+    }
+}
+
+/* Tablets */
+@media screen and (max-width: 992px) {
+    .container {
+        padding-left: 15px;
+        padding-right: 15px;
+    }
+    
+    .results_img {
+        width: 50%;
+    }
+    
+    .browse-images {
+        width: 50%;
+    }
+    
+    #result-infos {
+        flex-direction: column;
+    }
+    
+    #result-infos > div {
+        width: 100%;
+        flex: 1 1 100%;
+    }
+    
+    table {
+        font-size: 0.9rem;
+    }
+    
+    th, td {
+        padding: 0.5rem;
+    }
 }
