@@ -8,6 +8,7 @@ from datetime import datetime, timezone
 from os import getenv
 from pathlib import Path
 from shutil import rmtree
+import sys
 
 from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
@@ -73,6 +74,11 @@ def fill_ihdr_db() -> None:
     Returns:
         None
     """
+    # Skip if table already has entries
+    if db.session.query(IHDR.iid).first() is not None:
+        print("IHDR table already populated, skipping fill.")
+        return
+    
     # Standard PNG IHDR parameters
     resolutions = get_resolutions()
     bit_color_pairs = get_valid_depth_color_pairs()
@@ -127,6 +133,12 @@ def init_db(app: Flask) -> None:
         - Populates the IHDR CRC lookup table with initial data
         - Prints status messages to console during initialization
     """
+    # Workers should never clear/fill the database
+    # Detect if running as RQ worker
+    if 'rq.worker' in sys.modules:
+        print("Running as worker, skipping database initialization.")
+        return
+    
     with app.app_context():
         if getenv("CLEAR_AT_RESTART", "0") == "1":  # Force clear if CLEAR_AT_RESTART
             print("Clearing database and file system at restart...")
