@@ -24,14 +24,6 @@ Support Aperi'Solve:
 
 Aperi'Solve is an open-source steganalysis web platform that performs automated analysis on images to detect and extract hidden data using common steganography tools and techniques.
 
-Table of contents
-
-- [Key features](#key-features)
-- [Quick start (Docker)](#quick-start-docker)
-- [Architecture](#architecture)
-- [Roadmap](#roadmap)
-- [Contributing](#contributing)
-
 ## Key features
 
 - Visualize each bit layer (LSB and other layers) per image channel (R/G/B/Alpha).
