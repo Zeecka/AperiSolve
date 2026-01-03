@@ -29,7 +29,6 @@ Table of contents
 - [Key features](#key-features)
 - [Quick start (Docker)](#quick-start-docker)
 - [Development](#development)
-- [Adding a new analyzer](#adding-a-new-analyzer)
 - [Configuration & environment variables](#configuration--environment-variables)
 - [Architecture](#architecture)
 - [Troubleshooting & tips](#troubleshooting--tips)
@@ -64,6 +63,7 @@ Clone and start the full stack (production-like):
 ```bash
 git clone https://github.com/Zeecka/AperiSolve.git
 cd AperiSolve
+cp .env.example .env
 docker compose up -d
 ```
 
@@ -103,69 +103,38 @@ docker cp aperisolve-web:/aperisolve/results/filename.ext /path/to/backup/filena
 > rm -rf aperisolve/results
 > ```
 
-### Adding a new analyzer
-
-Adding a custom analyzer is straightforward:
-
-1. Create your analyzer file:
-
-   - Copy `aperisolve/analyzers/template_analyzer.py` -> `aperisolve/analyzers/myanalyzer.py`
-   - Implement function signature similar to:
-
-   ```python
-   # aperisolve/analyzers/myanalyzer.py
-   def analyze_myanalyzer(image_path: str, results_dir: str) -> dict:
-       """
-       Perform analysis on image located at image_path.
-       Produce outputs in results_dir and return a result dict (json-serializable).
-       """
-       # your analysis logic here
-       return {"name": "myanalyzer", "status": "ok", "outputs": [...]}
-   ```
-
-2. Register the analyzer in the worker pipeline:
-
-   - Edit `aperisolve/workers.py`:
-
-   ```python
-   # import
-   from .analyzers.myanalyzer import analyze_myanalyzer
-
-   # add to analyzers list (preserve the order)
-   analyzers = [
-       analyze_zsteg,
-       analyze_steghide,
-       # ...
-       analyze_myanalyzer,
-   ]
-   ```
-
-3. Add your analyzer to the UI order:
-
-   - Edit `aperisolve/static/js/aperisolve.js` and append `myanalyzer` to `TOOL_ORDER` so it appears in the frontend.
-
-4. Test locally: run the worker and submit jobs to ensure outputs are produced and displayed.
-
-> [!TIP]
->
-> - Keep analyzers idempotent and write outputs to the provided `results_dir`.
-> - Return structured JSON so the frontend can render links/downloads automatically.
-
 ## Configuration & environment variables
 
-Typical services:
+The application can be configured with the `.env` file:
 
-- Web app (Flask)
-- Workers (Python)
-- Redis (RQ)
-- PostgreSQL
+```shell
+# Application configuration
+MAX_CONTENT_LENGTH=1048576  # Max uploaded image size (bytes)
+MAX_PENDING_TIME=600  # Timeout for analyzer (seconds)
+MAX_STORE_TIME=259200  # Delay until deleted from server
+CLEAR_AT_RESTART=1  # Reset database and results at application restart/crash
+SKIP_IHDR_FILL=0  # Skip IHDR database fill (gain times at startup but reduce results)
 
-Main environment variables (examples):
+# Flask configuration
+FLASK_DEBUG=0
+FLASK_ENV=development
 
-- DATABASE_URL=postgresql://aperiuser:password@postgres:5432/aperisolve
-- REDIS_URL=redis://redis:6379/0
-- SECRET_KEY=change_me
-- FLASK_ENV=production/development
+# Redis configuration
+RQ_DASHBOARD_REDIS_URL=redis://redis:6379/0
+
+# Database configuration
+POSTGRES_DB=aperisolve
+POSTGRES_USER=aperiuser
+POSTGRES_PASSWORD=aperipass
+DB_URI=postgresql://aperiuser:aperipass@postgres:5432/aperisolve
+
+# Sentry configuration
+SENTRY_DSN=https://your-dsn@sentry.io/project-id
+SENTRY_TRACES_SAMPLE_RATE=0.1
+SENTRY_PROFILES_SAMPLE_RATE=0.1
+SENTRY_RELEASE=1.0.0
+SENTRY_ENVIRONMENT=development
+```
 
 > [!NOTE]
 > If using Docker Compose, defaults are set in the compose files. For production deployments, set secure secrets via your orchestrator or environment.

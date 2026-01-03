@@ -183,6 +183,8 @@ Your analyzer produces JSON in `results.json`:
 - The base class handles timeouts (10 minutes default)
 - Extracted files are automatically zipped into `.7z` archives
 - All exceptions are caught and logged to Sentry
+- Keep analyzers idempotent and write outputs to the provided `results_dir`
+- Return structured JSON so the frontend can render links/downloads automatically
 
 ## Example: Complete Analyzer
 
