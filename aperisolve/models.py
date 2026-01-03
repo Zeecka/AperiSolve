@@ -145,4 +145,5 @@ def init_db(app: Flask) -> None:
         if getenv("SKIP_IHDR_FILL", "0") == "1":
             print("Skipping IHDR lookup table fill as per configuration.")
         else:
+            print("Filling IHDR lookup table...")
             fill_ihdr_db()
