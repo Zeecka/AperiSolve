@@ -224,7 +224,6 @@ pre {
     background-color: var(--dark-bg-hover);
     box-shadow: 0 0 10px var(--theme-green);
 }
-
 #upload-form {
     transition: height 0.4s ease, padding 0.4s ease, margin 0.4s ease;
     overflow: hidden;
@@ -274,6 +273,7 @@ td {
     display: inline-block;
     padding: 10px;
     box-sizing: border-box;
+    min-width: 150px;
 }
 
 /* ======== Modal ======== */
@@ -294,7 +294,10 @@ td {
 }
 
 #image-modal-container img {
-    width: 60%;
+    width: 90%;
+    max-width: 800px;
+    max-height: 90vh;
+    object-fit: contain;
     border: 2px solid var(--theme-green);
     box-shadow: 0 0 20px var(--theme-green);
     cursor: pointer;
@@ -309,6 +312,7 @@ td {
     display: inline-block;
     padding: 10px;
     width: 25%;
+    min-width: 150px;
 }
 
 /* ======== FAQ ======== */
