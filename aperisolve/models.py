@@ -8,7 +8,6 @@ from datetime import datetime, timezone
 from os import getenv
 from pathlib import Path
 from shutil import rmtree
-import sys
 
 from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
@@ -133,12 +132,6 @@ def init_db(app: Flask) -> None:
         - Populates the IHDR CRC lookup table with initial data
         - Prints status messages to console during initialization
     """
-    # Workers should never clear/fill the database
-    # Detect if running as RQ worker
-    if 'rq.worker' in sys.modules:
-        print("Running as worker, skipping database initialization.")
-        return
-    
     with app.app_context():
         if getenv("CLEAR_AT_RESTART", "0") == "1":  # Force clear if CLEAR_AT_RESTART
             print("Clearing database and file system at restart...")
