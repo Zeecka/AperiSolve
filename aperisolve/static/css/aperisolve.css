@@ -354,6 +354,19 @@ td {
 #cheatsheet img,
 #cheatsheet table {
     margin-bottom: 15px;
+    max-width: 100%;
+    height: auto;
+}
+
+#cheatsheet table {
+    min-width: auto;
+    width: auto;
+}
+
+.command {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    word-wrap: break-word;
 }
 
 /* ======== Analyzer Blocks ======== */
@@ -364,15 +377,14 @@ td {
 
 #result-infos {
     display: flex;
+    flex-wrap: wrap;
+    gap: 15px;
 }
 
 #result-infos>div {
-    height: 100%;
-    width: 50%;
     height: auto;
-    flex: 1 1 0;
-    width: 50%;
-    display: inline-block;
+    flex: 1 1 300px;
+    min-width: 280px;
     padding: 10px;
     box-sizing: border-box;
     vertical-align: top;
