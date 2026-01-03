@@ -133,24 +133,26 @@ def init_db(app: Flask) -> None:
         - Populates the IHDR CRC lookup table with initial data
         - Prints status messages to console during initialization
     """
-    # Detect if running as RQ worker (not wsgi/web)
-    # rq.worker module is loaded when RQ runs a worker process
-    is_worker = "rq.worker" in sys.modules
-    
-    if is_worker:
-        print("Running as worker, skipping database initialization.")
-        return
+    # Detect if running as RQ worker by checking command line
+    # Worker: /usr/local/bin/rq worker ...
+    # Web: /usr/local/bin/flask run ... or gunicorn/wsgi
+    is_worker = any("rq" in arg and "flask" not in arg for arg in sys.argv[:2])
 
     with app.app_context():
-        if getenv("CLEAR_AT_RESTART", "0") == "1":  # Force clear if CLEAR_AT_RESTART
+        # Workers should never clear the database
+        if not is_worker and getenv("CLEAR_AT_RESTART", "0") == "1":
             print("Clearing database and file system at restart...")
             db.session.remove()  # pylint: disable=no-member
             db.drop_all()
             rmtree(Path("./results"), ignore_errors=True)  # Clear results folder
 
+        # Always create tables (idempotent - safe to call multiple times)
         db.create_all()
         print("Database structure created successfully.")
 
-        print("Filling IHDR lookup table...")
-        fill_ihdr_db()
+        # Workers should never fill IHDR table
+        if is_worker:
+            print("Running as worker, skipping IHDR table fill.")
+        else:
+            fill_ihdr_db()
 
