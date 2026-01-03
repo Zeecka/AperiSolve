@@ -4,6 +4,7 @@
 """This module defines the database models for the Aperi'Solve application."""
 
 import itertools
+import sys
 from datetime import datetime, timezone
 from os import getenv
 from pathlib import Path
@@ -73,6 +74,11 @@ def fill_ihdr_db() -> None:
     Returns:
         None
     """
+    # Skip if table already has entries
+    if db.session.query(IHDR.iid).first() is not None:
+        print("IHDR table already populated, skipping fill.")
+        return
+    
     # Standard PNG IHDR parameters
     resolutions = get_resolutions()
     bit_color_pairs = get_valid_depth_color_pairs()
@@ -105,7 +111,7 @@ def fill_ihdr_db() -> None:
                 db.session.commit()
 
     db.session.commit()  # pylint: disable=no-member
-    print(f"Precomputed {count} common IHDR entries.")
+    print(f"Precomputed {count} common IHDR entries. IHDR table filled successfully.")
 
 
 def init_db(app: Flask) -> None:
@@ -127,19 +133,26 @@ def init_db(app: Flask) -> None:
         - Populates the IHDR CRC lookup table with initial data
         - Prints status messages to console during initialization
     """
+    # Detect if running as RQ worker by checking command line
+    # Worker: /usr/local/bin/rq worker ...
+    # Web: /usr/local/bin/flask run ... or gunicorn/wsgi
+    is_worker = any("rq" in arg and "flask" not in arg for arg in sys.argv[:2])
+
     with app.app_context():
-        if getenv("CLEAR_AT_RESTART", "0") == "1":  # Force clear if CLEAR_AT_RESTART
+        # Workers should never clear the database
+        if not is_worker and getenv("CLEAR_AT_RESTART", "0") == "1":
             print("Clearing database and file system at restart...")
             db.session.remove()  # pylint: disable=no-member
             db.drop_all()
             rmtree(Path("./results"), ignore_errors=True)  # Clear results folder
 
+        # Always create tables (idempotent - safe to call multiple times)
         db.create_all()
         print("Database structure created successfully.")
 
-        if getenv("SKIP_IHDR_FILL", "0") == "1":
-            print("Skipping IHDR lookup table fill as per configuration.")
+        # Workers should never fill IHDR table
+        if is_worker:
+            print("Running as worker, skipping IHDR table fill.")
         else:
-            print("Filling IHDR lookup table...")
             fill_ihdr_db()
-            print("IHDR table filled successfully.")
+

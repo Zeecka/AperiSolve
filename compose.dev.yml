@@ -21,6 +21,7 @@ services:
     environment:
       - FLASK_DEBUG=true
       - FLASK_ENV=development
+      - CLEAR_AT_RESTART=0  # Don't clear on Flask debug auto-reload
 
   worker:
     #image: ghcr.io/zeecka/aperisolve:latest
