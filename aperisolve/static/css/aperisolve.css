@@ -493,3 +493,121 @@ footer a i {
         padding: 0.5rem;
     }
 }
+
+
+/* Large phones and small tablets */
+@media screen and (max-width: 768px) {
+    body {
+        font-size: 14px;
+    }
+    
+    .container {
+        margin-top: 20px !important;
+        padding-left: 10px;
+        padding-right: 10px;
+    }
+    
+    h1 {
+        font-size: 1.5rem;
+    }
+    
+    h2 {
+        font-size: 1.25rem;
+    }
+    
+    h3 {
+        font-size: 1.1rem;
+    }
+    
+    #water-logo {
+        width: 50px;
+    }
+    
+    .card, .form-control, .table, .border, .card-hack {
+        border-radius: 0.35rem;
+    }
+    
+    .card {
+        padding: 15px !important;
+    }
+    
+    #drop-zone {
+        padding: 20px !important;
+    }
+    
+    #drop-zone p {
+        font-size: 0.9rem;
+    }
+    
+    .results_img {
+        width: 50%;
+        padding: 5px;
+    }
+    
+    .browse-images {
+        width: 50%;
+        padding: 5px;
+    }
+    
+    textarea.form-control, pre {
+        padding: 15px;
+        font-size: 0.85rem;
+    }
+    
+    .a-strings textarea {
+        height: 250px;
+    }
+    
+    .a-exiftool .table-container {
+        max-height: 300px;
+    }
+    
+    /* Make tables scrollable horizontally */
+    .table-container {
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+    }
+    
+    table {
+        font-size: 0.8rem;
+        min-width: 400px;
+    }
+    
+    th, td {
+        padding: 0.4rem;
+        word-break: break-word;
+    }
+    
+    footer {
+        justify-content: center !important;
+        margin: 20px 0;
+        flex-wrap: wrap;
+        gap: 15px;
+    }
+    
+    footer a i {
+        font-size: 28px;
+    }
+    
+    #coffee {
+        height: 28px;
+    }
+    
+    /* FAQ/Cheatsheet adjustments */
+    #cheatsheet > div {
+        padding: 8px;
+        margin-bottom: 30px;
+    }
+    
+    #cheatsheet img {
+        max-width: 100%;
+        height: auto;
+    }
+    
+    .command {
+        padding: 8px;
+        font-size: 0.85rem;
+        overflow-x: auto;
+        white-space: nowrap;
+    }
+}
