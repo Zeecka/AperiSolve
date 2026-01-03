@@ -4,6 +4,7 @@
 """This module defines the database models for the Aperi'Solve application."""
 
 import itertools
+import sys
 from datetime import datetime, timezone
 from os import getenv
 from pathlib import Path
@@ -132,6 +133,13 @@ def init_db(app: Flask) -> None:
         - Populates the IHDR CRC lookup table with initial data
         - Prints status messages to console during initialization
     """
+    # Detect if running as RQ worker (not wsgi/web)
+    is_worker = len(sys.argv) > 0 and ("rq" in sys.argv[0] or "rq.worker" in sys.modules)
+    
+    if is_worker:
+        print("Running as worker, skipping database initialization.")
+        return
+
     with app.app_context():
         if getenv("CLEAR_AT_RESTART", "0") == "1":  # Force clear if CLEAR_AT_RESTART
             print("Clearing database and file system at restart...")
@@ -142,8 +150,6 @@ def init_db(app: Flask) -> None:
         db.create_all()
         print("Database structure created successfully.")
 
-        if getenv("SKIP_IHDR_FILL", "0") == "1":
-            print("Skipping IHDR lookup table fill as per configuration.")
-        else:
-            print("Filling IHDR lookup table...")
-            fill_ihdr_db()
+        print("Filling IHDR lookup table...")
+        fill_ihdr_db()
+
