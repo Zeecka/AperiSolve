@@ -18,10 +18,15 @@ html {
     --bs-progress-bar-bg: #f00 !important;
 }
 
+* {
+    box-sizing: border-box;
+}
+
 body {
     background-color: var(--dark-bg);
     color: #e0e0e0;
     font-family: 'Fira Code', monospace;
+    overflow-x: hidden;
 }
 
 /* ======== Typography ======== */
