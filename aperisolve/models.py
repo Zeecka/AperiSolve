@@ -110,7 +110,7 @@ def fill_ihdr_db() -> None:
                 db.session.commit()
 
     db.session.commit()  # pylint: disable=no-member
-    print(f"Precomputed {count} common IHDR entries.")
+    print(f"Precomputed {count} common IHDR entries. IHDR table filled successfully.")
 
 
 def init_db(app: Flask) -> None:
@@ -145,6 +145,4 @@ def init_db(app: Flask) -> None:
         if getenv("SKIP_IHDR_FILL", "0") == "1":
             print("Skipping IHDR lookup table fill as per configuration.")
         else:
-            print("Filling IHDR lookup table...")
             fill_ihdr_db()
-            print("IHDR table filled successfully.")
