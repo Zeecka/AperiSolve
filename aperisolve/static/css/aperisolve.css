@@ -611,3 +611,119 @@ footer a i {
         white-space: nowrap;
     }
 }
+
+/* Phones */
+@media screen and (max-width: 576px) {
+    body {
+        font-size: 13px;
+    }
+    
+    .container {
+        margin-top: 15px !important;
+        padding-left: 8px;
+        padding-right: 8px;
+    }
+    
+    h1 {
+        font-size: 1.3rem;
+    }
+    
+    h2 {
+        font-size: 1.1rem;
+    }
+    
+    h3 {
+        font-size: 1rem;
+    }
+    
+    #water-logo {
+        width: 40px;
+    }
+    
+    .card {
+        padding: 12px !important;
+    }
+    
+    #drop-zone {
+        padding: 15px !important;
+    }
+    
+    #drop-zone p {
+        font-size: 0.85rem;
+    }
+    
+    .btn, .btn-primary, .btn-hack {
+        width: 100%;
+        padding: 12px;
+        font-size: 1rem;
+    }
+    
+    .results_img {
+        width: 100%;
+        padding: 5px;
+    }
+    
+    .browse-images {
+        width: 100%;
+        padding: 5px;
+    }
+    
+    #result-infos > div {
+        padding: 5px;
+    }
+    
+    textarea.form-control, pre {
+        padding: 10px;
+        font-size: 0.8rem;
+    }
+    
+    .a-strings textarea {
+        height: 200px;
+    }
+    
+    .a-exiftool .table-container {
+        max-height: 250px;
+    }
+    
+    table {
+        font-size: 0.75rem;
+    }
+    
+    th, td {
+        padding: 0.3rem;
+    }
+    
+    .copy-icon {
+        display: block;
+        right: 5px;
+        margin-top: -35px;
+    }
+    
+    footer {
+        gap: 12px;
+    }
+    
+    footer a i {
+        font-size: 24px;
+    }
+    
+    #coffee {
+        height: 24px;
+    }
+    
+    #image-modal-container img {
+        width: 95%;
+    }
+    
+    .analyzer {
+        margin-top: 15px;
+    }
+    
+    .analyzer h2 + div {
+        margin-top: 10px;
+    }
+    
+    .analyzer h3 {
+        margin-top: 15px;
+    }
+}
