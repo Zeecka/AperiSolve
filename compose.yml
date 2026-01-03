@@ -39,7 +39,6 @@ services:
       - .env
     environment:
       - CLEAR_AT_RESTART=0  # Always false for worker to prevent double clearing
-      - SKIP_IHDR_FILL=1
 
   postgres:
     image: postgres:18
