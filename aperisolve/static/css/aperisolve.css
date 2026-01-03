@@ -726,4 +726,19 @@ footer a i {
     .analyzer h3 {
         margin-top: 15px;
     }
+    
+    /* FAQ/Cheatsheet adjustments */
+    #cheatsheet li {
+        padding-left: 20px;
+        font-size: 0.9rem;
+    }
+    
+    .command {
+        font-size: 0.75rem;
+        padding: 6px;
+    }
+    
+    #httperror {
+        padding-top: 50px;
+    }
 }
