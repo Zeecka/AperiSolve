@@ -726,7 +726,7 @@ footer a i {
     .analyzer h3 {
         margin-top: 15px;
     }
-    
+
     /* FAQ/Cheatsheet adjustments */
     #cheatsheet li {
         padding-left: 20px;
@@ -740,5 +740,95 @@ footer a i {
     
     #httperror {
         padding-top: 50px;
+    }
+}
+
+/* Extra small phones */
+@media screen and (max-width: 380px) {
+    body {
+        font-size: 12px;
+    }
+    
+    h1 {
+        font-size: 1.1rem;
+    }
+    
+    #water-logo {
+        width: 35px;
+    }
+    
+    .btn, .btn-primary, .btn-hack {
+        padding: 10px;
+        font-size: 0.9rem;
+    }
+    
+    footer a i {
+        font-size: 22px;
+    }
+    
+    #coffee {
+        height: 22px;
+    }
+}
+
+
+/* Touch device optimizations */
+@media (hover: none) and (pointer: coarse) {
+    .copy-icon {
+        display: block;
+        opacity: 0.7;
+    }
+    
+    .btn, .btn-primary, .btn-hack {
+        min-height: 44px;
+    }
+    
+    input, textarea, select {
+        font-size: 16px; /* Prevents zoom on iOS */
+    }
+    
+    a, button {
+        min-height: 44px;
+        min-width: 44px;
+    }
+}
+
+/* Landscape mode on phones */
+@media screen and (max-height: 500px) and (orientation: landscape) {
+    .container {
+        margin-top: 10px !important;
+    }
+    
+    #image-modal-container img {
+        max-height: 85vh;
+        width: auto;
+        max-width: 95%;
+    }
+}
+
+/* Print styles */
+@media print {
+    #three-bg {
+        display: none;
+    }
+    
+    body {
+        background-color: white;
+        color: black;
+    }
+    
+    .card, .form-control, .table, .border, .card-hack {
+        background-color: white;
+        border-color: #333 !important;
+        box-shadow: none;
+    }
+    
+    h1, h2, h3, h4, h5, h6, strong, .highlight {
+        color: #333;
+        text-shadow: none;
+    }
+    
+    a, .text-accent {
+        color: #333;
     }
 }
