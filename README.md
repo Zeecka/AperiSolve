@@ -191,32 +191,17 @@ This separation keeps heavy tools (binwalk, foremost, zsteg, etc.) isolated and 
 ## Roadmap
 
 - [ ] **[Bug]** Duplicate key value violates unique constraint "submission_pkey"
+- [ ] **[Enhancement]** Server continuous deployment
 - [ ] **[Feature]** Zsteg: full extraction (--all) and download of discovered files (mp3, etc.)
 - [ ] **[Feature]** Mobile-friendly UI / test on mobile
 - [ ] **[Feature]** i18n (internationalization)
 - [ ] **[Feature]** Rootless / unprivileged analyzers
-- [ ] **[Feature]** Improve analyzer sandboxing (e.g., per-analyzer containers)
+
+See [Issues](../../issues) for more!
 
 ## Contributing
 
-Contributions are welcome! Please:
-
-1. Fork the repository
-2. Create a feature branch
-3. Open a pull request describing your change
-
-> [!IMPORTANT]
-> Please follow the code style and run linters before submitting. The project adheres to:
->
-> - Black (line length 100)
-> - Isort (profile black)
-> - Flake8 (ignoring E203, E501, W503)
-> - Pylint (ignoring W0718, R0903, R0801)
-> - Mypy (ignoring unused-awaitable)
->
-> See [.pre-commit-config.yaml](.pre-commit-config.yaml) file.
-
-CI will run these checks on each PR.
+See [CONTRIBUTING.md](CONTRIBUTING.md).
 
 ## Security
 
