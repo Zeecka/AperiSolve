@@ -10,7 +10,6 @@ jobs:
   docker-releases:
 
     runs-on: ubuntu-latest
-    if: startsWith(github.ref, 'refs/tags/') && (github.ref_name == 'main' || github.ref_name == 'prod')
 
     steps:
     - name: Get release version
