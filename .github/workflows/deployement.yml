@@ -1,45 +1,17 @@
 name: Deploy to production
 
 on:
-  workflow_run:
-    workflows:
-      - Docker Image CI
-    types:
-      - completed
+  push:
+    tags:
+      - '*'
 
 jobs:
-  check-and-deploy:
-    if: ${{ github.event.workflow_run.conclusion == 'success' }}
+  deploy:
     runs-on: ubuntu-latest
     environment: prod
 
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-        with:
-          ref: ${{ github.event.workflow_run.head_sha }}
-          fetch-depth: 0
-
-      - name: Check if tag is from prod branch
-        id: check
-        run: |
-          TAG_REF="${{ github.event.workflow_run.head_branch }}"
-          echo "Tag/Branch: $TAG_REF"
-
-          # Récupère les branches contenant ce commit
-          BRANCHES=$(git branch -r --contains ${{ github.event.workflow_run.head_sha }})
-          echo "Branches containing this commit: $BRANCHES"
-
-          if echo "$BRANCHES" | grep -q "origin/prod"; then
-            echo "is_prod=true" >> $GITHUB_OUTPUT
-            echo "✅ Tag is from prod branch - will deploy"
-          else
-            echo "is_prod=false" >> $GITHUB_OUTPUT
-            echo "❌ Tag is not from prod branch - skipping deployment"
-          fi
-
       - name: Deploy to production server
-        if: steps.check.outputs.is_prod == 'true'
         uses: appleboy/ssh-action@v1.0.3
         with:
           host: ${{ secrets.PROD_SSH_HOST }}

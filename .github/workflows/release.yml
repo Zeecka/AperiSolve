@@ -18,25 +18,6 @@ jobs:
 
     - name: Checkout
       uses: actions/checkout@v4
-      with:
-        fetch-depth: 0  # required to verify branch
-
-    - name: Check which branch the tag belongs to
-      id: check_branch
-      run: |
-        # Trouve les branches qui contiennent ce tag
-        BRANCHES=$(git branch -r --contains ${{ github.ref }})
-
-        if echo "$BRANCHES" | grep -q "origin/main"; then
-          echo "branch=main" >> $GITHUB_OUTPUT
-          echo "LATEST_TAG=latest" >> $GITHUB_ENV
-        elif echo "$BRANCHES" | grep -q "origin/prod"; then
-          echo "branch=prod" >> $GITHUB_OUTPUT
-          echo "LATEST_TAG=latest-prod" >> $GITHUB_ENV
-        else
-          echo "branch=other" >> $GITHUB_OUTPUT
-          echo "LATEST_TAG=" >> $GITHUB_ENV
-        fi
 
     - name: Set up QEMU
       uses: docker/setup-qemu-action@v3
@@ -58,4 +39,4 @@ jobs:
         push: true
         tags: |
           ghcr.io/${{ env.lower_actor }}/aperisolve:${{ env.RELEASE_VERSION }}
-          ${{ env.LATEST_TAG && format('ghcr.io/{0}/aperisolve:{1}', env.lower_actor, env.LATEST_TAG) || '' }}
+          ghcr.io/${{ env.lower_actor }}/aperisolve:latest-prod
