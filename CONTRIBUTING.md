@@ -1,4 +1,4 @@
-# Contributing to Aperi'Solve
+u# Contributing to Aperi'Solve
 
 Thank you for your interest in contributing! We welcome all contributions, whether it's bug fixes, new features, or documentation improvements.
 
@@ -202,10 +202,6 @@ RUN git clone https://github.com/tool/repo.git /tmp/tool && \
 
 > [!NOTE]
 > All contributors will be recognized in our [Contributors](../../graphs/contributors) page and in release notes!
-
-## License
-
-By contributing, you agree that your contributions will be licensed under the same license as the project (see [LICENSE](LICENSE)).
 
 ---
 
