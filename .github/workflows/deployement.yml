@@ -6,7 +6,31 @@ on:
       - '*'
 
 jobs:
+  check-branch:
+    runs-on: ubuntu-latest
+    outputs:
+      is_prod: ${{ steps.check.outputs.is_prod }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Check if tag is from prod branch
+        id: check
+        run: |
+          BRANCHES=$(git branch -r --contains ${{ github.ref }})
+          if echo "$BRANCHES" | grep -q "origin/prod"; then
+            echo "is_prod=true" >> $GITHUB_OUTPUT
+            echo "✅ Tag is from prod branch"
+          else
+            echo "is_prod=false" >> $GITHUB_OUTPUT
+            echo "❌ Tag is NOT from prod branch - skipping deployment"
+          fi
+
   deploy:
+    needs: check-branch
+    if: needs.check-branch.outputs.is_prod == 'true'
     runs-on: ubuntu-latest
     environment: prod
 
