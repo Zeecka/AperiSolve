@@ -6,10 +6,12 @@ on:
       - Docker Image CI
     types:
       - completed
+    branches:
+      - prod  # Only triggers for tags in the production branch
 
 jobs:
   deploy:
-    # ne déploie que si le build a réussi
+    # Deploys only if the build was successfuli
     if: ${{ github.event.workflow_run.conclusion == 'success' }}
 
     runs-on: ubuntu-latest

@@ -3,23 +3,40 @@ name: Docker Image CI
 on:
   push:
     tags:
-    - '*'
+      - '*'
 
 jobs:
-
   docker-releases:
-
     runs-on: ubuntu-latest
 
     steps:
     - name: Get release version
       run: echo "RELEASE_VERSION=${GITHUB_REF#refs/tags/}" >> $GITHUB_ENV
 
-    - name: downcase username
+    - name: Downcase username
       run: echo "lower_actor=${GITHUB_ACTOR,,}" >> $GITHUB_ENV
 
     - name: Checkout
       uses: actions/checkout@v4
+      with:
+        fetch-depth: 0  # required to verify branch
+
+    - name: Check which branch the tag belongs to
+      id: check_branch
+      run: |
+        # Trouve les branches qui contiennent ce tag
+        BRANCHES=$(git branch -r --contains ${{ github.ref }})
+
+        if echo "$BRANCHES" | grep -q "origin/main"; then
+          echo "branch=main" >> $GITHUB_OUTPUT
+          echo "LATEST_TAG=latest" >> $GITHUB_ENV
+        elif echo "$BRANCHES" | grep -q "origin/prod"; then
+          echo "branch=prod" >> $GITHUB_OUTPUT
+          echo "LATEST_TAG=latest-prod" >> $GITHUB_ENV
+        else
+          echo "branch=other" >> $GITHUB_OUTPUT
+          echo "LATEST_TAG=" >> $GITHUB_ENV
+        fi
 
     - name: Set up QEMU
       uses: docker/setup-qemu-action@v3
@@ -30,25 +47,15 @@ jobs:
     - name: Login to GitHub Container Registry
       uses: docker/login-action@v3
       with:
-          registry: ghcr.io
-          username: ${{ github.actor }}
-          password: ${{ secrets.GITHUB_TOKEN }}
-
-    - name: Determine latest tag
-      run: |
-        if [[ "${GITHUB_REF_NAME}" == "main" ]]; then
-          echo "LATEST_TAG=latest" >> $GITHUB_ENV
-        elif [[ "${GITHUB_REF_NAME}" == "prod" ]]; then
-          echo "LATEST_TAG=latest-prod" >> $GITHUB_ENV
-        else
-          echo "LATEST_TAG=" >> $GITHUB_ENV
-        fi
+        registry: ghcr.io
+        username: ${{ github.actor }}
+        password: ${{ secrets.GITHUB_TOKEN }}
 
     - name: Build and push Docker images
       uses: docker/build-push-action@v6.9.0
       with:
-          context: ./
-          push: true
-          tags: |
-            ghcr.io/${{ env.lower_actor }}/aperisolve:${{ env.RELEASE_VERSION }}
-            ghcr.io/${{ env.lower_actor }}/aperisolve:${{ env.LATEST_TAG }}
+        context: ./
+        push: true
+        tags: |
+          ghcr.io/${{ env.lower_actor }}/aperisolve:${{ env.RELEASE_VERSION }}
+          ${{ env.LATEST_TAG && format('ghcr.io/{0}/aperisolve:{1}', env.lower_actor, env.LATEST_TAG) || '' }}
