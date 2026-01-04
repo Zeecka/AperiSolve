@@ -1,127 +1,71 @@
+# flake8: noqa: E203,E501,W503
+# pylint: disable=C0413,W0718,R0903,R0801
+# mypy: disable-error-code=unused-awaitable
 """Steghide Analyzer for Image Submissions."""
 
 import re
-import shutil
-import subprocess
 from pathlib import Path
 from typing import Optional
 
-from .utils import MAX_PENDING_TIME, update_data
+from .base_analyzer import SubprocessAnalyzer
 
 
-def analyze_steghide(
-    input_img: Path, output_dir: Path, password: Optional[str] = None
-) -> None:
-    """Analyze an image submission using steghide."""
+class SteghideAnalyzer(SubprocessAnalyzer):
+    """Analyzer for steghide."""
 
-    image_name = input_img.name
-    try:
-        stderr = ""
-        # Get embedded file information first
-        cmd: list[str] = ["steghide", "info", "../" + str(image_name)]
-        if password:
-            cmd += ["-p", password]
-        else:
-            cmd += ["-p", ""]
+    def __init__(self, input_img: Path, output_dir: Path) -> None:
+        super().__init__("steghide", input_img, output_dir, has_archive=True)
 
-        data = subprocess.run(
-            cmd,
-            cwd=output_dir,
-            capture_output=True,
-            text=True,
-            check=False,
-            timeout=MAX_PENDING_TIME,
-        )
+    def build_cmd(self, password: Optional[str] = None) -> list[str]:
+        if password is None:
+            password = ""
+
+        # First, get the embedded file name, and return the test cmd if failed
+        cmd_test = ["steghide", "info", self.img, "-p", password]
+        data = self.run_command(cmd_test, cwd=self.output_dir)
+        err = self.is_error(data.returncode, data.stdout, data.stderr, False)
+        if err:
+            return cmd_test
 
         match = re.search(r'embedded file "([^"]+)"', data.stdout)
+        assert match is not None
+        hidden_file = match.group(1)
+        safe_hidden_file = Path(hidden_file).name
+        outfile = str(self.get_extracted_dir() / safe_hidden_file)
+        cmd = ["steghide", "extract", "-sf", self.img, "-xf", outfile, "-p", password]
+        return cmd
+
+    def is_error(self, returncode: int, stdout: str, stderr: str, zip_exist: bool) -> bool:
+        """Check if the result is an error."""
+
+        match = re.search(r'embedded file "([^"]+)".*', stdout + stderr)
         embedded_filename = match.group(1) if match else None
 
+        match = re.search(r'wrote extracted data to "([^"]+)".*', stdout + stderr)
+        extracted_filename = match.group(1) if match else None
+
         # if bad file format or wrong password, raise an error
-        if data.returncode != 0 or embedded_filename is None:
-            stderr += data.stderr.replace(f'"../{image_name}" ', "")  # hide file name
-            # the file format of the file \"../foobar.png\"  is not supported.
-            # become
-            # the file format of the file is not supported.
-            err = {
-                "steghide": {
-                    "status": "error",
-                    "error": stderr,
-                }
-            }
-            update_data(output_dir, err)
-            return None
+        return embedded_filename is None and extracted_filename is None
 
-        # The passphrase is correct, we can extract the file
-        # prevent path traversal
-        embedded_file = output_dir / "steghide" / str(Path(embedded_filename).name)
-        extracted_dir = embedded_file.parent
-        extracted_dir.mkdir(parents=True, exist_ok=True)
+    def process_output(self, stdout: str, stderr: str) -> str | list[str] | dict[str, str]:
+        """Process the stdout into a list of lines."""
+        out = []
+        for line in (stdout + "\n" + stderr).split("\n"):
+            if "wrote extracted data to" in line:
+                out.append(line)
+        return out
 
-        cmd_ext: list[str] = [
-            "steghide",
-            "extract",
-            "-sf",
-            "../../" + str(image_name),
-            "-xf",
-            str(embedded_file.name),
-        ]
-        if password:
-            cmd_ext += ["-p", password]
-        else:
-            cmd_ext += ["-p", ""]
+    def process_error(self, stdout: str, stderr: str) -> str:
+        """Process stderr."""
+        if "the file format of the file" in stderr and "not supported" in stderr:
+            return "The file format of the file is not supported (JPEG or BMP only)."
+        return stderr
 
-        data = subprocess.run(
-            cmd_ext,
-            cwd=extracted_dir,
-            capture_output=True,
-            text=True,
-            check=False,
-            timeout=MAX_PENDING_TIME,
-        )
-        # Filter out lines that indicate success
-        stdout = []
-        for line in data.stderr.split("\n"):
-            if line.startswith('wrote extracted data to "'):
-                stdout.append(line)
-            elif line:
-                stderr += line + "\n"
 
-        # Zip extracted files
-        zip_data = subprocess.run(
-            ["7z", "a", "../steghide.7z", "*"],
-            cwd=extracted_dir,
-            capture_output=True,
-            text=True,
-            check=False,
-            timeout=MAX_PENDING_TIME,
-        )
-
-        stderr += zip_data.stderr
-
-        if len(stderr) > 0:
-            err = {
-                "steghide": {
-                    "status": "error",
-                    "error": stderr,
-                }
-            }
-            update_data(output_dir, err)
-            return None
-
-        # Remove the extracted directory
-        shutil.rmtree(extracted_dir)
-
-        update_data(
-            output_dir,
-            {
-                "steghide": {
-                    "status": "ok",
-                    "output": stdout,
-                    "download": f"/download/{output_dir.name}/steghide",
-                }
-            },
-        )
-
-    except Exception as e:
-        update_data(output_dir, {"steghide": {"status": "error", "error": str(e)}})
-    return None
+def analyze_steghide(input_img: Path, output_dir: Path, password: Optional[str] = None) -> None:
+    """Analyze an image submission using steghide."""
+    analyzer = SteghideAnalyzer(input_img, output_dir)
+    if password:
+        analyzer.analyze(password)
+    else:
+        analyzer.analyze()

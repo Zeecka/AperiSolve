@@ -1,3 +1,6 @@
+# flake8: noqa: E203,E501,W503
+# pylint: disable=C0413,W0718,R0903,R0801
+# mypy: disable-error-code=unused-awaitable
 """Cleanup old entries in the database and file system."""
 
 import shutil
@@ -46,9 +49,7 @@ def cleanup_old_entries() -> None:
             db.session.delete(submission)  # pylint: disable=no-member
         elif submission.status == "done":  # type: ignore
             # Search for buggy results, delete
-            result_path = (
-                RESULT_FOLDER / str(submission.image_hash) / str(submission.hash)
-            )
+            result_path = RESULT_FOLDER / str(submission.image_hash) / str(submission.hash)
             result_file = result_path / "results.json"
             if not result_file.exists():
                 db.session.delete(submission)  # pylint: disable=no-member

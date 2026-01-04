@@ -252,6 +252,38 @@ function parseResult(result) {
 
     analyzer.innerHTML += `<h2>${capitalize(tool.replace("_"," "))}</h2>`;
 
+    // Parse text output
+    if (typeof result[tool]["output"] === "string") {
+      output = escapeHtml(result[tool]["output"]);
+      analyzer.innerHTML += `<div class="alert alert-success" role="alert">${output}</div>`;
+    } else if (Array.isArray(result[tool]["output"])) {
+      if (result[tool]["output"].length > 0) {
+        var texarea_content = `<div class="textarea-container">`;
+        texarea_content += `<textarea class="form-control w-100 mb-2" rows="8" readonly>`;
+        for (const line of result[tool]["output"]) {
+          texarea_content += escapeHtml(`${line}\n`);
+        }
+        texarea_content = texarea_content.trim();
+        texarea_content += `</textarea>`;
+        texarea_content += `<i class="fas fa-copy copy-icon"></i>`;
+        texarea_content += `</div>`;
+        analyzer.innerHTML += texarea_content;
+      }
+    } else if (typeof result[tool]["output"] === "object") {
+      var table_content = `<div class="table-container">`;
+      table_content += `<table>`;
+      for (const key in result[tool]["output"]) {
+        table_content += `<tr><td>${escapeHtml(key)}</td>`;
+        table_content += `<td>${escapeHtml(
+          result[tool]["output"][key]
+        )}</td></tr>`;
+      }
+      table_content += `</table>`;
+      table_content += `</table>`;
+      analyzer.innerHTML += table_content;
+    }
+
+    // Parse images, downloads, ...
     if (result[tool]["status"] === "ok") {
       if ("images" in result[tool]) {
         // Parse image output
@@ -284,41 +316,6 @@ function parseResult(result) {
         for (const image of result[tool]["png_images"]) {
              analyzer.innerHTML += `<div class='results_img'><img src='${escapeHtml(image)}'/></div>`;
         }
-      }
-
-      // Parse text output
-
-
-      if (typeof result[tool]["output"] === "string") {
-        analyzer.innerHTML += `<pre>${escapeHtml(
-          result[tool]["output"]
-        )}</pre>`;
-      } else if (Array.isArray(result[tool]["output"])) {
-        if (result[tool]["output"].length > 0) {
-          var texarea_content = `<div class="textarea-container">`;
-          texarea_content += `<textarea class="form-control w-100 mb-2" rows="8" readonly>`;
-          for (const line of result[tool]["output"]) {
-            texarea_content += escapeHtml(`${line}\n`);
-          }
-          texarea_content += `</textarea>`;
-          texarea_content += `<i class="fas fa-copy copy-icon"></i>`;
-          texarea_content += `</div>`;
-          analyzer.innerHTML += texarea_content;
-        }
-      } else if (typeof result[tool]["output"] === "object") {
-        var table_content = `<div class="table-container">`;
-        table_content += `<table>`;
-        for (const key in result[tool]["output"]) {
-          table_content += `<tr><td>${escapeHtml(key)}</td>`;
-          table_content += `<td>${escapeHtml(
-            result[tool]["output"][key]
-          )}</td></tr>`;
-        }
-        table_content += `</table>`;
-        table_content += `</table>`;
-        analyzer.innerHTML += table_content;
-      } else {
-        // analyzer.innerHTML += `<pre>${result[tool]["output"]}</pre>`;
       }
 
       if ("download" in result[tool]) {
@@ -489,7 +486,9 @@ if (browseBtn) {
           } catch (e) {
             showDanger("❌ Invalid server response.", true);
           }
-        } else {
+        } else if (xhr.status == 413) {
+          showDanger("❌ File too large. Please upload a smaller file.", true);
+        }else {
           showDanger(`❌ HTTP error ${xhr.status}`, true);
         }
         progressBar.style.width = "100%";

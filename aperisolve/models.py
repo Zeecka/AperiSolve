@@ -1,7 +1,14 @@
+# flake8: noqa: E203,E501,W503
+# pylint: disable=C0413,W0718,R0903,R0801
+# mypy: disable-error-code=unused-awaitable
 """This module defines the database models for the Aperi'Solve application."""
 
 import itertools
+import sys
 from datetime import datetime, timezone
+from os import getenv
+from pathlib import Path
+from shutil import rmtree
 
 from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
@@ -56,7 +63,7 @@ class IHDR(db.Model):  # type: ignore
     packed = Column(BigInteger, nullable=False)
 
 
-def create_crc_db() -> None:
+def fill_ihdr_db() -> None:
     """
     Creates a database of common PNG IHDR (Image Header) entries by generating
     combinations of standard PNG parameters such as resolutions, bit depths,
@@ -67,6 +74,11 @@ def create_crc_db() -> None:
     Returns:
         None
     """
+    # Skip if table already has entries
+    if db.session.query(IHDR.iid).first() is not None:
+        print("IHDR table already populated, skipping fill.")
+        return
+
     # Standard PNG IHDR parameters
     resolutions = get_resolutions()
     bit_color_pairs = get_valid_depth_color_pairs()
@@ -91,9 +103,7 @@ def create_crc_db() -> None:
             if exists:  # Skip if already present
                 continue
 
-            db.session.add(  # pylint: disable=no-member
-                IHDR(packed=p.packed, crc=p.crc)
-            )
+            db.session.add(IHDR(packed=p.packed, crc=p.crc))  # pylint: disable=no-member
             count += 1
 
             if count % 5000 == 0:
@@ -101,7 +111,7 @@ def create_crc_db() -> None:
                 db.session.commit()
 
     db.session.commit()  # pylint: disable=no-member
-    print(f"Precomputed {count} common IHDR entries.")
+    print(f"Precomputed {count} common IHDR entries. IHDR table filled successfully.")
 
 
 def init_db(app: Flask) -> None:
@@ -123,11 +133,25 @@ def init_db(app: Flask) -> None:
         - Populates the IHDR CRC lookup table with initial data
         - Prints status messages to console during initialization
     """
+    # Detect if running as RQ worker by checking command line
+    # Worker: /usr/local/bin/rq worker ...
+    # Web: /usr/local/bin/flask run ... or gunicorn/wsgi
+    is_worker = any("rq" in arg and "flask" not in arg for arg in sys.argv[:2])
+
     with app.app_context():
-        if not db.engine.dialect.has_table(db.engine.connect(), "image"):
-            print("Creating database...")
-            db.create_all()
-            print("Database structure created successfully.")
-            print("Filling IHDR lookup table...")
-            create_crc_db()
-            print("IHDR table filled successfully.")
+        # Workers should never clear the database
+        if not is_worker and getenv("CLEAR_AT_RESTART", "0") == "1":
+            print("Clearing database and file system at restart...")
+            db.session.remove()  # pylint: disable=no-member
+            db.drop_all()
+            rmtree(Path("./results"), ignore_errors=True)  # Clear results folder
+
+        # Always create tables (idempotent - safe to call multiple times)
+        db.create_all()
+        print("Database structure created successfully.")
+
+        # Workers should never fill IHDR table
+        if is_worker:
+            print("Running as worker, skipping IHDR table fill.")
+        else:
+            fill_ihdr_db()

@@ -1,114 +1,66 @@
+# flake8: noqa: E203,E501,W503
+# pylint: disable=C0413,W0718,R0903,R0801
+# mypy: disable-error-code=unused-awaitable
 """OpenStego Analyzer for Image Submissions."""
 
-import shutil
-import subprocess
 from pathlib import Path
+from typing import Any, Optional
 
-from .utils import MAX_PENDING_TIME, update_data
+from .base_analyzer import SubprocessAnalyzer
+
+
+class OpenStegoAnalyzer(SubprocessAnalyzer):
+    """Analyzer for openstego."""
+
+    def __init__(self, input_img: Path, output_dir: Path) -> None:
+        super().__init__("openstego", input_img, output_dir, has_archive=True)
+        self.algo = 0
+
+    def build_cmd(self, password: Optional[str] = None) -> list[str]:
+        """Iterator that return command for OpenStego for every algorithms"""
+        if password is None:
+            password = ""
+
+        algorithms = ["AES128", "AES256"]
+        algo = algorithms[self.algo]
+        self.algo += 1
+        cmd = ["openstego", "extract", "-a", "randomlsb", "--cryptalgo", algo, "-sf"]
+        cmd += [self.img, "-xd", str(self.get_extracted_dir()), "-p", password]
+        return cmd
+
+    def is_error(self, returncode: int, stdout: str, stderr: str, zip_exist: bool) -> bool:
+        """Check if the result is an error."""
+        return (
+            len(list(self.get_extracted_dir().glob("*"))) == 0 and "Extracted file: " not in stderr
+        )
+
+    def analyze(self, password: Optional[str] = None) -> None:
+        """Run the subprocess command and handle results."""
+        result: dict[str, Any]
+        try:
+            result = self.get_results(password)
+            if result["status"] == "error":  # check second algorithm if failed
+                result = self.get_results(password)
+            self.update_result(result)
+        except Exception as e:
+            self.update_result({"status": "error", "error": str(e)})
+            raise
+
+    def process_output(self, stdout: str, stderr: str) -> str | list[str] | dict[str, str]:
+        """Process the stdout/stderr."""
+        return stderr
+
+    def process_error(self, stdout: str, stderr: str) -> str:
+        """Process the stderr."""
+        if "OpenStego is a steganography application" in stderr:
+            return "OpenStego needs a password to work."
+        return stderr
 
 
 def analyze_openstego(input_img: Path, output_dir: Path, password: str = "") -> None:
     """Analyze an image submission using openstego."""
-
-    image_name = input_img.name
-    try:
-        stderr = ""
-        # Try to extract the embedded file
-        extracted_dir = output_dir / "openstego"
-        extracted_dir.mkdir(parents=True, exist_ok=True)
-
-        for algo in ["AES128", "AES256"]:
-            cmd: list[str] = [
-                "openstego",
-                "extract",
-                "-a",
-                "randomlsb",
-                "--cryptalgo",
-                algo,
-                "-sf",
-                "../" + str(image_name),
-                "-xd",
-                str(extracted_dir),
-                "-p",
-                password,
-            ]
-
-            data = subprocess.run(
-                cmd,
-                cwd=output_dir,
-                capture_output=True,
-                text=True,
-                check=False,
-                timeout=MAX_PENDING_TIME,
-            )
-
-            # Check if extraction was successful
-            if data.returncode != 0:
-                stderr += data.stderr.replace(
-                    f'"../{image_name}" ', ""
-                )  # hide file name
-                err = {
-                    "openstego": {
-                        "status": "error",
-                        "error": stderr,
-                    }
-                }
-                update_data(output_dir, err)
-                return None
-
-        # Find the extracted file
-        extracted_files = list(extracted_dir.glob("*"))
-        if not extracted_files:
-            err = {
-                "openstego": {
-                    "status": "error",
-                    "error": "No file extracted, password may be incorrect.",
-                }
-            }
-            update_data(output_dir, err)
-            return None
-
-        # Filter stdout for success messages
-        stdout = []
-        for f in extracted_files:
-            stdout.append(f"Recovered file: {f.name}")
-
-        # Zip extracted files
-        zip_data = subprocess.run(
-            ["7z", "a", "../openstego.7z", "*"],
-            cwd=extracted_dir,
-            capture_output=True,
-            text=True,
-            check=False,
-            timeout=MAX_PENDING_TIME,
-        )
-
-        stderr += zip_data.stderr
-
-        if len(stderr) > 0:
-            err = {
-                "openstego": {
-                    "status": "error",
-                    "error": stderr,
-                }
-            }
-            update_data(output_dir, err)
-            return None
-
-        # Remove the extracted directory
-        shutil.rmtree(extracted_dir)
-
-        update_data(
-            output_dir,
-            {
-                "openstego": {
-                    "status": "ok",
-                    "output": stdout,
-                    "download": f"/download/{output_dir.name}/openstego",
-                }
-            },
-        )
-
-    except Exception as e:
-        update_data(output_dir, {"openstego": {"status": "error", "error": str(e)}})
-    return None
+    analyzer = OpenStegoAnalyzer(input_img, output_dir)
+    if password:
+        analyzer.analyze(password)
+    else:
+        analyzer.analyze()

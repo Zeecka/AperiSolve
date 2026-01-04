@@ -18,10 +18,15 @@ html {
     --bs-progress-bar-bg: #f00 !important;
 }
 
+* {
+    box-sizing: border-box;
+}
+
 body {
     background-color: var(--dark-bg);
     color: #e0e0e0;
     font-family: 'Fira Code', monospace;
+    overflow-x: hidden;
 }
 
 /* ======== Typography ======== */
@@ -219,7 +224,6 @@ pre {
     background-color: var(--dark-bg-hover);
     box-shadow: 0 0 10px var(--theme-green);
 }
-
 #upload-form {
     transition: height 0.4s ease, padding 0.4s ease, margin 0.4s ease;
     overflow: hidden;
@@ -269,6 +273,7 @@ td {
     display: inline-block;
     padding: 10px;
     box-sizing: border-box;
+    min-width: 150px;
 }
 
 /* ======== Modal ======== */
@@ -289,7 +294,10 @@ td {
 }
 
 #image-modal-container img {
-    width: 60%;
+    width: 90%;
+    max-width: 800px;
+    max-height: 90vh;
+    object-fit: contain;
     border: 2px solid var(--theme-green);
     box-shadow: 0 0 20px var(--theme-green);
     cursor: pointer;
@@ -304,6 +312,7 @@ td {
     display: inline-block;
     padding: 10px;
     width: 25%;
+    min-width: 150px;
 }
 
 /* ======== FAQ ======== */
@@ -345,6 +354,19 @@ td {
 #cheatsheet img,
 #cheatsheet table {
     margin-bottom: 15px;
+    max-width: 100%;
+    height: auto;
+}
+
+#cheatsheet table {
+    min-width: auto;
+    width: auto;
+}
+
+.command {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    word-wrap: break-word;
 }
 
 /* ======== Analyzer Blocks ======== */
@@ -355,15 +377,14 @@ td {
 
 #result-infos {
     display: flex;
+    flex-wrap: wrap;
+    gap: 15px;
 }
 
 #result-infos>div {
-    height: 100%;
-    width: 50%;
     height: auto;
-    flex: 1 1 0;
-    width: 50%;
-    display: inline-block;
+    flex: 1 1 300px;
+    min-width: 280px;
     padding: 10px;
     box-sizing: border-box;
     vertical-align: top;
@@ -379,6 +400,10 @@ td {
     height: 400px;
 }
 
+.a-foremost textarea {
+    height: 100px;
+}
+
 /* ======== Footer ======== */
 
 footer {
@@ -387,6 +412,7 @@ footer {
     margin: 0 20px 20px 0;
     justify-content: flex-end !important;
 }
+
 @media screen and (min-width: 1800px) {
     footer {
         position: fixed;
@@ -420,4 +446,389 @@ footer a i {
 }
 #httperror h1, #httperror h2{
     text-align: center;
+}
+
+/* ======== Responsive Design ======== */
+
+/* Large tablets and small desktops */
+@media screen and (max-width: 1200px) {
+    .results_img {
+        width: 33.333%;
+    }
+    
+    .browse-images {
+        width: 33.333%;
+    }
+}
+
+/* Tablets */
+@media screen and (max-width: 992px) {
+    .container {
+        padding-left: 15px;
+        padding-right: 15px;
+    }
+    
+    .results_img {
+        width: 50%;
+    }
+    
+    .browse-images {
+        width: 50%;
+    }
+    
+    #result-infos {
+        flex-direction: column;
+    }
+    
+    #result-infos > div {
+        width: 100%;
+        flex: 1 1 100%;
+    }
+    
+    table {
+        font-size: 0.9rem;
+    }
+    
+    th, td {
+        padding: 0.5rem;
+    }
+}
+
+
+/* Large phones and small tablets */
+@media screen and (max-width: 768px) {
+    body {
+        font-size: 14px;
+    }
+    
+    .container {
+        margin-top: 20px !important;
+        padding-left: 10px;
+        padding-right: 10px;
+    }
+    
+    h1 {
+        font-size: 1.5rem;
+    }
+    
+    h2 {
+        font-size: 1.25rem;
+    }
+    
+    h3 {
+        font-size: 1.1rem;
+    }
+    
+    #water-logo {
+        width: 50px;
+    }
+    
+    .card, .form-control, .table, .border, .card-hack {
+        border-radius: 0.35rem;
+    }
+    
+    .card {
+        padding: 15px !important;
+    }
+    
+    #drop-zone {
+        padding: 20px !important;
+    }
+    
+    #drop-zone p {
+        font-size: 0.9rem;
+    }
+    
+    .results_img {
+        width: 50%;
+        padding: 5px;
+    }
+    
+    .browse-images {
+        width: 50%;
+        padding: 5px;
+    }
+    
+    textarea.form-control, pre {
+        padding: 15px;
+        font-size: 0.85rem;
+    }
+    
+    .a-strings textarea {
+        height: 250px;
+    }
+    
+    .a-exiftool .table-container {
+        max-height: 300px;
+    }
+    
+    /* Make tables scrollable horizontally */
+    .table-container {
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+    }
+    
+    table {
+        font-size: 0.8rem;
+        min-width: 400px;
+    }
+    
+    th, td {
+        padding: 0.4rem;
+        word-break: break-word;
+    }
+    
+    footer {
+        justify-content: center !important;
+        margin: 20px 0;
+        flex-wrap: wrap;
+        gap: 15px;
+    }
+    
+    footer a i {
+        font-size: 28px;
+    }
+    
+    #coffee {
+        height: 28px;
+    }
+    
+    /* FAQ/Cheatsheet adjustments */
+    #cheatsheet > div {
+        padding: 8px;
+        margin-bottom: 30px;
+    }
+    
+    #cheatsheet img {
+        max-width: 100%;
+        height: auto;
+    }
+    
+    .command {
+        padding: 8px;
+        font-size: 0.85rem;
+        overflow-x: auto;
+        white-space: nowrap;
+    }
+}
+
+/* Phones */
+@media screen and (max-width: 576px) {
+    body {
+        font-size: 13px;
+    }
+    
+    .container {
+        margin-top: 15px !important;
+        padding-left: 8px;
+        padding-right: 8px;
+    }
+    
+    h1 {
+        font-size: 1.3rem;
+    }
+    
+    h2 {
+        font-size: 1.1rem;
+    }
+    
+    h3 {
+        font-size: 1rem;
+    }
+    
+    #water-logo {
+        width: 40px;
+    }
+    
+    .card {
+        padding: 12px !important;
+    }
+    
+    #drop-zone {
+        padding: 15px !important;
+    }
+    
+    #drop-zone p {
+        font-size: 0.85rem;
+    }
+    
+    .btn, .btn-primary, .btn-hack {
+        width: 100%;
+        padding: 12px;
+        font-size: 1rem;
+    }
+    
+    .results_img {
+        width: 100%;
+        padding: 5px;
+    }
+    
+    .browse-images {
+        width: 100%;
+        padding: 5px;
+    }
+    
+    #result-infos > div {
+        padding: 5px;
+    }
+    
+    textarea.form-control, pre {
+        padding: 10px;
+        font-size: 0.8rem;
+    }
+    
+    .a-strings textarea {
+        height: 200px;
+    }
+    
+    .a-exiftool .table-container {
+        max-height: 250px;
+    }
+    
+    table {
+        font-size: 0.75rem;
+    }
+    
+    th, td {
+        padding: 0.3rem;
+    }
+    
+    .copy-icon {
+        display: block;
+        right: 5px;
+        margin-top: -35px;
+    }
+    
+    footer {
+        gap: 12px;
+    }
+    
+    footer a i {
+        font-size: 24px;
+    }
+    
+    #coffee {
+        height: 24px;
+    }
+    
+    #image-modal-container img {
+        width: 95%;
+    }
+    
+    .analyzer {
+        margin-top: 15px;
+    }
+    
+    .analyzer h2 + div {
+        margin-top: 10px;
+    }
+    
+    .analyzer h3 {
+        margin-top: 15px;
+    }
+
+    /* FAQ/Cheatsheet adjustments */
+    #cheatsheet li {
+        padding-left: 20px;
+        font-size: 0.9rem;
+    }
+    
+    .command {
+        font-size: 0.75rem;
+        padding: 6px;
+    }
+    
+    #httperror {
+        padding-top: 50px;
+    }
+}
+
+/* Extra small phones */
+@media screen and (max-width: 380px) {
+    body {
+        font-size: 12px;
+    }
+    
+    h1 {
+        font-size: 1.1rem;
+    }
+    
+    #water-logo {
+        width: 35px;
+    }
+    
+    .btn, .btn-primary, .btn-hack {
+        padding: 10px;
+        font-size: 0.9rem;
+    }
+    
+    footer a i {
+        font-size: 22px;
+    }
+    
+    #coffee {
+        height: 22px;
+    }
+}
+
+
+/* Touch device optimizations */
+@media (hover: none) and (pointer: coarse) {
+    .copy-icon {
+        display: block;
+        opacity: 0.7;
+    }
+    
+    .btn, .btn-primary, .btn-hack {
+        min-height: 44px;
+    }
+    
+    input, textarea, select {
+        font-size: 16px; /* Prevents zoom on iOS */
+    }
+    
+    a, button {
+        min-height: 44px;
+        min-width: 44px;
+    }
+}
+
+/* Landscape mode on phones */
+@media screen and (max-height: 500px) and (orientation: landscape) {
+    .container {
+        margin-top: 10px !important;
+    }
+    
+    #image-modal-container img {
+        max-height: 85vh;
+        width: auto;
+        max-width: 95%;
+    }
+}
+
+/* Print styles */
+@media print {
+    #three-bg {
+        display: none;
+    }
+    
+    body {
+        background-color: white;
+        color: black;
+    }
+    
+    .card, .form-control, .table, .border, .card-hack {
+        background-color: white;
+        border-color: #333 !important;
+        box-shadow: none;
+    }
+    
+    h1, h2, h3, h4, h5, h6, strong, .highlight {
+        color: #333;
+        text-shadow: none;
+    }
+    
+    a, .text-accent {
+        color: #333;
+    }
 }

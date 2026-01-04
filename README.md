@@ -24,31 +24,20 @@ Support Aperi'Solve:
 
 Aperi'Solve is an open-source steganalysis web platform that performs automated analysis on images to detect and extract hidden data using common steganography tools and techniques.
 
-Table of contents
-- [Key features](#key-features)
-- [Quick start (Docker)](#quick-start-docker)
-- [Development](#development)
-- [Adding a new analyzer](#adding-a-new-analyzer)
-- [Configuration & environment variables](#configuration--environment-variables)
-- [Architecture](#architecture)
-- [Troubleshooting & tips](#troubleshooting--tips)
-- [Roadmap](#roadmap)
-- [Contributing](#contributing)
-
 ## Key features
 
 - Visualize each bit layer (LSB and other layers) per image channel (R/G/B/Alpha).
 - Browse and download each bit-layer image.
 - Integrates and displays outputs from:
-  - [zsteg](https://github.com/zed-0xff/zsteg) (LSB text/data extraction)
-  - [steghide](https://steghide.sourceforge.net/) (extraction with password)
-  - [outguess](https://www.rbcafe.com/software/outguess/) (extraction with password)
-  - [openstego](https://www.openstego.com/) (extraction with password)
-  - [exiftool](https://exiftool.org/) (metadata and geolocation)
   - [binwalk](https://github.com/ReFirmLabs/binwalk) (embedded archives)
+  - [exiftool](https://exiftool.org/) (metadata and geolocation)
   - [foremost](https://foremost.sourceforge.net/) (carved files)
+  - [openstego](https://www.openstego.com/) (extraction with password)
+  - [outguess](https://www.rbcafe.com/software/outguess/) (extraction with password)
   - [pngcheck](https://www.libpng.org/pub/png/apps/pngcheck.html)
+  - [steghide](https://steghide.sourceforge.net/) (extraction with password)
   - [strings](https://pubs.opengroup.org/onlinepubs/9799919799/utilities/strings.html)
+  - [zsteg](https://github.com/zed-0xff/zsteg) (LSB text/data extraction)
 - Worker queue architecture for offloading heavy/slow analyzers (Redis + background workers).
 - Results stored for later browsing and download.
 
@@ -56,100 +45,16 @@ Table of contents
 
 In case you want to host your own version of https://www.aperisolve.com/.
 
-Recommended: Docker + Docker Compose.
+> Required: Docker + Docker Compose.
 
-Clone and start the full stack (production-like):
 ```bash
 git clone https://github.com/Zeecka/AperiSolve.git
 cd AperiSolve
+cp .env.example .env
 docker compose up -d
 ```
 
-Default: http://localhost:5000/
-
-## Development
-Development compose:
-```bash
-# development environment (hot reload and local volumes)
-docker compose -f compose.dev.yml up --build
-```
-
-Useful commands:
-```bash
-# Stop and remove containers, networks and volumes (results are stored in a volume)
-docker compose down -v
-
-# Enter web container shell
-docker exec -it aperisolve-web bash
-
-# Enter Postgres shell (from host)
-docker exec -it postgres psql -U aperiuser -d aperisolve
-```
-
-> [!WARNING]
-> If switching between dev and production compose files, remove the `results` directory or mounted volume to avoid conflicts:
-> ```bash
-> rm -rf aperisolve/results
-> ```
-
-### Adding a new analyzer
-
-Adding a custom analyzer is straightforward:
-
-1. Create your analyzer file:
-   - Copy `aperisolve/analyzers/template_analyzer.py` -> `aperisolve/analyzers/myanalyzer.py`
-   - Implement function signature similar to:
-   ```python
-   # aperisolve/analyzers/myanalyzer.py
-   def analyze_myanalyzer(image_path: str, results_dir: str) -> dict:
-       """
-       Perform analysis on image located at image_path.
-       Produce outputs in results_dir and return a result dict (json-serializable).
-       """
-       # your analysis logic here
-       return {"name": "myanalyzer", "status": "ok", "outputs": [...]}
-   ```
-
-2. Register the analyzer in the worker pipeline:
-   - Edit `aperisolve/workers.py`:
-   ```python
-   # import
-   from .analyzers.myanalyzer import analyze_myanalyzer
-
-   # add to analyzers list (preserve the order)
-   analyzers = [
-       analyze_zsteg,
-       analyze_steghide,
-       # ...
-       analyze_myanalyzer,
-   ]
-   ```
-
-3. Add your analyzer to the UI order:
-   - Edit `aperisolve/static/js/aperisolve.js` and append `myanalyzer` to `TOOL_ORDER` so it appears in the frontend.
-
-4. Test locally: run the worker and submit jobs to ensure outputs are produced and displayed.
-
-> [!TIP]
-> - Keep analyzers idempotent and write outputs to the provided `results_dir`.
-> - Return structured JSON so the frontend can render links/downloads automatically.
-
-## Configuration & environment variables
-
-Typical services:
-- Web app (Flask)
-- Workers (Python)
-- Redis (RQ)
-- PostgreSQL
-
-Main environment variables (examples):
-- DATABASE_URL=postgresql://aperiuser:password@postgres:5432/aperisolve
-- REDIS_URL=redis://redis:6379/0
-- SECRET_KEY=change_me
-- FLASK_ENV=production/development
-
-> [!NOTE]
-> If using Docker Compose, defaults are set in the compose files. For production deployments, set secure secrets via your orchestrator or environment.
+Then browse url: http://localhost:5000/
 
 ## Architecture
 
@@ -160,44 +65,13 @@ Main environment variables (examples):
 
 This separation keeps heavy tools (binwalk, foremost, zsteg, etc.) isolated and avoids blocking the web worker.
 
-## Troubleshooting & tips
-
-- If analyzers don't produce output, check worker logs:
-  ```bash
-  docker compose logs -f aperisolve-worker
-  ```
-- To force re-analysis, remove results for the image (both file and in database) and re-submit the job.
-- Ensure system packages needed by native tools (binwalk, foremost) are available in the analyzer containers or host image.
-
 ## Roadmap
 
-- [ ] **[Bug]** Error 500 when file already exist on disc
-- [ ] **[Bug]** Multiple bug on buggy Jpeg filebugSomething isn't working
-- [ ] **[Bug]** Binwalk Extractor errorbugSomething isn't working
-- [ ] **[Bug]** Grayscale on a RGB image ?bugSomething isn't working
-- [ ] **[Feature]** Implement healthcheck and auto reboot
-- [ ] **[Feature]** Implement Sentry for better error handling
-- [ ] **[Feature]** Zsteg: full extraction (--all) and download of discovered files (mp3, etc.)
-- [ ] **[Feature]** Mobile-friendly UI / test on mobile
-- [ ] **[Feature]** i18n (internationalization)
-- [ ] **[Feature]** Rootless / unprivileged analyzers
-- [ ] **[Feature]** Improve analyzer sandboxing (e.g., per-analyzer containers)
+See [Issues](../../issues).
 
 ## Contributing
 
-Contributions are welcome! Please:
-1. Fork the repository
-2. Create a feature branch
-3. Open a pull request describing your change
-
-> [!IMPORTANT]
-> Please follow the code style and run linters before submitting. The project adheres to:
-> - Black
-> - Flake8 (ignoring E203, E501, W503)
-> - Pylint (ignoring W0718, R0903, R0801)
-> - Mypy (ignoring unused-awaitable)
-
-CI will run these checks on each PR.
+See [CONTRIBUTING.md](CONTRIBUTING.md).
 
 ## Security
 
@@ -206,5 +80,13 @@ CI will run these checks on each PR.
 
 ## Credits
 
-Acknowledgements:
-- Thanks to contributors and the open-source community for the tools integrated ([zsteg](https://github.com/zed-0xff/zsteg), [steghide](https://steghide.sourceforge.net/), [outguess](https://www.rbcafe.com/software/outguess/), [openstego](https://www.openstego.com/), [exiftool](https://exiftool.org/), [binwalk](https://github.com/ReFirmLabs/binwalk), [foremost](https://foremost.sourceforge.net/), [pngcheck](https://www.libpng.org/pub/png/apps/pngcheck.html), [strings](https://pubs.opengroup.org/onlinepubs/9799919799/utilities/strings.html), ...).
+Thanks to donors:
+- [Philip Zimmermann](https://github.com/Philip-Zimmermann)
+
+Thanks to contributors:
+- [Zeecka](https://www.zeecka.fr/) - **(author)**
+- [aradhyacp](https://github.com/aradhyacp)
+- [Philip Zimmermann](https://github.com/Philip-Zimmermann)
+
+Thanks to the open-source community:
+[binwalk](https://github.com/ReFirmLabs/binwalk), [exiftool](https://exiftool.org/), [foremost](https://foremost.sourceforge.net/), [openstego](https://www.openstego.com/), [outguess](https://www.rbcafe.com/software/outguess/), [pngcheck](https://www.libpng.org/pub/png/apps/pngcheck.html), [steghide](https://steghide.sourceforge.net/), [strings](https://pubs.opengroup.org/onlinepubs/9799919799/utilities/strings.html), [zsteg](https://github.com/zed-0xff/zsteg), ...

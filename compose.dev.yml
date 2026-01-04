@@ -17,10 +17,11 @@ services:
       worker:
         condition: service_started
     env_file:
-      - .env
+      - .env.example
     environment:
       - FLASK_DEBUG=true
       - FLASK_ENV=development
+      - CLEAR_AT_RESTART=0  # Don't clear on Flask debug auto-reload
 
   worker:
     #image: ghcr.io/zeecka/aperisolve:latest
@@ -34,17 +35,18 @@ services:
       - redis
       - postgres
     env_file:
-      - .env
+      - .env.example
     environment:
       - FLASK_DEBUG=true
       - FLASK_ENV=development
+      - CLEAR_AT_RESTART=0  # Always false for worker to prevent double clearing
 
   redis:
     image: redis:7
     container_name: redis
     restart: always
     env_file:
-      - .env
+      - .env.example
 
   postgres:
     image: postgres:14
@@ -58,8 +60,7 @@ services:
       timeout: 5s
       retries: 5
     env_file:
-      - .env
-
+      - .env.example
 
   rqdashboard:
     image: eoranged/rq-dashboard
@@ -70,7 +71,7 @@ services:
     depends_on:
       - redis
     env_file:
-      - .env
-      
+      - .env.example
+
 volumes:
   pgdata:

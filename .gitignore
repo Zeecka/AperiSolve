@@ -1,5 +1,6 @@
 # Python
+.env
 __pycache__/
 .mypy_cache/
 results/
-.env
+.vscode
