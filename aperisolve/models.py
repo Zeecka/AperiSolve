@@ -78,7 +78,7 @@ def fill_ihdr_db() -> None:
     if db.session.query(IHDR.iid).first() is not None:
         print("IHDR table already populated, skipping fill.")
         return
-    
+
     # Standard PNG IHDR parameters
     resolutions = get_resolutions()
     bit_color_pairs = get_valid_depth_color_pairs()
@@ -155,4 +155,3 @@ def init_db(app: Flask) -> None:
             print("Running as worker, skipping IHDR table fill.")
         else:
             fill_ihdr_db()
-
