@@ -196,7 +196,6 @@ RUN git clone https://github.com/tool/repo.git /tmp/tool && \
 
 - 💬 **Questions?** Open a [Discussion](../../discussions)
 - 🐛 **Found a bug?** Open an [Issue](../../issues)
-- 📧 **Email:** [Your contact email]
 - 💡 **Ideas?** We'd love to hear them in Discussions!
 
 ## Recognition
