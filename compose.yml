@@ -7,7 +7,7 @@ services:
     ports:
       - "5000:5000"
     volumes:
-      - apresults:/aperisolve/results
+      - apresults:/app/aperisolve/results
     depends_on:
       postgres:
         condition: service_healthy
@@ -31,7 +31,7 @@ services:
     restart: always
     command: rq worker default --url redis://redis:6379/0
     volumes:
-      - apresults:/aperisolve/results
+      - apresults:/app/aperisolve/results
     depends_on:
       - redis
       - postgres

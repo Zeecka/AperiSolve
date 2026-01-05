@@ -148,10 +148,10 @@ docker exec -it aperisolve-web bash
 docker exec -it postgres psql -U aperiuser -d aperisolve
 
 # Backup all uploaded files
-docker cp -r aperisolve-web:/aperisolve/results /path/to/backup/location
+docker cp -r aperisolve-web:/app/aperisolve/results /path/to/backup/location
 
 # Backup a single uploaded file
-docker cp aperisolve-web:/aperisolve/results/filename.ext /path/to/backup/filename.ext
+docker cp aperisolve-web:/app/aperisolve/results/filename.ext /path/to/backup/filename.ext
 ```
 
 > [!WARNING]
