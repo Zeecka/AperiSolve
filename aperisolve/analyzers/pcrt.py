@@ -296,7 +296,7 @@ class PNG:
                 self._log("Correct IEND chunk")
 
             if extra_data := self.data[pos + 8 :]:
-                self._log(f"Found {len(extra_data)} bytes after IEND: {extra_data[:20]}")
+                self._log(f"Found {len(extra_data)} bytes after IEND: {extra_data[:20]!r}")
 
         self.repaired_data.extend(iend)
         self._log("IEND chunk check complete")
