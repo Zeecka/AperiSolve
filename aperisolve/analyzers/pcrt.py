@@ -1,5 +1,5 @@
 # flake8: noqa: E203,E501,W503
-# pylint: disable=C0413,W0718,R0903,R0801
+# pylint: disable=C0413,W0718,R0903,R0902,R0801
 # mypy: disable-error-code=unused-awaitable
 """PCRT (PNG Check & Repair Tool) Analyzer for Image Submissions."""
 
@@ -43,9 +43,9 @@ class PNG:
         self.data = data
         self.width = self.height = self.bits = self.mode = 0
         self.compression = self.filter = self.interlace = self.channel = 0
-        self.txt_content: dict = {}
-        self.image_content: dict = {}
-        self.crcs: dict = {}
+        self.txt_content: dict[bytes, list[bytes]] = {}
+        self.image_content: dict[bytes, list[bytes]] = {}
+        self.crcs: dict[bytes, Any] = {}
         self.repaired_data = bytearray()
         self.logs: list[str] = []
         self.errors: list[str] = []
@@ -114,7 +114,9 @@ class PNG:
         self.txt_content, self.image_content, self.crcs = self._find_ancillary(self.data)
         return True
 
-    def _find_ancillary(self, data: bytes) -> tuple[dict, dict, dict]:
+    def _find_ancillary(
+        self, data: bytes
+    ) -> tuple[dict[bytes, list[bytes]], dict[bytes, list[bytes]], dict[bytes, Any]]:
         """Find ancillary chunks in PNG data."""
         ancillary = [
             b"cHRM",
@@ -139,8 +141,8 @@ class PNG:
             b"gIFx",
         ]
         attach_txt = [b"eXIf", b"iTXt", b"tEXt", b"zTXt"]
-        image_content: dict = {}
-        crcs: dict = {}
+        image_content: dict[bytes, list[bytes]] = {}
+        crcs: dict[bytes, Any] = {}
 
         for data_i in ancillary:
             image_content[data_i] = []
@@ -154,7 +156,7 @@ class PNG:
                 crcs[data_i] = (calc_crc, crc_data) if calc_crc else []
                 pos += 4 + length + 1
 
-        txt_content: dict = {}
+        txt_content: dict[bytes, list[bytes]] = {}
         for text in attach_txt:
             txt_content[text] = []
             pos = 0
