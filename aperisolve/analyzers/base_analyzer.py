@@ -50,8 +50,10 @@ class SubprocessAnalyzer(ABC):
             timeout=MAX_PENDING_TIME,
         )
 
-    def generate_archive(self, output_dir: Path, extracted_dir: Path) -> str:
+    def generate_archive(self, output_dir: Path, extracted_dir: Optional[Path] = None) -> str:
         """Zip the extracted files and remove the directory."""
+        if extracted_dir is None:
+            extracted_dir = self.get_extracted_dir()
         zip_data = self.run_command(["7z", "a", f"../{self.name}.7z", "*"], cwd=extracted_dir)
         rmtree(extracted_dir)
         return zip_data.stderr

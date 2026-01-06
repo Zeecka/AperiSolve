@@ -5,6 +5,7 @@ const TOOL_ORDER = [
   "foremost",
   "outguess",
   "pngcheck",
+  "pcrt",
   "steghide",
   "openstego",
   "zsteg",

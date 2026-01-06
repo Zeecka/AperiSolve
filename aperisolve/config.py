@@ -6,6 +6,6 @@
 from pathlib import Path
 
 IMAGE_EXTENSIONS = [".png", ".jpg", ".jpeg", ".gif", ".bmp", ".webp", ".tiff"]
-WORKER_FILES = ["binwalk", "foremost", "steghide", "zsteg", "image_resize", "openstego"]
+WORKER_FILES = ["binwalk", "foremost", "steghide", "zsteg", "image_resize", "openstego", "pcrt"]
 
 RESULT_FOLDER = Path(__file__).parent.resolve() / "results"
