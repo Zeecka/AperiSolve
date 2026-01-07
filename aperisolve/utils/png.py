@@ -1,5 +1,5 @@
 # flake8: noqa: E203,E501,W503
-# pylint: disable=C0413,W0718,R0903,R0801
+# pylint: disable=C0413,W0718,R0903,R0801,R0902
 # mypy: disable-error-code=unused-awaitable
 """PNG Class for analyzer modules"""
 
@@ -11,7 +11,7 @@ from typing import Any, Optional
 
 from ..app import app
 from ..models import IHDR
-from .utils import int2hex, str2hex, str2num
+from .utils import int2hex, str2hex
 
 __author__ = [
     "Zeecka",

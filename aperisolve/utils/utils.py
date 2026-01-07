@@ -19,11 +19,6 @@ def int2hex(i: int) -> str:
     return "0x" + hex(i)[2:].upper()
 
 
-def str2num(s: bytes, n: int = 0) -> int:
-    """Convert bytes to number."""
-    return struct.unpack("!I", s)[0] if n == 4 else int(str2hex(s), 16)
-
-
 def get_resolutions() -> list[tuple[int, int]]:
     """
     Generate a sorted list of common display and image resolutions.
