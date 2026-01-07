@@ -17,7 +17,6 @@ from .analyzers.binwalk import analyze_binwalk  # pylint: disable=C0413
 from .analyzers.decomposer import analyze_decomposer
 from .analyzers.exiftool import analyze_exiftool
 from .analyzers.foremost import analyze_foremost
-from .analyzers.image_resize import analyze_image_resize
 from .analyzers.openstego import analyze_openstego
 from .analyzers.outguess import analyze_outguess
 from .analyzers.pcrt import analyze_pcrt
@@ -104,7 +103,6 @@ def analyze_image(submission_hash: str) -> None:
                 (analyze_decomposer, img_path, result_path),
                 (analyze_exiftool, img_path, result_path),
                 (analyze_foremost, img_path, result_path),
-                (analyze_image_resize, img_path, result_path),
                 (analyze_openstego, img_path, result_path, submission.password),
                 (analyze_pngcheck, img_path, result_path),
                 (analyze_pcrt, img_path, result_path),

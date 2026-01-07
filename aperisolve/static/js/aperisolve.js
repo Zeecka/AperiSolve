@@ -10,7 +10,6 @@ const TOOL_ORDER = [
   "openstego",
   "zsteg",
   "strings",
-  "image_resize",
 ];
 
 function escapeHtml(text) {
