@@ -132,7 +132,8 @@ def fill_ihdr_db() -> None:
         bit_color_pairs,
         interlace_methods,
     )
-
+    batch = []
+    batch_size = 10000  # Increased from 5000
     count = 0
     with db.session.no_autoflush:
         for (width, height), (bit_depth, color_type), interlace in combinations:
@@ -156,27 +157,30 @@ def fill_ihdr_db() -> None:
             if exists:
                 continue
 
-            # Add new entry
-            db.session.add(
-                IHDR(
-                    crc=crc,
-                    width=width,
-                    height=height,
-                    bit_depth=bit_depth,
-                    color_type=color_type,
-                    interlace=interlace,
-                )
+            batch.append(
+                {
+                    "crc": crc,
+                    "width": width,
+                    "height": height,
+                    "bit_depth": bit_depth,
+                    "color_type": color_type,
+                    "interlace": interlace,
+                }
             )
 
             count += 1
-            if count % 5000 == 0:
-                print(f"Inserted {count} IHDR entries...")
+            if len(batch) >= batch_size:
+                db.session.bulk_insert_mappings(IHDR, batch)
                 db.session.commit()
+                print(f"Inserted {count} IHDR entries...")
+                batch = []
 
-        # Final commit
-        if count % 5000 != 0:
+        # Insert remaining entries
+        if batch:
+            db.session.bulk_insert_mappings(IHDR, batch)
             db.session.commit()
-            print(f"Inserted {count} total IHDR entries.")
+
+        print(f"Inserted {count} total IHDR entries.")
 
 
 def init_db(app: Flask) -> None:

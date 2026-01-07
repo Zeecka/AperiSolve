@@ -20,6 +20,7 @@ __author__ = [
     "sherlly (https://github.com/sherlly/PCRT)",
 ]
 
+
 class PNG:
     """PNG file analyzer and repair tool."""
 
@@ -101,7 +102,7 @@ class PNG:
     def _find_ancillary(
         self, data: bytes
     ) -> tuple[dict[bytes, list[bytes]], dict[bytes, list[bytes]], dict[bytes, Any]]:
-        """Find ancillary chunks in PNG data."""
+        """Find ancillary chunks in PNG data with an optimized single pass."""
         ancillary = [
             b"cHRM",
             b"pHYs",
@@ -125,64 +126,72 @@ class PNG:
             b"gIFx",
         ]
         attach_txt = [b"eXIf", b"iTXt", b"tEXt", b"zTXt"]
-        image_content: dict[bytes, list[bytes]] = {}
-        crcs: dict[bytes, Any] = {}
 
-        for data_i in ancillary:
-            image_content[data_i] = []
-            crcs[data_i] = []
-            pos = 0
-            while (pos := data.find(data_i, pos)) != -1:
-                length = str2num(data[pos - 4 : pos])
-                image_content[data_i].append(data[pos + 4 : pos + 4 + length])
-                crc_data = data[pos + 4 + length : pos + 4 + length + 4]
-                calc_crc = self._check_crc(data_i, image_content[data_i][0], crc_data)
-                crcs[data_i] = (calc_crc, crc_data) if calc_crc else []
-                pos += 4 + length + 1
+        # Initialize result dictionaries
+        image_content: dict[bytes, list[bytes]] = {chunk: [] for chunk in ancillary}
+        txt_content: dict[bytes, list[bytes]] = {chunk: [] for chunk in attach_txt}
+        crcs: dict[bytes, Any] = {chunk: [] for chunk in ancillary}
 
-        txt_content: dict[bytes, list[bytes]] = {}
-        for text in attach_txt:
-            txt_content[text] = []
-            pos = 0
-            while (pos := data.find(text, pos)) != -1:
-                length = str2num(data[pos - 4 : pos])
-                txt_content[text].append(data[pos + 4 : pos + 4 + length])
+        # Single pass through data
+        pos = 8  # Skip PNG signature
+        while pos < len(data) - 12:  # Need at least 12 bytes for chunk header
+            # Try to read chunk length
+            try:
+                length = struct.unpack("!I", data[pos : pos + 4])[0]
+                chunk_type = data[pos + 4 : pos + 8]
+
+                # Check if this is a chunk we care about
+                if chunk_type in ancillary:
+                    chunk_data = data[pos + 8 : pos + 8 + length]
+                    image_content[chunk_type].append(chunk_data)
+
+                    # Check CRC for first occurrence only
+                    if len(image_content[chunk_type]) == 1:
+                        crc_data = data[pos + 8 + length : pos + 12 + length]
+                        calc_crc = self._check_crc(chunk_type, chunk_data, crc_data)
+                        crcs[chunk_type] = (calc_crc, crc_data) if calc_crc else []
+
+                elif chunk_type in attach_txt:
+                    chunk_data = data[pos + 8 : pos + 8 + length]
+                    txt_content[chunk_type].append(chunk_data)
+
+                # Move to next chunk
+                pos += 12 + length
+            except (struct.error, IndexError):
+                # Malformed chunk, skip ahead
                 pos += 1
+
         return txt_content, image_content, crcs
 
     def check_chunks(self) -> bool:
-        """Copy ancillary chunks (like PLTE) from original data to repaired_data."""
-        # Critical ancillary chunks that should be preserved
+        """Copy ancillary chunks (like PLTE) from original data to repaired_data with crc
+        validation."""
         critical_ancillary = [
-            b"PLTE",  # Palette (required for color_type 3)
-            b"tRNS",  # Transparency
-            b"cHRM",  # Chromaticity
-            b"gAMA",  # Gamma
-            b"iCCP",  # ICC Profile
-            b"sBIT",  # Significant bits
-            b"sRGB",  # sRGB color space
-            b"bKGD",  # Background color
-            b"hIST",  # Histogram
-            b"pHYs",  # Physical pixel dimensions
-            b"sPLT",  # Suggested palette
+            b"PLTE",
+            b"tRNS",
+            b"cHRM",
+            b"gAMA",
+            b"iCCP",
+            b"sBIT",
+            b"sRGB",
+            b"bKGD",
+            b"hIST",
+            b"pHYs",
+            b"sPLT",
         ]
 
-        # Find position after IHDR in repaired data
         ihdr_end = len(self.repaired_data)
-
-        # Find IDAT position in original data to know where to stop looking
         idat_pos = self.data.find(b"IDAT")
         if idat_pos == -1:
             return False
 
-        # Search for ancillary chunks between IHDR and IDAT
         search_start = self.data.find(b"IHDR")
         if search_start == -1:
             return False
 
         # Skip past the IHDR chunk
         ihdr_length = struct.unpack("!I", self.data[search_start - 4 : search_start])[0]
-        search_start = search_start + 4 + ihdr_length + 4  # +4 for length, +4 for CRC
+        search_start = search_start + 4 + ihdr_length + 4
 
         # Collect all ancillary chunks before IDAT
         for chunk_type in critical_ancillary:
@@ -192,22 +201,28 @@ class PNG:
                 if pos == -1:
                     break
 
-                # Extract the complete chunk (length + type + data + CRC)
-                chunk_start = pos - 4  # Include length field
+                chunk_start = pos - 4
                 length = struct.unpack("!I", self.data[chunk_start:pos])[0]
-                chunk_end = pos + 4 + length + 4  # type + data + CRC
+                chunk_data = self.data[pos + 4 : pos + 4 + length]
+                chunk_crc = self.data[pos + 4 + length : pos + 8 + length]
 
-                chunk_data = self.data[chunk_start:chunk_end]
-                self.repaired_data[ihdr_end:ihdr_end] = chunk_data
-                ihdr_end += len(chunk_data)
+                # Validate CRC before copying
+                if calc_crc := self._check_crc(chunk_type, chunk_data, chunk_crc):
+                    self._log(f"Warning: {chunk_type.decode()} has invalid CRC, fixing...")
+                    chunk_crc = calc_crc
+
+                # Reconstruct complete chunk with validated CRC
+                complete_chunk = struct.pack("!I", length) + chunk_type + chunk_data + chunk_crc
+                self.repaired_data[ihdr_end:ihdr_end] = complete_chunk
+                ihdr_end += len(complete_chunk)
 
                 self._log(f"Copied {chunk_type.decode()} chunk ({length} bytes)")
+                pos = pos + 4 + length + 4
 
-                pos = chunk_end
         return True
 
     def check_ihdr(self) -> bool:
-        """Check and repair IHDR chunk using database lookup."""
+        """Check and repair IHDR chunk using database lookup - WITH OPTIMIZED EXHAUSTIVE SEARCH."""
         pos, ihdr = self._find_ihdr(self.data)
         if pos == -1:
             self._error("Lost IHDR chunk")
@@ -216,7 +231,6 @@ class PNG:
         length = struct.unpack("!I", ihdr[:4])[0]
         chunk_type, chunk_ihdr = ihdr[4:8], ihdr[8 : 8 + length]
         crc = ihdr[8 + length : 12 + length]
-        #  width, height = struct.unpack("!II", chunk_ihdr[:8])
 
         fixed = False
         if calc_crc := self._check_crc(chunk_type, chunk_ihdr, crc):
@@ -224,7 +238,6 @@ class PNG:
             self._log(f"Chunk crc: {str2hex(crc)}, Correct crc: {str2hex(calc_crc)}")
             self._log("Looking up CRC in database...")
 
-            # Convert CRC bytes to integer for database lookup
             crc_int = struct.unpack("!I", crc)[0]
 
             # Database lookup
@@ -233,14 +246,9 @@ class PNG:
 
             if matches:
                 self._log(f"Found {len(matches)} matching IHDR configuration(s) in database")
-
-                # Use the first match
                 match = matches[0]
-
-                # Build the corrected IHDR chunk data directly from database fields
                 test_ihdr = match.to_ihdr_bytes()
 
-                # Verify the CRC matches
                 if not self._check_crc(chunk_type, test_ihdr, crc):
                     ihdr = ihdr[:8] + test_ihdr + crc
                     self._log(
@@ -268,7 +276,7 @@ class PNG:
                         break
 
             if not fixed:
-                self._error("Exhausted all recovery attempts")
+                self._error("Could not recover IHDR dimensions")
         else:
             self._log(f"Correct IHDR CRC at offset {int2hex(pos + 4 + length)}")
 
