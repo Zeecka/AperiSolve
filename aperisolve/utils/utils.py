@@ -5,7 +5,6 @@
 
 import binascii
 import math
-import struct
 from typing import Iterable
 
 
