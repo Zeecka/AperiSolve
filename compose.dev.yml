@@ -12,16 +12,14 @@ services:
     depends_on:
       postgres:
         condition: service_healthy
+      initdb:
+        condition: service_completed_successfully
       redis:
         condition: service_started
       worker:
         condition: service_started
     env_file:
       - .env.example
-    environment:
-      - FLASK_DEBUG=true
-      - FLASK_ENV=development
-      - CLEAR_AT_RESTART=0  # Don't clear on Flask debug auto-reload
 
   worker:
     #image: ghcr.io/zeecka/aperisolve:latest
@@ -32,14 +30,27 @@ services:
     volumes:
       - ./aperisolve:/app/aperisolve
     depends_on:
-      - redis
-      - postgres
+      postgres:
+        condition: service_healthy
+      initdb:
+        condition: service_completed_successfully
+      redis:
+        condition: service_started
     env_file:
       - .env.example
-    environment:
-      - FLASK_DEBUG=true
-      - FLASK_ENV=development
-      - CLEAR_AT_RESTART=0  # Always false for worker to prevent double clearing
+
+  initdb:
+    build: .
+    container_name: aperisolve-initdb
+    command: python -m aperisolve.utils.init_db
+    volumes:
+      - ./aperisolve:/app/aperisolve
+    depends_on:
+      postgres:
+        condition: service_healthy
+    env_file:
+      - .env.example
+    restart: "no"
 
   redis:
     image: redis:7

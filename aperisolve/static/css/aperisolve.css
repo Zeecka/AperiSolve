@@ -224,6 +224,7 @@ pre {
     background-color: var(--dark-bg-hover);
     box-shadow: 0 0 10px var(--theme-green);
 }
+
 #upload-form {
     transition: height 0.4s ease, padding 0.4s ease, margin 0.4s ease;
     overflow: hidden;
@@ -274,6 +275,15 @@ td {
     padding: 10px;
     box-sizing: border-box;
     min-width: 150px;
+}
+
+.a-pcrt .results_img {
+    width: 100%;
+    margin: auto;
+    text-align: center;
+}
+#result .a-pcrt .results_img img{
+    width: 75%;
 }
 
 /* ======== Modal ======== */
@@ -441,10 +451,12 @@ footer a i {
     box-shadow: 0 0 10px var(--theme-green-shadow);
 }
 
-#httperror{
+#httperror {
     padding-top: 100px;
 }
-#httperror h1, #httperror h2{
+
+#httperror h1,
+#httperror h2 {
     text-align: center;
 }
 
@@ -455,7 +467,7 @@ footer a i {
     .results_img {
         width: 33.333%;
     }
-    
+
     .browse-images {
         width: 33.333%;
     }
@@ -467,29 +479,30 @@ footer a i {
         padding-left: 15px;
         padding-right: 15px;
     }
-    
+
     .results_img {
         width: 50%;
     }
-    
+
     .browse-images {
         width: 50%;
     }
-    
+
     #result-infos {
         flex-direction: column;
     }
-    
-    #result-infos > div {
+
+    #result-infos>div {
         width: 100%;
         flex: 1 1 100%;
     }
-    
+
     table {
         font-size: 0.9rem;
     }
-    
-    th, td {
+
+    th,
+    td {
         padding: 0.5rem;
     }
 }
@@ -500,110 +513,116 @@ footer a i {
     body {
         font-size: 14px;
     }
-    
+
     .container {
         margin-top: 20px !important;
         padding-left: 10px;
         padding-right: 10px;
     }
-    
+
     h1 {
         font-size: 1.5rem;
     }
-    
+
     h2 {
         font-size: 1.25rem;
     }
-    
+
     h3 {
         font-size: 1.1rem;
     }
-    
+
     #water-logo {
         width: 50px;
     }
-    
-    .card, .form-control, .table, .border, .card-hack {
+
+    .card,
+    .form-control,
+    .table,
+    .border,
+    .card-hack {
         border-radius: 0.35rem;
     }
-    
+
     .card {
         padding: 15px !important;
     }
-    
+
     #drop-zone {
         padding: 20px !important;
     }
-    
+
     #drop-zone p {
         font-size: 0.9rem;
     }
-    
+
     .results_img {
         width: 50%;
         padding: 5px;
     }
-    
+
     .browse-images {
         width: 50%;
         padding: 5px;
     }
-    
-    textarea.form-control, pre {
+
+    textarea.form-control,
+    pre {
         padding: 15px;
         font-size: 0.85rem;
     }
-    
+
     .a-strings textarea {
         height: 250px;
     }
-    
+
     .a-exiftool .table-container {
         max-height: 300px;
     }
-    
+
     /* Make tables scrollable horizontally */
     .table-container {
         overflow-x: auto;
         -webkit-overflow-scrolling: touch;
     }
-    
+
     table {
         font-size: 0.8rem;
         min-width: 400px;
     }
-    
-    th, td {
+
+    th,
+    td {
         padding: 0.4rem;
         word-break: break-word;
     }
-    
+
     footer {
         justify-content: center !important;
         margin: 20px 0;
         flex-wrap: wrap;
         gap: 15px;
     }
-    
+
     footer a i {
         font-size: 28px;
     }
-    
+
     #coffee {
         height: 28px;
     }
-    
+
     /* FAQ/Cheatsheet adjustments */
-    #cheatsheet > div {
+    #cheatsheet>div {
         padding: 8px;
         margin-bottom: 30px;
     }
-    
+
     #cheatsheet img {
         max-width: 100%;
         height: auto;
     }
-    
+
     .command {
         padding: 8px;
         font-size: 0.85rem;
@@ -617,112 +636,116 @@ footer a i {
     body {
         font-size: 13px;
     }
-    
+
     .container {
         margin-top: 15px !important;
         padding-left: 8px;
         padding-right: 8px;
     }
-    
+
     h1 {
         font-size: 1.3rem;
     }
-    
+
     h2 {
         font-size: 1.1rem;
     }
-    
+
     h3 {
         font-size: 1rem;
     }
-    
+
     #water-logo {
         width: 40px;
     }
-    
+
     .card {
         padding: 12px !important;
     }
-    
+
     #drop-zone {
         padding: 15px !important;
     }
-    
+
     #drop-zone p {
         font-size: 0.85rem;
     }
-    
-    .btn, .btn-primary, .btn-hack {
+
+    .btn,
+    .btn-primary,
+    .btn-hack {
         width: 100%;
         padding: 12px;
         font-size: 1rem;
     }
-    
+
     .results_img {
         width: 100%;
         padding: 5px;
     }
-    
+
     .browse-images {
         width: 100%;
         padding: 5px;
     }
-    
-    #result-infos > div {
+
+    #result-infos>div {
         padding: 5px;
     }
-    
-    textarea.form-control, pre {
+
+    textarea.form-control,
+    pre {
         padding: 10px;
         font-size: 0.8rem;
     }
-    
+
     .a-strings textarea {
         height: 200px;
     }
-    
+
     .a-exiftool .table-container {
         max-height: 250px;
     }
-    
+
     table {
         font-size: 0.75rem;
     }
-    
-    th, td {
+
+    th,
+    td {
         padding: 0.3rem;
     }
-    
+
     .copy-icon {
         display: block;
         right: 5px;
         margin-top: -35px;
     }
-    
+
     footer {
         gap: 12px;
     }
-    
+
     footer a i {
         font-size: 24px;
     }
-    
+
     #coffee {
         height: 24px;
     }
-    
+
     #image-modal-container img {
         width: 95%;
     }
-    
+
     .analyzer {
         margin-top: 15px;
     }
-    
-    .analyzer h2 + div {
+
+    .analyzer h2+div {
         margin-top: 10px;
     }
-    
+
     .analyzer h3 {
         margin-top: 15px;
     }
@@ -732,12 +755,12 @@ footer a i {
         padding-left: 20px;
         font-size: 0.9rem;
     }
-    
+
     .command {
         font-size: 0.75rem;
         padding: 6px;
     }
-    
+
     #httperror {
         padding-top: 50px;
     }
@@ -748,24 +771,26 @@ footer a i {
     body {
         font-size: 12px;
     }
-    
+
     h1 {
         font-size: 1.1rem;
     }
-    
+
     #water-logo {
         width: 35px;
     }
-    
-    .btn, .btn-primary, .btn-hack {
+
+    .btn,
+    .btn-primary,
+    .btn-hack {
         padding: 10px;
         font-size: 0.9rem;
     }
-    
+
     footer a i {
         font-size: 22px;
     }
-    
+
     #coffee {
         height: 22px;
     }
@@ -778,16 +803,22 @@ footer a i {
         display: block;
         opacity: 0.7;
     }
-    
-    .btn, .btn-primary, .btn-hack {
+
+    .btn,
+    .btn-primary,
+    .btn-hack {
         min-height: 44px;
     }
-    
-    input, textarea, select {
-        font-size: 16px; /* Prevents zoom on iOS */
+
+    input,
+    textarea,
+    select {
+        font-size: 16px;
+        /* Prevents zoom on iOS */
     }
-    
-    a, button {
+
+    a,
+    button {
         min-height: 44px;
         min-width: 44px;
     }
@@ -798,7 +829,7 @@ footer a i {
     .container {
         margin-top: 10px !important;
     }
-    
+
     #image-modal-container img {
         max-height: 85vh;
         width: auto;
@@ -811,24 +842,36 @@ footer a i {
     #three-bg {
         display: none;
     }
-    
+
     body {
         background-color: white;
         color: black;
     }
-    
-    .card, .form-control, .table, .border, .card-hack {
+
+    .card,
+    .form-control,
+    .table,
+    .border,
+    .card-hack {
         background-color: white;
         border-color: #333 !important;
         box-shadow: none;
     }
-    
-    h1, h2, h3, h4, h5, h6, strong, .highlight {
+
+    h1,
+    h2,
+    h3,
+    h4,
+    h5,
+    h6,
+    strong,
+    .highlight {
         color: #333;
         text-shadow: none;
     }
-    
-    a, .text-accent {
+
+    a,
+    .text-accent {
         color: #333;
     }
 }

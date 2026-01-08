@@ -49,4 +49,4 @@ COPY aperisolve/ /app/aperisolve/
 RUN pip install --no-cache-dir -r /app/aperisolve/requirements.txt
 
 # Commande de lancement
-CMD ["gunicorn", "-w", "4", "-b", "0.0.0.0:5000", "--access-logfile", "-", "--error-logfile", "-", "--log-level", "info", "--capture-output", "aperisolve.wsgi:application"]
+CMD ["gunicorn", "-w", "8", "-b", "0.0.0.0:5000", "--access-logfile", "-", "--error-logfile", "-", "--log-level", "info", "--capture-output", "aperisolve.utils.wsgi:application"]

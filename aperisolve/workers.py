@@ -9,7 +9,7 @@ from typing import Any
 
 import sentry_sdk
 
-from .sentry import initialize_sentry
+from .utils.sentry import initialize_sentry
 
 initialize_sentry()
 
@@ -17,16 +17,16 @@ from .analyzers.binwalk import analyze_binwalk  # pylint: disable=C0413
 from .analyzers.decomposer import analyze_decomposer
 from .analyzers.exiftool import analyze_exiftool
 from .analyzers.foremost import analyze_foremost
-from .analyzers.image_resize import analyze_image_resize
 from .analyzers.openstego import analyze_openstego
 from .analyzers.outguess import analyze_outguess
+from .analyzers.pcrt import analyze_pcrt
 from .analyzers.pngcheck import analyze_pngcheck
 from .analyzers.steghide import analyze_steghide
 from .analyzers.strings import analyze_strings
 from .analyzers.zsteg import analyze_zsteg
-from .app import app, db
+from .app import create_app
 from .config import RESULT_FOLDER
-from .models import Image, Submission
+from .models import Image, Submission, db
 
 
 def analyze_image(submission_hash: str) -> None:
@@ -55,6 +55,7 @@ def analyze_image(submission_hash: str) -> None:
         - Creates result directories and generates analysis output files
         - Modifies the database session and commits changes
     """
+    app = create_app()
     with app.app_context():
         submission: Submission = Submission.query.get(submission_hash)  # type: ignore
         image = Image.query.get_or_404(submission.image_hash)  # type: ignore
@@ -103,9 +104,9 @@ def analyze_image(submission_hash: str) -> None:
                 (analyze_decomposer, img_path, result_path),
                 (analyze_exiftool, img_path, result_path),
                 (analyze_foremost, img_path, result_path),
-                (analyze_image_resize, img_path, result_path),
                 (analyze_openstego, img_path, result_path, submission.password),
                 (analyze_pngcheck, img_path, result_path),
+                (analyze_pcrt, img_path, result_path),
                 (analyze_strings, img_path, result_path),
                 (analyze_steghide, img_path, result_path, submission.password),
                 (analyze_zsteg, img_path, result_path),

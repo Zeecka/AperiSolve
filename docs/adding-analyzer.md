@@ -5,7 +5,7 @@ This guide shows you how to add a new image analysis tool to the system.
 ## Quick Start
 
 1. Create a new file in `analyzers/` from template file `template_analyzer.py`.
-2. Register it in `workers.py`
+2. Register it in `workers.py`, `config.py` and `aperisolve.js`.
 
 ## Basic Template
 
@@ -51,6 +51,8 @@ class ForemostAnalyzer(SubprocessAnalyzer):
 ```
 
 Note the `has_archive=True` parameter.
+
+**If a tool return an archive, it's important to add the worker name in `WORKER_FILES` variable of `config.py`.**
 
 ### Tool With Password Support
 
@@ -137,6 +139,26 @@ if submission.deep_analysis:
     analyzers.extend([
         (analyze_mytool, img_path, result_path),
     ])
+```
+
+And also in `aperisolve.js` in the `TOOL_ORDER` constant:
+
+```js
+const TOOL_ORDER = [
+  "decomposer",
+  "exiftool",
+  "binwalk",
+  "mytool"  // My new tool
+  "foremost",
+  "outguess",
+  "pngcheck",
+  "pcrt",
+  "steghide",
+  "openstego",
+  "zsteg",
+  "strings",
+  "image_resize",
+];
 ```
 
 ## Available Methods to Override
