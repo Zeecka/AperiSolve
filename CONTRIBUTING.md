@@ -60,41 +60,57 @@ Contributions to the web interface are welcome:
 ## Code Style & Quality
 
 > [!IMPORTANT]
-> Please follow the code style and run linters before submitting.
+> Follow the project’s code style and run linters before submitting any code.
 
-The project adheres to:
+This project enforces:
+- **Black** : line length 100
+- **Isort** : profile black
+- **Flake8** : ignoring E203, E501, W503
+- **Pylint** : ignoring W0511, W0718, R0801, R0903, R0914
+- **Mypy** : ignoring unused-awaitable
 
-- **Black** (line length 100)
-- **Isort** (profile black)
-- **Flake8** (ignoring E203, E501, W503)
-- **Pylint** (ignoring W0718, R0903, R0801)
-- **Mypy** (ignoring unused-awaitable)
+See [.pre-commit-config.yaml](.pre-commit-config.yaml) for the exact configuration.
 
-See [.pre-commit-config.yaml](.pre-commit-config.yaml) for exact configuration.
-
-### Running Linters Locally
+### Setup
 
 > [!TIP]
-> Install pre-commit hooks to automatically check your code before commits:
-> ```bash
-> pip install pre-commit
-> pre-commit install
-> ```
+> Use a virtual environment and install development dependencies:
 
-**Manual checks:**
 ```bash
-# Format code
+# Create & activate a virtual environment
+python3 -m venv .venv
+source .venv/bin/activate  # Linux/macOS
+# .venv\Scripts\activate    # Windows
+
+# Install dev dependencies
+pip install -r aperisolve/requirements-dev.txt
+pip install -r aperisolve/requirements.txt
+```
+
+### Running Tools Manually
+
+Install pre-commit hooks to automatically check your code before commits:
+
+```bash
+pre-commit install
+```
+
+Check for issues:
+
+```bash
+pre-commit run --all-files
+```
+
+Format code:
+
+```bash
 black . --line-length 100
 isort . --profile black
-
-# Check for issues
-flake8 .
-pylint **/*.py
-mypy .
 ```
 
 > [!NOTE]
-> CI will automatically run these checks on every PR. Make sure they pass!
+> Continuous Integration (CI) runs all checks on every PR. Ensure your code passes before submitting.
+
 
 ## Pull Request Guidelines
 
