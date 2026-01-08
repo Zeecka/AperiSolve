@@ -160,6 +160,7 @@ def fill_ihdr_db() -> None:
         print(f"Error filling IHDR table: {e}")
         db.session.rollback()
 
+
 def cleanup_old_entries() -> None:
     """
     Clean up old and incomplete entries from the database and file system.

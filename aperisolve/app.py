@@ -1,5 +1,5 @@
 # flake8: noqa: E203,E501,W503
-# pylint: disable=C0413,W0718,R0903,R0801
+# pylint: disable=C0413,W0718,R0903,R0801,R0915
 # mypy: disable-error-code=unused-awaitable
 """Aperi'Solve Flask application."""
 
@@ -263,6 +263,7 @@ def create_app() -> Flask:
         return send_file(output_file, as_attachment=True)
 
     return app
+
 
 if __name__ == "__main__":
     my_app = create_app()
