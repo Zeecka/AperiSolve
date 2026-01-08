@@ -9,7 +9,7 @@ import struct
 import zlib
 from typing import Any, Optional
 
-from ..app import app
+from ..app import create_app
 from ..models import IHDR
 from .utils import int2hex, str2hex
 
@@ -241,6 +241,7 @@ class PNG:
             crc_int = struct.unpack("!I", crc)[0]
 
             # Database lookup
+            app = create_app()
             with app.app_context():
                 matches = IHDR.query.filter_by(crc=crc_int).all()
 

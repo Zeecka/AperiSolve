@@ -1,18 +1,15 @@
 # flake8: noqa: E203,E501,W503
-# pylint: disable=C0413,W0718,R0903,R0801
+# pylint: disable=E1101,C0413,W0212,W0718,R0903,R0801
 # mypy: disable-error-code=unused-awaitable
 """This module defines the database models for the Aperi'Solve application."""
 
 import itertools
+import shutil
 import struct
-import sys
+import time
 import zlib
 from datetime import datetime, timezone
-from os import getenv
-from pathlib import Path
-from shutil import rmtree
 
-from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy import (
     BigInteger,
@@ -25,6 +22,7 @@ from sqlalchemy import (
     String,
 )
 
+from aperisolve.config import MAX_PENDING_TIME, MAX_STORE_TIME, RESULT_FOLDER
 from aperisolve.utils.utils import get_resolutions, get_valid_depth_color_pairs
 
 db: SQLAlchemy = SQLAlchemy()
@@ -117,110 +115,109 @@ def fill_ihdr_db() -> None:
 
     Computes CRC for each combination and stores parameters directly.
     """
+    try:
+        # Skip if table already has entries (check before doing any work)
+        count_query = db.session.query(IHDR.iid).limit(1)
+        if db.session.execute(count_query).first() is not None:
+            print("IHDR table already populated, skipping fill.")
+            return
 
-    # Skip if table already has entries
-    if db.session.query(IHDR.iid).first() is not None:
-        print("IHDR table already populated, skipping fill.")
-        return
+        resolutions = get_resolutions()
+        bit_color_pairs = list(get_valid_depth_color_pairs())
+        interlace_methods = [0, 1]
 
-    resolutions = get_resolutions()
-    bit_color_pairs = list(get_valid_depth_color_pairs())
-    interlace_methods = [0, 1]
+        combinations = itertools.product(
+            resolutions,
+            bit_color_pairs,
+            interlace_methods,
+        )
+        count = 0
 
-    combinations = itertools.product(
-        resolutions,
-        bit_color_pairs,
-        interlace_methods,
-    )
-    batch = []
-    batch_size = 10000  # Increased from 5000
-    count = 0
-    with db.session.no_autoflush:
-        for (width, height), (bit_depth, color_type), interlace in combinations:
-            # Compute CRC directly
-            crc = IHDR.compute_crc(width, height, bit_depth, color_type, interlace)
+        with db.session.no_autoflush:
+            for (width, height), (bit_depth, color_type), interlace in combinations:
+                # Compute CRC directly
+                crc = IHDR.compute_crc(width, height, bit_depth, color_type, interlace)
 
-            # Check if entry already exists
-            exists = db.session.execute(
-                db.select(IHDR.iid).where(
-                    db.and_(
-                        IHDR.crc == crc,
-                        IHDR.width == width,
-                        IHDR.height == height,
-                        IHDR.bit_depth == bit_depth,
-                        IHDR.color_type == color_type,
-                        IHDR.interlace == interlace,
+                # Add new entry
+                db.session.add(
+                    IHDR(
+                        crc=crc,
+                        width=width,
+                        height=height,
+                        bit_depth=bit_depth,
+                        color_type=color_type,
+                        interlace=interlace,
                     )
                 )
-            ).first()
 
-            if exists:
-                continue
+                count += 1
+                if count % 5000 == 0:
+                    print(f"Inserted {count} IHDR entries...")
+                    db.session.commit()
+            print(f"Inserted {count} total IHDR entries.")
 
-            batch.append(
-                {
-                    "crc": crc,
-                    "width": width,
-                    "height": height,
-                    "bit_depth": bit_depth,
-                    "color_type": color_type,
-                    "interlace": interlace,
-                }
-            )
+    except Exception as e:
+        print(f"Error filling IHDR table: {e}")
+        db.session.rollback()
 
-            count += 1
-            if len(batch) >= batch_size:
-                db.session.bulk_insert_mappings(IHDR, batch)
-                db.session.commit()
-                print(f"Inserted {count} IHDR entries...")
-                batch = []
-
-        # Insert remaining entries
-        if batch:
-            db.session.bulk_insert_mappings(IHDR, batch)
-            db.session.commit()
-
-        print(f"Inserted {count} total IHDR entries.")
-
-
-def init_db(app: Flask) -> None:
+def cleanup_old_entries() -> None:
     """
-    Initialize the database by creating tables and populating lookup data.
+    Clean up old and incomplete entries from the database and file system.
 
-    This function creates the database schema if it doesn't already exist,
-    and populates the CRC lookup table for PNG IHDR validation.
+    This function performs two main cleanup operations:
 
-    Args:
-        app (Flask): The Flask application instance used to establish the application context
-                    for database operations.
+    1. Submission cleanup:
+       - Deletes submissions with "pending" or "running" status that have exceeded
+         the maximum allowed processing time (MAX_PENDING_TIME).
+       - Deletes completed submissions ("done" status) that have missing or buggy
+         results (results.json file not found).
+
+    2. Image cleanup:
+       - Deletes images older than MAX_STORE_TIME along with all associated
+         submissions and their result folders.
+       - Deletes orphaned images (with no submissions) older than MAX_PENDING_TIME
+         and removes their associated result folders from the file system.
+
+    All database changes are committed at the end of the operation.
 
     Returns:
         None
-
-    Side Effects:
-        - Creates all database tables if the "image" table doesn't exist
-        - Populates the IHDR CRC lookup table with initial data
-        - Prints status messages to console during initialization
     """
-    # Detect if running as RQ worker by checking command line
-    # Worker: /usr/local/bin/rq worker ...
-    # Web: /usr/local/bin/flask run ... or gunicorn/wsgi
-    is_worker = any("rq" in arg and "flask" not in arg for arg in sys.argv[:2])
+    now = time.time()
+    for submission in Submission.query.all():  # type: ignore
+        if (
+            submission.status in ("pending", "running")  # type: ignore
+            and now - submission.date > MAX_PENDING_TIME  # type: ignore
+        ):
+            # Processing took too long, delete
+            db.session.delete(submission)  # pylint: disable=no-member
+        elif submission.status == "done":  # type: ignore
+            # Search for buggy results, delete
+            result_path = RESULT_FOLDER / str(submission.image_hash) / str(submission.hash)
+            result_file = result_path / "results.json"
+            if not result_file.exists():
+                db.session.delete(submission)  # pylint: disable=no-member
+                shutil.rmtree(result_path)
 
-    with app.app_context():
-        # Workers should never clear the database
-        if not is_worker and getenv("CLEAR_AT_RESTART", "0") == "1":
-            print("Clearing database and file system at restart...")
-            db.session.remove()  # pylint: disable=no-member
-            db.drop_all()
-            rmtree(Path("./results"), ignore_errors=True)  # Clear results folder
-
-        # Always create tables (idempotent - safe to call multiple times)
-        db.create_all()
-        print("Database structure created successfully.")
-
-        # Workers should never fill IHDR table
-        if is_worker:
-            print("Running as worker, skipping IHDR table fill.")
+    # Delete "old" images
+    for img in Image.query.all():  # type: ignore
+        if img.last_submission_date.tzinfo is None:
+            img_date = img.last_submission_date.replace(tzinfo=timezone.utc)
         else:
-            fill_ihdr_db()
+            img_date = img.last_submission_date
+        delay = datetime.now(timezone.utc) - img_date
+        img_fold = RESULT_FOLDER / img.hash
+        if delay.total_seconds() > MAX_STORE_TIME:
+            for s in img.submissions:
+                db.session.delete(s)  # pylint: disable=no-member
+            if img_fold.exists():
+                shutil.rmtree(img_fold)  # type: ignore
+            db.session.delete(img)  # pylint: disable=no-member
+
+        # Delete Images with missing submission
+        if len(img.submissions) == 0 and delay.total_seconds() > MAX_PENDING_TIME:
+            if img_fold.exists():
+                shutil.rmtree(img_fold)  # type: ignore
+            db.session.delete(img)  # pylint: disable=no-member
+
+    db.session.commit()  # pylint: disable=no-member

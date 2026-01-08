@@ -13,8 +13,9 @@ from pathlib import Path
 from shutil import rmtree
 from typing import Any, Optional, overload
 
+from ..config import MAX_PENDING_TIME
+
 _thread_lock = threading.Lock()
-MAX_PENDING_TIME = int(os.getenv("MAX_PENDING_TIME", "600"))  # 10 minutes by default
 
 
 class SubprocessAnalyzer(ABC):

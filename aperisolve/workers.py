@@ -9,7 +9,7 @@ from typing import Any
 
 import sentry_sdk
 
-from .sentry import initialize_sentry
+from .utils.sentry import initialize_sentry
 
 initialize_sentry()
 
@@ -24,9 +24,9 @@ from .analyzers.pngcheck import analyze_pngcheck
 from .analyzers.steghide import analyze_steghide
 from .analyzers.strings import analyze_strings
 from .analyzers.zsteg import analyze_zsteg
-from .app import app, db
+from .app import create_app
 from .config import RESULT_FOLDER
-from .models import Image, Submission
+from .models import Image, Submission, db
 
 
 def analyze_image(submission_hash: str) -> None:
@@ -55,6 +55,7 @@ def analyze_image(submission_hash: str) -> None:
         - Creates result directories and generates analysis output files
         - Modifies the database session and commits changes
     """
+    app = create_app()
     with app.app_context():
         submission: Submission = Submission.query.get(submission_hash)  # type: ignore
         image = Image.query.get_or_404(submission.image_hash)  # type: ignore
