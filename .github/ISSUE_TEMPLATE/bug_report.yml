@@ -1,0 +1,30 @@
+name: "[Bug] Bug report"
+description: Report something that is broken
+title: "[Bug] "
+labels: ["priority 0"]
+body:
+  - type: textarea
+    id: description
+    attributes:
+      label: Description
+      description: What is the bug?
+      placeholder: Clearly describe the issue
+    validations:
+      required: true
+
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to reproduce
+      placeholder: |
+        1.
+        2.
+        3.
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected behavior
+      placeholder: What should have happened?
