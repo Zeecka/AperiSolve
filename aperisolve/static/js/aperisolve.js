@@ -97,24 +97,24 @@ function showInfo(message, reset) {
  */
 
 document.addEventListener('click', function (event) {
-    // Check if the clicked element is a copy icon
-    if (event.target.classList.contains('copy-icon')) {
-      const icon = event.target;
-      const textarea = icon.closest('.textarea-container').querySelector('textarea');
+  // Check if the clicked element is a copy icon
+  if (event.target.classList.contains('copy-icon')) {
+    const icon = event.target;
+    const textarea = icon.closest('.textarea-container').querySelector('textarea');
 
-      if (textarea) {
-        textarea.select();
-        navigator.clipboard.writeText(textarea.value).then(() => {
-          icon.classList.remove('fa-copy');
-          icon.classList.add('fa-check');
-          setTimeout(() => {
-            icon.classList.remove('fa-check');
-            icon.classList.add('fa-copy');
-          }, 1500);
-        });
-      }
+    if (textarea) {
+      textarea.select();
+      navigator.clipboard.writeText(textarea.value).then(() => {
+        icon.classList.remove('fa-copy');
+        icon.classList.add('fa-check');
+        setTimeout(() => {
+          icon.classList.remove('fa-check');
+          icon.classList.add('fa-copy');
+        }, 1500);
+      });
     }
-  });
+  }
+});
 
 /**
  * Image preview functions
@@ -250,7 +250,7 @@ function parseResult(result) {
     analyzer.className = `analyzer a-${escapeHtml(tool)}`;
     resultDiv.appendChild(analyzer);
 
-    analyzer.innerHTML += `<h2>${capitalize(tool.replace("_"," "))}</h2>`;
+    analyzer.innerHTML += `<h2>${capitalize(tool.replace("_", " "))}</h2>`;
 
     // Parse text output
     if (typeof result[tool]["output"] === "string") {
@@ -314,7 +314,7 @@ function parseResult(result) {
 
       if ("png_images" in result[tool]) {
         for (const image of result[tool]["png_images"]) {
-             analyzer.innerHTML += `<div class='results_img'><img src='${escapeHtml(image)}'/></div>`;
+          analyzer.innerHTML += `<div class='results_img'><img src='${escapeHtml(image)}'/></div>`;
         }
       }
 
@@ -347,9 +347,9 @@ async function pollStatus(submission_hash) {
     const resultResp = await fetch(`/result/${submission_hash}`);
     const resultData = await resultResp.json();
     fetchImageInfo(submission_hash);
-    if ("error" in resultData){
+    if ("error" in resultData) {
       showWarning(`❌ ${resultData.error}`, true);
-    }else if ("results" in resultData) {
+    } else if ("results" in resultData) {
       parseResult(resultData.results);
     }
   } else if (statusData.status === "error") {
@@ -360,9 +360,9 @@ async function pollStatus(submission_hash) {
     try {
       const resultResp = await fetch(`/result/${submission_hash}`);
       const resultData = await resultResp.json();
-      if ("error" in resultData){
+      if ("error" in resultData) {
         // showWarning(`❌ ${resultData.error}`, true);
-      }else if ("results" in resultData) {
+      } else if ("results" in resultData) {
         fetchImageInfo(submission_hash);
         parseResult(resultData.results);
       }
@@ -488,7 +488,7 @@ if (browseBtn) {
           }
         } else if (xhr.status == 413) {
           showDanger("❌ File too large. Please upload a smaller file.", true);
-        }else {
+        } else {
           showDanger(`❌ HTTP error ${xhr.status}`, true);
         }
         progressBar.style.width = "100%";
