@@ -1,0 +1,21 @@
+name: "[Feature] Feature request"
+description: Suggest a new feature
+title: "[Feature] "
+labels: ["feature", "priority 2"]
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem or analyzer tool
+      description: What problem does this feature solve?
+      placeholder: Describe the use case
+    validations:
+      required: true
+
+  - type: textarea
+    id: solution
+    attributes:
+      label: Proposed solution
+      placeholder: How should it work?
+    validations:
+      required: true
