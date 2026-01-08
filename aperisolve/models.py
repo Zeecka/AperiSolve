@@ -104,6 +104,18 @@ class IHDR(db.Model):  # type: ignore
         return zlib.crc32(b"IHDR" + ihdr_data) & 0xFFFFFFFF
 
 
+class UploadLog(db.Model):  # type: ignore
+    """Model representing upload activity logs."""
+
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    ip_address = Column(String(45), nullable=False)  # IPv6 max length is 45
+    user_agent = Column(String(512), nullable=True)
+    upload_time = Column(DateTime, nullable=False, default=lambda: datetime.now(timezone.utc))
+    image_hash = Column(String(64), nullable=False)
+    submission_hash = Column(String(128), nullable=True)
+    filename = Column(String(128), nullable=True)
+
+
 def fill_ihdr_db() -> None:
     """
     Populate IHDR table with common PNG configurations.

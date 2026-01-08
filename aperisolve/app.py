@@ -21,7 +21,7 @@ from .utils.sentry import initialize_sentry
 initialize_sentry()
 
 from .config import IMAGE_EXTENSIONS, RESULT_FOLDER, WORKER_FILES
-from .models import Image, Submission, cleanup_old_entries, db
+from .models import Image, Submission, UploadLog, cleanup_old_entries, db
 
 
 def create_app() -> Flask:
@@ -112,6 +112,22 @@ def create_app() -> Flask:
         )
         submission_hash = hashlib.md5(submission_data).hexdigest()
         submission_path = RESULT_FOLDER / img_hash / submission_hash
+
+        # Log upload to database
+        client_ip = request.headers.get("X-Forwarded-For", request.remote_addr)
+        if client_ip and "," in client_ip:
+            client_ip = client_ip.split(",")[0].strip()
+        user_agent = request.headers.get("User-Agent", "Unknown")
+
+        upload_log = UploadLog(
+            ip_address=client_ip,
+            user_agent=user_agent,
+            image_hash=img_hash,
+            submission_hash=submission_hash,
+            filename=image.filename,
+        )
+        db.session.add(upload_log)  # pylint: disable=no-member
+        db.session.commit()  # pylint: disable=no-member
 
         # Check if hash is present on the DB
         submission: Submission = Submission.query.filter_by(hash=submission_hash).first()
