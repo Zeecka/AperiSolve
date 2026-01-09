@@ -230,6 +230,108 @@ async function fetchImageInfo(submission_hash) {
       .join(", ");
     tableInfos.innerHTML += `<tr><td><i class="fa fa-key"></i> Common password(s):</td><td>${passwordList}</td></tr>`;
   }
+
+  // Fetch removal status and update removal UI
+  await updateRemovalUI(submission_hash, infoData);
+}
+
+/**
+ * Image removal functionality
+ */
+
+let removalTimerIntervals = {};
+
+async function updateRemovalUI(submission_hash, infoData) {
+  console.log("Updating removal UI...");
+  const resultRemovalDiv = document.getElementById("result-removal");
+  resultRemovalDiv.innerHTML = "";
+
+  try {
+
+    // Extract upload timestamp from first_submission_date
+    const uploadTime = new Date(infoData.first_submission_date).getTime();
+    const currentTime = new Date().getTime();
+    const ageSeconds = Math.floor((currentTime - uploadTime) / 1000);
+    const REMOVAL_MIN_AGE_SECONDS = infoData.removal_min_age_seconds || 300;
+
+    const removalContainer = document.createElement("div");
+    removalContainer.className = "card removal-card";
+    resultRemovalDiv.appendChild(removalContainer);
+
+    if (ageSeconds < REMOVAL_MIN_AGE_SECONDS) {
+      const remainingSeconds = REMOVAL_MIN_AGE_SECONDS - ageSeconds;
+      removalContainer.innerHTML = `
+        <h3><i class="fa fa-trash"></i> Remove Image</h3>
+        <p>Available in <span id="removal-countdown">${remainingSeconds}</span> seconds</p>
+        <button class="btn btn-primary" disabled id="remove-btn">Remove Image</button>
+      `;
+
+      // Clear existing interval if any
+      if (removalTimerIntervals[submission_hash]) {
+        clearInterval(removalTimerIntervals[submission_hash]);
+      }
+
+      // Start countdown timer
+      removalTimerIntervals[submission_hash] = setInterval(() => {
+        const countdownEl = document.getElementById("removal-countdown");
+        if (countdownEl) {
+          const current = parseInt(countdownEl.textContent);
+          if (current > 1) {
+            countdownEl.textContent = current - 1;
+          } else {
+            clearInterval(removalTimerIntervals[submission_hash]);
+            updateRemovalUI(submission_hash, infoData);
+          }
+        }
+      }, 1000);
+    } else {
+      // Check for multiple IPs - we'll do this by attempting removal
+      removalContainer.innerHTML = `
+        <h3><i class="fa fa-trash"></i> Remove Image</h3>
+        <button class="btn btn-primary" id="remove-btn">Remove Image</button>
+        <p id="removal-status"></p>
+      `;
+
+      const removeBtn = document.getElementById("remove-btn");
+      removeBtn.addEventListener("click", async () => {
+        removeBtn.disabled = true;
+        const statusEl = document.getElementById("removal-status");
+
+        try {
+          const response = await fetch(`/remove/${submission_hash}`, {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+          });
+
+          const data = await response.json();
+
+          if (response.ok) {
+            statusEl.innerHTML = `<span class="text-success"><i class="fa fa-check"></i> Image successfully removed</span>`;
+            removeBtn.style.display = "none";
+            setTimeout(() => { document.location = '/'; }, 2000);
+          } else if (response.status === 403) {
+            if (data.error.includes("multiple IP")) {
+              statusEl.innerHTML = `<span class="text-danger"><i class="fa fa-warning"></i> ${escapeHtml(data.error)}</span>`;
+            } else {
+              statusEl.innerHTML = `<span class="text-danger"><i class="fa fa-warning"></i> ${escapeHtml(data.error)}</span>`;
+            }
+            removeBtn.disabled = false;
+          } else {
+            statusEl.innerHTML = `<span class="text-danger"><i class="fa fa-exclamation-circle"></i> Error: ${escapeHtml(data.error)}</span>`;
+            removeBtn.disabled = false;
+          }
+        } catch (error) {
+          statusEl.innerHTML = `<span class="text-danger"><i class="fa fa-exclamation-circle"></i> Network error occurred</span>`;
+          removeBtn.disabled = false;
+          console.error("Removal error:", error);
+        }
+      });
+    }
+  } catch (error) {
+    console.error("Error updating removal UI:", error);
+  }
 }
 
 /**

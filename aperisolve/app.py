@@ -6,6 +6,7 @@
 import hashlib
 import json
 import os
+import shutil
 import time
 from datetime import datetime, timezone
 from pathlib import Path
@@ -20,7 +21,13 @@ from .utils.sentry import initialize_sentry
 
 initialize_sentry()
 
-from .config import IMAGE_EXTENSIONS, RESULT_FOLDER, WORKER_FILES
+from .config import (
+    IMAGE_EXTENSIONS,
+    REMOVAL_MIN_AGE_SECONDS,
+    REMOVED_IMAGES_FOLDER,
+    RESULT_FOLDER,
+    WORKER_FILES,
+)
 from .models import Image, Submission, UploadLog, cleanup_old_entries, db
 
 
@@ -217,6 +224,7 @@ def create_app() -> Flask:
                 "last_submission_date": image.last_submission_date,
                 "upload_count": image.upload_count,
                 "passwords": passwords,
+                "removal_min_age_seconds": REMOVAL_MIN_AGE_SECONDS,
             }
         )  # type: ignore
 
@@ -250,6 +258,92 @@ def create_app() -> Flask:
             abort(404, description="Tool output not found.")
 
         return send_file(output_file, as_attachment=True)
+
+    @app.route("/remove/<hash_val>", methods=["POST"])
+    def remove_image(hash_val: str) -> tuple[Response, int]:
+        """Remove an image and associated results if criteria are met."""
+
+        submission = Submission.query.get_or_404(hash_val)  # type: ignore
+        image = Image.query.get_or_404(submission.image_hash)  # type: ignore
+
+        # Check if image is at least 5 minutes old
+        current_time = time.time()
+        age_seconds = current_time - submission.date
+        if age_seconds < REMOVAL_MIN_AGE_SECONDS:
+            return (
+                jsonify(
+                    {
+                        "error": "Image must be at least 5 minutes old. "
+                        f"Current age: {int(age_seconds)}s"
+                    }
+                ),
+                403,
+            )
+
+        # Get all IPs that uploaded this image
+        upload_logs = UploadLog.query.filter_by(image_hash=image.hash).all()
+        unique_ips = set()
+        for log in upload_logs:
+            if log.ip_address:
+                unique_ips.add(log.ip_address)
+
+        # Check if only one IP has uploaded this image
+        if len(unique_ips) > 1:
+            return (
+                jsonify(
+                    {
+                        "error": "Image uploaded from multiple IP addresses. Removal is not "
+                        "allowed.",
+                        "ip_count": len(unique_ips),
+                    }
+                ),
+                403,
+            )
+
+        # Create archive directory if it doesn't exist
+        REMOVED_IMAGES_FOLDER.mkdir(parents=True, exist_ok=True)
+
+        # Archive the original image (copy to removed_images folder with metadata)
+        original_image_path = Path(image.file)
+        if original_image_path.exists():
+            dt = datetime.now(timezone.utc).isoformat()
+            archive_filename = f"{image.hash}_{submission.hash}_{dt}{original_image_path.suffix}"
+            archive_path = REMOVED_IMAGES_FOLDER / archive_filename
+            try:
+                shutil.copy2(original_image_path, archive_path)
+            except Exception as e:
+                sentry_sdk.capture_exception(e)
+                return jsonify({"error": "Failed to archive image"}), 500
+
+        # Delete the results folder
+        result_path = RESULT_FOLDER / str(image.hash) / str(submission.hash)
+        try:
+            if result_path.exists():
+                shutil.rmtree(result_path)
+        except Exception as e:
+            sentry_sdk.capture_exception(e)
+            return jsonify({"error": "Failed to delete results"}), 500
+
+        # Delete submission from database
+        try:
+            db.session.delete(submission)  # pylint: disable=no-member
+
+            # If this was the last submission for this image, delete the image entry too
+            if len(image.submissions) <= 1:
+                # Also delete the original image file
+                if original_image_path.exists():
+                    original_image_path.unlink()
+                db.session.delete(image)  # pylint: disable=no-member
+
+            db.session.commit()  # pylint: disable=no-member
+        except Exception as e:
+            db.session.rollback()  # pylint: disable=no-member
+            sentry_sdk.capture_exception(e)
+            return jsonify({"error": "Failed to update database"}), 500
+
+        # Note: UploadLog entries are intentionally kept for audit purposes
+
+        return jsonify({"message": "Image successfully removed"}), 200
 
     @app.route("/image/<img_name>")
     @app.route("/image/<hash_val>/<img_name>")
