@@ -1,16 +1,18 @@
 services:
   web:
-    image: ghcr.io/zeecka/aperisolve:latest
-    #build: .
+    #image: ghcr.io/zeecka/aperisolve:latest
+    build: .
     container_name: aperisolve-web
-    restart: always
+    restart: no
     ports:
       - "5000:5000"
     volumes:
-      - apresults:/aperisolve/results
+      - apresults:/app/aperisolve/results
     depends_on:
       postgres:
         condition: service_healthy
+      initdb:
+        condition: service_completed_successfully
       redis:
         condition: service_started
       worker:
@@ -25,20 +27,22 @@ services:
       start_period: 900s
 
   worker:
-    image: ghcr.io/zeecka/aperisolve:latest
-    #build: .
+    #image: ghcr.io/zeecka/aperisolve:latest
+    build: .
     container_name: aperisolve-worker
-    restart: always
+    restart: no
     command: rq worker default --url redis://redis:6379/0
     volumes:
-      - apresults:/aperisolve/results
+      - apresults:/app/aperisolve/results
     depends_on:
-      - redis
-      - postgres
+      postgres:
+        condition: service_healthy
+      initdb:
+        condition: service_completed_successfully
+      redis:
+        condition: service_started
     env_file:
       - .env
-    environment:
-      - CLEAR_AT_RESTART=0  # Always false for worker to prevent double clearing
 
   postgres:
     image: postgres:18
@@ -53,6 +57,19 @@ services:
       retries: 5
     env_file:
       - .env
+
+  initdb:
+    build: .
+    container_name: aperisolve-initdb
+    command: python -m aperisolve.utils.init_db
+    volumes:
+      - apresults:/app/aperisolve/results
+    depends_on:
+      postgres:
+        condition: service_healthy
+    env_file:
+      - .env
+    restart: "no"
 
   redis:
     image: redis:7

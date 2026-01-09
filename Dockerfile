@@ -1,17 +1,31 @@
-FROM python:3.14-slim AS build
+# ==========================
+# Stage 1 : Builder (download OpenStego)
+# ==========================
+FROM python:3.14-slim AS builder
 
-WORKDIR /
-
-# Install build tools and dependencies
-RUN apt-get update && apt-get install -y \
+# Install wget only to download OpenStego
+RUN apt-get update && apt-get install -y --no-install-recommends \
     wget \
-    default-jdk \
+    && rm -rf /var/lib/apt/lists/*
+
+# Download OpenStego
+RUN wget https://github.com/syvaidya/openstego/releases/download/openstego-0.8.6/openstego_0.8.6-1_all.deb \
+    -O /tmp/openstego.deb
+
+# ==========================
+# Stage 2 : Image runtime minimale
+# ==========================
+FROM python:3.14-slim
+
+WORKDIR /app
+
+# Install runtime + stego tools
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    default-jre \
+    file \
     ruby \
     zip \
-    7zip
-
-# Install steganography and forensics tools
-RUN apt-get update && apt-get install -y \
+    p7zip-full \
     binwalk \
     foremost \
     exiftool \
@@ -19,27 +33,20 @@ RUN apt-get update && apt-get install -y \
     binutils \
     outguess \
     pngcheck \
-    && gem install zsteg
+    && gem install zsteg \
+    && rm -rf /var/lib/apt/lists/*
 
 # Install OpenStego
-RUN wget https://github.com/syvaidya/openstego/releases/download/openstego-0.8.6/openstego_0.8.6-1_all.deb -O /tmp/openstego.deb && \
-    dpkg -i /tmp/openstego.deb && \
-    rm /tmp/openstego.deb
+COPY --from=builder /tmp/openstego.deb /tmp/openstego.deb
+RUN dpkg -i /tmp/openstego.deb || apt-get install -f -y --no-install-recommends \
+    && rm -rf /tmp/openstego.deb \
+    && rm -rf /var/lib/apt/lists/*
 
-# Copy application
-COPY aperisolve/ /aperisolve/
-
-RUN mkdir -p /data
+# Copy app
+COPY aperisolve/ /app/aperisolve/
 
 # Install Python dependencies
-RUN pip install --no-cache-dir -r /aperisolve/requirements.txt
+RUN pip install --no-cache-dir -r /app/aperisolve/requirements.txt
 
-ENV PYTHONUNBUFFERED=1
-
-# Auto clean after build
-RUN apt-get remove -y wget && \
-    apt-get autoremove -y && \
-    apt-get clean && \
-    rm -rf /var/lib/apt/lists/*
-
-CMD ["gunicorn", "-w", "4", "-b", "0.0.0.0:5000", "--access-logfile", "-", "--error-logfile", "-", "--log-level", "info", "--capture-output", "aperisolve.wsgi:application"]
+# Commande de lancement
+CMD ["gunicorn", "-w", "8", "-b", "0.0.0.0:5000", "--access-logfile", "-", "--error-logfile", "-", "--log-level", "info", "--capture-output", "aperisolve.utils.wsgi:application"]

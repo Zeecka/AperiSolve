@@ -1,17 +1,11 @@
 repos:
-# -   repo: https://github.com/pre-commit/pre-commit-hooks
-#     rev: v6.0.0
-#     hooks:
-#     -   id: check-yaml
-#     -   id: end-of-file-fixer
-#     -   id: trailing-whitespace
 - repo: https://github.com/psf/black
-  rev: 25.11.0
+  rev: 25.12.0
   hooks:
   - id: black
     args: ['--line-length', '100']
 - repo: https://github.com/pycqa/isort
-  rev: 5.11.2
+  rev: 7.0.0
   hooks:
   - id: isort
     args: ['--profile', 'black']
@@ -21,14 +15,26 @@ repos:
   - id: flake8
     args: ['--extend-ignore','E203,E501,W503']
 - repo: https://github.com/pylint-dev/pylint
-  rev: v4.0.2
+  rev: v4.0.4
   hooks:
   - id: pylint
     args: ['--disable', 'W0511,W0718,R0801,R0903,R0914']
     language: system
-- repo: https://github.com/pre-commit/mirrors-mypy
-  rev: v1.18.2
+- repo: local
   hooks:
-  - id: mypy
-    args: ["--disallow-any-generics", "--disallow-untyped-def", "--follow-imports", "skip", "--ignore-missing-imports", "--disable-error-code", "unused-awaitable"]
-    language: system
+    - id: mypy
+      name: mypy
+      entry: mypy
+      types: [python]
+      language: system
+      pass_filenames: true
+      args:
+        [
+          "--disallow-any-generics",
+          "--disallow-untyped-def",
+          "--follow-imports",
+          "skip",
+          "--ignore-missing-imports",
+          "--disable-error-code",
+          "unused-awaitable",
+        ]

@@ -1,0 +1,20 @@
+name: "[Enhancement] Improvement"
+description: Improve an existing feature or behavior
+title: "[Enhancement] "
+labels: ["enhancement", "priority 2"]
+body:
+  - type: textarea
+    id: current
+    attributes:
+      label: Current behavior
+      placeholder: How does it work today?
+    validations:
+      required: true
+
+  - type: textarea
+    id: improvement
+    attributes:
+      label: Suggested improvement
+      placeholder: What would you improve?
+    validations:
+      required: true

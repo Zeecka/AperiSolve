@@ -2,11 +2,6 @@ name: Linters
 
 on: [push, pull_request]
 
-env:
-  FLAKE8_IGNORE: E203,E501,W503
-  PYLINT_IGNORE: W0718,R0903,R0801
-  MYPY_IGNORE: unused-awaitable
-
 permissions:
   checks: write
   contents: write
@@ -23,11 +18,11 @@ jobs:
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
-          python-version: 3.11
+          python-version: 3.12
 
       - name: Install Python dependencies
         run: |
-          pip install isort black flake8 pylint mypy mypy-extensions
+          pip install -r aperisolve/requirements-dev.txt
           pip install -r aperisolve/requirements.txt
 
       - name: Run linters

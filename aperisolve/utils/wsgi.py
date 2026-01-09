@@ -3,7 +3,6 @@
 # mypy: disable-error-code=unused-awaitable
 """Aperi'Solve WSGI runner."""
 
-from .app import app as application
+from aperisolve.app import create_app
 
-if __name__ == "__main__":
-    application.run()
+application = create_app()
