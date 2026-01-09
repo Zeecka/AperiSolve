@@ -18,7 +18,7 @@ class PCRTAnalyzer(SubprocessAnalyzer):
 
     def _write_repaired_data(self, data: bytes) -> str:
         """Write recovered image."""
-        img_name = f"pcrt_recoverd_{self.input_img.name}.png"
+        img_name = f"pcrt_recovered_{self.input_img.stem}.png"
         output_path = self.output_dir / img_name
         saved_img_url = "/image/" + str(Path(self.output_dir.name) / img_name)
         with output_path.open("wb") as f:

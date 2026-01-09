@@ -57,8 +57,9 @@ class PNG:
         pos = data.find(b"IHDR")
         if pos == -1:
             return -1, b""
-        idat_begin = data.find(b"IDAT")
-        return pos, data[pos - 4 : idat_begin - 4 if idat_begin != -1 else pos + 21]
+        # IHDR chunk is always 25 bytes: 4 (length) + 4 (type) + 13 (data) + 4 (CRC)
+        # Only return the IHDR chunk itself, not everything up to IDAT
+        return pos, data[pos - 4 : pos + 21]
 
     def check_header(self) -> bool:
         """Check and fix PNG header."""
