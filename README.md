@@ -1,6 +1,6 @@
 # Aperi'Solve
 
-![CI](https://github.com/Zeecka/AperiSolve/actions/workflows/releases.yml/badge.svg)
+![CI](https://github.com/Zeecka/AperiSolve/actions/workflows/release.yml/badge.svg)
 ![Lint](https://github.com/Zeecka/AperiSolve/actions/workflows/lint.yml/badge.svg)
 ![Black Code Style](https://img.shields.io/badge/code%20style-black-000000.svg)
 [![Website](https://img.shields.io/website?url=https%3A%2F%2Faperisolve.com)](https://aperisolve.com/)
