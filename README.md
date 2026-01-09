@@ -82,6 +82,7 @@ See [CONTRIBUTING.md](CONTRIBUTING.md).
 
 Thanks to donors:
 - [Philip Zimmermann](https://github.com/Philip-Zimmermann)
+- [Ed Guillory](#)
 
 Thanks to contributors:
 - [Zeecka](https://www.zeecka.fr/) - **(author)**
