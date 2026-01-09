@@ -20,7 +20,7 @@ jobs:
         run: |
           TAG_REF="${GITHUB_REF#refs/tags/}"
           echo "Tag: $TAG_REF"
-          echo "GITHUB_SHA: $GITHUB_SHA"
+          echo "Commit SHA: $GITHUB_SHA"
 
           # Get branches containing this commit
           BRANCHES=$(git branch -r --contains HEAD)
@@ -28,8 +28,21 @@ jobs:
 
           # Using prod-test for testing (change to origin/prod in production)
           if echo "$BRANCHES" | grep -q "origin/prod-test"; then
-            echo "is_prod=true" >> $GITHUB_OUTPUT
-            echo "✅ Tag is from prod-test branch - will deploy"
+            # Additional check: ensure this commit is at the HEAD of prod-test
+            # This prevents deployment if the same commit exists on multiple branches
+            PROD_HEAD=$(git rev-parse origin/prod-test)
+            TAG_COMMIT=$(git rev-parse HEAD)
+            
+            echo "Prod-test HEAD: $PROD_HEAD"
+            echo "Tag commit: $TAG_COMMIT"
+            
+            if [ "$PROD_HEAD" = "$TAG_COMMIT" ]; then
+              echo "is_prod=true" >> $GITHUB_OUTPUT
+              echo "✅ Tag is at prod-test branch HEAD - will deploy"
+            else
+              echo "is_prod=false" >> $GITHUB_OUTPUT
+              echo "⚠️ Commit is on prod-test but not at HEAD - skipping deployment"
+            fi
           else
             echo "is_prod=false" >> $GITHUB_OUTPUT
             echo "❌ Tag is not from prod-test branch - skipping deployment"
