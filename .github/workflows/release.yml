@@ -16,6 +16,17 @@ jobs:
     - name: Downcase username
       run: echo "lower_actor=${GITHUB_ACTOR,,}" >> $GITHUB_ENV
 
+    - name: Determine tag type (prod vs main)
+      id: tag_type
+      run: |
+        if [[ "${{ env.RELEASE_VERSION }}" == *"-prod"* ]]; then
+          echo "is_prod_tag=true" >> $GITHUB_OUTPUT
+          echo "📦 Prod tag detected - will push :latest-prod"
+        else
+          echo "is_prod_tag=false" >> $GITHUB_OUTPUT
+          echo "📦 Main tag detected - will push :latest"
+        fi
+
     - name: Checkout
       uses: actions/checkout@v4
 
@@ -32,7 +43,21 @@ jobs:
         username: ${{ github.actor }}
         password: ${{ secrets.GITHUB_TOKEN }}
 
-    - name: Build and push Docker images
+    # Build and push for PROD tags (X.X.X-prod)
+    - name: Build and push Docker images (prod)
+      if: steps.tag_type.outputs.is_prod_tag == 'true'
+      uses: docker/build-push-action@v6.9.0
+      with:
+        context: ./
+        push: true
+        tags: |
+          ghcr.io/${{ env.lower_actor }}/aperisolve:${{ env.RELEASE_VERSION }}
+          ghcr.io/${{ env.lower_actor }}/aperisolve:latest-prod
+          ghcr.io/${{ env.lower_actor }}/aperisolve:prod
+
+    # Build and push for MAIN tags (X.X.X)
+    - name: Build and push Docker images (main)
+      if: steps.tag_type.outputs.is_prod_tag == 'false'
       uses: docker/build-push-action@v6.9.0
       with:
         context: ./
