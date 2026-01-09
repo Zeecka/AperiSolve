@@ -225,6 +225,7 @@ def create_app() -> Flask:
                 "upload_count": image.upload_count,
                 "passwords": passwords,
                 "removal_min_age_seconds": REMOVAL_MIN_AGE_SECONDS,
+                "submission_date": submission.date,
             }
         )  # type: ignore
 
@@ -344,6 +345,60 @@ def create_app() -> Flask:
         # Note: UploadLog entries are intentionally kept for audit purposes
 
         return jsonify({"message": "Image successfully removed"}), 200
+
+    @app.route("/remove_password/<hash_val>", methods=["POST"])
+    def remove_password(hash_val: str) -> tuple[Response, int]:
+        """Remove a password from a submission if criteria are met."""
+
+        submission = Submission.query.get_or_404(hash_val)  # type: ignore
+
+        if not submission.password:
+            return jsonify({"error": "No password to remove"}), 400
+
+        # Check if submission is at least 5 minutes old
+        current_time = time.time()
+        age_seconds = current_time - submission.date
+        if age_seconds < REMOVAL_MIN_AGE_SECONDS:
+            return (
+                jsonify(
+                    {
+                        "error": f"Submission must be at least 5 minutes old. "
+                        f"Current age: {int(age_seconds)}s"
+                    }
+                ),
+                403,
+            )
+
+        # Get all IPs that uploaded this specific submission (password combination)
+        upload_logs = UploadLog.query.filter_by(submission_hash=submission.hash).all()
+        unique_ips = set()
+        for log in upload_logs:
+            if log.ip_address:
+                unique_ips.add(log.ip_address)
+
+        # Check if only one IP has uploaded this submission
+        if len(unique_ips) > 1:
+            return (
+                jsonify(
+                    {
+                        "error": "Submission uploaded from multiple IP addresses. "
+                        "Password removal is not allowed.",
+                        "ip_count": len(unique_ips),
+                    }
+                ),
+                403,
+            )
+
+        # Remove the password
+        try:
+            submission.password = None
+            db.session.commit()  # pylint: disable=no-member
+        except Exception as e:
+            db.session.rollback()  # pylint: disable=no-member
+            sentry_sdk.capture_exception(e)
+            return jsonify({"error": "Failed to remove password"}), 500
+
+        return jsonify({"message": "Password successfully removed"}), 200
 
     @app.route("/image/<img_name>")
     @app.route("/image/<hash_val>/<img_name>")

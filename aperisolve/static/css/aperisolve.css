@@ -191,6 +191,23 @@ form {
     font-size: 0.95rem;
 }
 
+/* Password removal styling */
+.password-item {
+    display: inline-block;
+    margin-right: 8px;
+    position: relative;
+}
+
+.password-delete-icon {
+    transition: color 0.2s, transform 0.2s;
+    vertical-align: middle;
+}
+
+.password-delete-icon:hover {
+    color: #ff0000 !important;
+    transform: scale(1.2);
+}
+
 /* ======== Forms & Inputs ======== */
 input,
 textarea,
