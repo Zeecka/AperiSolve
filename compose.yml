@@ -1,6 +1,6 @@
 services:
   web:
-    image: ghcr.io/zeecka/aperisolve:prod
+    image: ghcr.io/zeecka/aperisolve:latest
     #build: .
     container_name: aperisolve-web
     restart: always
@@ -25,7 +25,7 @@ services:
       start_period: 900s
 
   worker:
-    image: ghcr.io/zeecka/aperisolve:prod
+    image: ghcr.io/zeecka/aperisolve:latest
     #build: .
     container_name: aperisolve-worker
     restart: always
@@ -39,6 +39,20 @@ services:
       - .env
     environment:
       - CLEAR_AT_RESTART=0  # Always false for worker to prevent double clearing
+
+  initdb:
+    image: ghcr.io/zeecka/aperisolve:latest
+    #build: .
+    container_name: aperisolve-initdb
+    command: python -m aperisolve.utils.init_db
+    volumes:
+      - apresults:/aperisolve/results
+    depends_on:
+      postgres:
+        condition: service_healthy
+    env_file:
+      - .env.example
+    restart: "no"
 
   postgres:
     image: postgres:18

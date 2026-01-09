@@ -52,7 +52,6 @@ jobs:
         push: true
         tags: |
           ghcr.io/${{ env.lower_actor }}/aperisolve:${{ env.RELEASE_VERSION }}
-          ghcr.io/${{ env.lower_actor }}/aperisolve:latest-prod
           ghcr.io/${{ env.lower_actor }}/aperisolve:prod
 
     # Build and push for MAIN tags (X.X.X)
@@ -94,10 +93,10 @@ jobs:
             # This prevents deployment if the same commit exists on multiple branches
             PROD_HEAD=$(git rev-parse origin/prod)
             TAG_COMMIT=$(git rev-parse HEAD)
-            
+
             echo "Prod HEAD: $PROD_HEAD"
             echo "Tag commit: $TAG_COMMIT"
-            
+
             if [ "$PROD_HEAD" = "$TAG_COMMIT" ]; then
               echo "is_prod=true" >> $GITHUB_OUTPUT
               echo "✅ Tag is at prod branch HEAD - will deploy"
@@ -110,12 +109,12 @@ jobs:
             echo "❌ Tag is not from prod branch - skipping deployment"
           fi
 
-      # wait for 30 seconds 
+      # wait for 120 seconds
       - name: Wait for image propagation
         if: steps.check.outputs.is_prod == 'true'
         run: |
-          echo "Waiting 30 seconds for image to propagate in registry..."
-          sleep 30
+          echo "Waiting 120 seconds for image to propagate in registry..."
+          sleep 120
 
       - name: Deploy to production server
         if: steps.check.outputs.is_prod == 'true'

@@ -430,12 +430,6 @@ def create_app() -> Flask:
     return app
 
 
-@app.route("/ads.txt")
-def google_ads() -> str:
-    """Google Ads required file"""
-    return "google.com, pub-2324718887045017, DIRECT, f08c47fec0942fa0"
-
-
 if __name__ == "__main__":
     my_app = create_app()
     debug_mode = os.environ.get("FLASK_DEBUG", "0") == "1"
