@@ -26,12 +26,13 @@ jobs:
           BRANCHES=$(git branch -r --contains HEAD)
           echo "Branches containing this commit: $BRANCHES"
 
-          if echo "$BRANCHES" | grep -q "origin/prod"; then
+          # Using prod-test for testing (change to origin/prod in production)
+          if echo "$BRANCHES" | grep -q "origin/prod-test"; then
             echo "is_prod=true" >> $GITHUB_OUTPUT
-            echo "✅ Tag is from prod branch - will deploy"
+            echo "✅ Tag is from prod-test branch - will deploy"
           else
             echo "is_prod=false" >> $GITHUB_OUTPUT
-            echo "❌ Tag is not from prod branch - skipping deployment"
+            echo "❌ Tag is not from prod-test branch - skipping deployment"
           fi
 
       - name: Would Deploy
