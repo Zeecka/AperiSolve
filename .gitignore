@@ -1,7 +1,7 @@
-# Python
 .env
 .venv/
-__pycache__/
 .mypy_cache/
+.vscode/
+__pycache__/
 results/
-.vscode
+removed_images/

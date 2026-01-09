@@ -224,11 +224,235 @@ async function fetchImageInfo(submission_hash) {
     infoData.size
   )}</td></tr>`;
   tableInfos.innerHTML += `<tr><td><i class="fa fa-upload"></i> Upload count:</td><td>${infoData.upload_count}</td></tr>`;
-  if (Array.isArray(infoData.passwords)) {
-    const passwordList = infoData.passwords
-      .map((pwd) => `<code>${escapeHtml(pwd)}</code>`)
-      .join(", ");
-    tableInfos.innerHTML += `<tr><td><i class="fa fa-key"></i> Common password(s):</td><td>${passwordList}</td></tr>`;
+  if (Array.isArray(infoData.passwords) && infoData.passwords.length > 0) {
+    await displayPasswordsWithRemoval(tableInfos, infoData.passwords, submission_hash, infoData);
+  }
+
+  // Fetch removal status and update removal UI
+  await updateRemovalUI(submission_hash, infoData);
+}
+
+async function displayPasswordsWithRemoval(tableInfos, passwords, submission_hash, infoData) {
+  const tr = document.createElement("tr");
+  const tdLabel = document.createElement("td");
+  const tdContent = document.createElement("td");
+
+  tdLabel.innerHTML = '<i class="fa fa-key"></i> Common password(s):';
+  tr.appendChild(tdLabel);
+  tr.appendChild(tdContent);
+  tableInfos.appendChild(tr);
+
+  // Clear existing password timer if any
+  if (passwordTimerIntervals[submission_hash]) {
+    clearInterval(passwordTimerIntervals[submission_hash]);
+    delete passwordTimerIntervals[submission_hash];
+  }
+
+  const uploadTime = infoData.submission_date * 1000;
+  const currentTime = new Date().getTime();
+  const ageSeconds = Math.floor((currentTime - uploadTime) / 1000);
+  const REMOVAL_MIN_AGE_SECONDS = infoData.removal_min_age_seconds || 300;
+
+  for (const pwd of passwords) {
+    const passwordSpan = document.createElement("span");
+    passwordSpan.className = "password-item";
+    passwordSpan.innerHTML = `<code>${escapeHtml(pwd)}</code>`;
+
+    // Check if this password can be removed
+    const canRemove = ageSeconds >= REMOVAL_MIN_AGE_SECONDS;
+
+    if (canRemove) {
+      const deleteIcon = document.createElement("i");
+      deleteIcon.className = "fas fa-times password-delete-icon";
+      deleteIcon.title = "Remove password";
+      deleteIcon.dataset.submissionHash = submission_hash;
+      deleteIcon.dataset.password = pwd;
+      deleteIcon.style.cursor = "pointer";
+      deleteIcon.style.marginLeft = "5px";
+      deleteIcon.style.color = "#ff4d4d";
+
+      deleteIcon.addEventListener("click", async function() {
+        await handlePasswordRemoval(submission_hash, deleteIcon);
+      });
+
+      passwordSpan.appendChild(deleteIcon);
+    }
+
+    tdContent.appendChild(passwordSpan);
+    tdContent.appendChild(document.createTextNode(" "));
+  }
+
+  // Set up timer to refresh when passwords become eligible for removal
+  if (ageSeconds < REMOVAL_MIN_AGE_SECONDS) {
+    const remainingSeconds = REMOVAL_MIN_AGE_SECONDS - ageSeconds;
+    passwordTimerIntervals[submission_hash] = setInterval(async () => {
+      const newUploadTime = infoData.submission_date * 1000;
+      const newCurrentTime = new Date().getTime();
+      const newAgeSeconds = Math.floor((newCurrentTime - newUploadTime) / 1000);
+
+      if (newAgeSeconds >= REMOVAL_MIN_AGE_SECONDS) {
+        // Time has elapsed, refresh the password display
+        clearInterval(passwordTimerIntervals[submission_hash]);
+        delete passwordTimerIntervals[submission_hash];
+
+        // Re-fetch info and refresh display
+        const infoResp = await fetch(`/infos/${submission_hash}`);
+        const newInfoData = await infoResp.json();
+
+        // Clear and rebuild password row
+        tr.remove();
+        await displayPasswordsWithRemoval(tableInfos, newInfoData.passwords, submission_hash, newInfoData);
+      }
+    }, Math.min(remainingSeconds * 1000, 1000)); // Check every second or at the exact time
+  }
+}
+
+async function checkPasswordRemovalEligibility(submission_hash, password, infoData) {
+  try {
+    // Check age constraint using submission date, not first_submission_date
+    const uploadTime = infoData.submission_date * 1000; // Convert to milliseconds
+    const currentTime = new Date().getTime();
+    const ageSeconds = Math.floor((currentTime - uploadTime) / 1000);
+    const REMOVAL_MIN_AGE_SECONDS = infoData.removal_min_age_seconds || 300;
+
+    if (ageSeconds < REMOVAL_MIN_AGE_SECONDS) {
+      return false;
+    }
+    return true;
+  } catch (error) {
+    console.error("Error checking password removal eligibility:", error);
+    return false;
+  }
+}
+
+async function handlePasswordRemoval(submission_hash, iconElement) {
+  try {
+    iconElement.style.pointerEvents = "none";
+    iconElement.style.opacity = "0.5";
+
+    const response = await fetch(`/remove_password/${submission_hash}`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+    });
+
+    if (response.ok) {
+      // Remove the password item from display
+      const passwordSpan = iconElement.closest(".password-item");
+      if (passwordSpan) {
+        passwordSpan.style.transition = "opacity 0.3s";
+        passwordSpan.style.opacity = "0";
+        setTimeout(() => passwordSpan.remove(), 300);
+      }
+    } else {
+      // Silently fail - just re-enable the icon
+      iconElement.style.pointerEvents = "auto";
+      iconElement.style.opacity = "1";
+    }
+  } catch (error) {
+    console.error("Password removal error:", error);
+    iconElement.style.pointerEvents = "auto";
+    iconElement.style.opacity = "1";
+  }
+}
+
+/**
+ * Image removal functionality
+ */
+
+let removalTimerIntervals = {};
+let passwordTimerIntervals = {};
+
+async function updateRemovalUI(submission_hash, infoData) {
+  const resultRemovalDiv = document.getElementById("result-removal");
+  resultRemovalDiv.innerHTML = "";
+
+  try {
+
+    // Extract upload timestamp from first_submission_date
+    const uploadTime = new Date(infoData.first_submission_date).getTime();
+    const currentTime = new Date().getTime();
+    const ageSeconds = Math.floor((currentTime - uploadTime) / 1000);
+    const REMOVAL_MIN_AGE_SECONDS = infoData.removal_min_age_seconds || 300;
+
+    const removalContainer = document.createElement("div");
+    removalContainer.className = "card removal-card";
+    resultRemovalDiv.appendChild(removalContainer);
+
+    if (ageSeconds < REMOVAL_MIN_AGE_SECONDS) {
+      const remainingSeconds = REMOVAL_MIN_AGE_SECONDS - ageSeconds;
+      removalContainer.innerHTML = `
+        <h3><i class="fa fa-trash"></i> Remove Image</h3>
+        <p>Available in <span id="removal-countdown">${remainingSeconds}</span> seconds</p>
+        <button class="btn btn-primary" disabled id="remove-btn">Remove Image</button>
+      `;
+
+      // Clear existing interval if any
+      if (removalTimerIntervals[submission_hash]) {
+        clearInterval(removalTimerIntervals[submission_hash]);
+      }
+
+      // Start countdown timer
+      removalTimerIntervals[submission_hash] = setInterval(() => {
+        const countdownEl = document.getElementById("removal-countdown");
+        if (countdownEl) {
+          const current = parseInt(countdownEl.textContent);
+          if (current > 1) {
+            countdownEl.textContent = current - 1;
+          } else {
+            clearInterval(removalTimerIntervals[submission_hash]);
+            updateRemovalUI(submission_hash, infoData);
+          }
+        }
+      }, 1000);
+    } else {
+      // Check for multiple IPs - we'll do this by attempting removal
+      removalContainer.innerHTML = `
+        <h3><i class="fa fa-trash"></i> Remove Image</h3>
+        <button class="btn btn-primary" id="remove-btn">Remove Image</button>
+        <p id="removal-status"></p>
+      `;
+
+      const removeBtn = document.getElementById("remove-btn");
+      removeBtn.addEventListener("click", async () => {
+        removeBtn.disabled = true;
+        const statusEl = document.getElementById("removal-status");
+
+        try {
+          const response = await fetch(`/remove/${submission_hash}`, {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+          });
+
+          const data = await response.json();
+
+          if (response.ok) {
+            statusEl.innerHTML = `<span class="text-success"><i class="fa fa-check"></i> Image successfully removed</span>`;
+            removeBtn.style.display = "none";
+            setTimeout(() => { document.location = '/'; }, 2000);
+          } else if (response.status === 403) {
+            if (data.error.includes("multiple IP")) {
+              statusEl.innerHTML = `<span class="text-danger"><i class="fa fa-warning"></i> ${escapeHtml(data.error)}</span>`;
+            } else {
+              statusEl.innerHTML = `<span class="text-danger"><i class="fa fa-warning"></i> ${escapeHtml(data.error)}</span>`;
+            }
+            removeBtn.disabled = false;
+          } else {
+            statusEl.innerHTML = `<span class="text-danger"><i class="fa fa-exclamation-circle"></i> Error: ${escapeHtml(data.error)}</span>`;
+            removeBtn.disabled = false;
+          }
+        } catch (error) {
+          statusEl.innerHTML = `<span class="text-danger"><i class="fa fa-exclamation-circle"></i> Network error occurred</span>`;
+          removeBtn.disabled = false;
+          console.error("Removal error:", error);
+        }
+      });
+    }
+  } catch (error) {
+    console.error("Error updating removal UI:", error);
   }
 }
 
