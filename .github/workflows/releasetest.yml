@@ -1,0 +1,43 @@
+name: Test Deploy Logic
+
+on:
+  push:
+    tags:
+      - '*'
+
+jobs:
+  test-deploy-check:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Check if tag is from prod branch
+        id: check
+        run: |
+          TAG_REF="${GITHUB_REF#refs/tags/}"
+          echo "Tag: $TAG_REF"
+          echo "GITHUB_SHA: $GITHUB_SHA"
+
+          # Get branches containing this commit
+          BRANCHES=$(git branch -r --contains HEAD)
+          echo "Branches containing this commit: $BRANCHES"
+
+          if echo "$BRANCHES" | grep -q "origin/prod"; then
+            echo "is_prod=true" >> $GITHUB_OUTPUT
+            echo "✅ Tag is from prod branch - will deploy"
+          else
+            echo "is_prod=false" >> $GITHUB_OUTPUT
+            echo "❌ Tag is not from prod branch - skipping deployment"
+          fi
+
+      - name: Would Deploy
+        if: steps.check.outputs.is_prod == 'true'
+        run: echo "🚀 DEPLOYMENT WOULD HAPPEN HERE"
+
+      - name: Would Skip
+        if: steps.check.outputs.is_prod != 'true'
+        run: echo "⏭️ DEPLOYMENT SKIPPED"
