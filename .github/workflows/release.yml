@@ -134,22 +134,22 @@ jobs:
             MAX_STORE_TIME=${{ vars.MAX_STORE_TIME }}
             CLEAR_AT_RESTART=${{ vars.CLEAR_AT_RESTART }}
             SKIP_IHDR_FILL=${{ vars.SKIP_IHDR_FILL }}
+            REMOVAL_MIN_AGE_SECONDS=${{ vars.REMOVAL_MIN_AGE_SECONDS }}
 
             FLASK_DEBUG=${{ vars.FLASK_DEBUG }}
-            FLASK_ENV=${{ vars.FLASK_ENV }}
 
-            RQ_DASHBOARD_REDIS_URL=${{ secrets.REDIS_URL }}
+            RQ_DASHBOARD_REDIS_URL=${{ vars.REDIS_URL }}
 
+            POSTGRES_DB=${{ secrets.POSTGRES_DB }}
             POSTGRES_USER=${{ secrets.POSTGRES_USER }}
             POSTGRES_PASSWORD=${{ secrets.POSTGRES_PASSWORD }}
-            POSTGRES_DB=${{ secrets.POSTGRES_DB }}
             DB_URI=${{ secrets.DATABASE_URL }}
 
             SENTRY_DSN=${{ secrets.SENTRY_DSN }}
-            SENTRY_TRACES_SAMPLE_RATE=${{ secrets.SENTRY_TRACES_SAMPLE_RATE }}
-            SENTRY_PROFILES_SAMPLE_RATE=${{ secrets.SENTRY_PROFILES_SAMPLE_RATE }}
-            SENTRY_RELEASE=${{ secrets.SENTRY_RELEASE }}
-            SENTRY_ENVIRONMENT=${{ secrets.SENTRY_ENVIRONMENT }}
+            SENTRY_TRACES_SAMPLE_RATE=${{ vars.SENTRY_TRACES_SAMPLE_RATE }}
+            SENTRY_PROFILES_SAMPLE_RATE=${{ vars.SENTRY_PROFILES_SAMPLE_RATE }}
+            SENTRY_RELEASE=${{ vars.SENTRY_RELEASE }}
+            SENTRY_ENVIRONMENT=${{ vars.SENTRY_ENVIRONMENT }}
             EOF
 
             # Pull images and deploy
