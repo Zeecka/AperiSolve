@@ -1,14 +1,13 @@
 # Aperi'Solve
 
 [![Website](https://img.shields.io/website?url=https%3A%2F%2Faperisolve.com)](https://aperisolve.com/)
-![License](https://img.shields.io/github/license/Zeecka/AperiSolve)
+![CI](https://github.com/Zeecka/AperiSolve/actions/workflows/release.yml/badge.svg)
+![Lint](https://github.com/Zeecka/AperiSolve/actions/workflows/lint.yml/badge.svg)
 ![Docker](https://img.shields.io/badge/docker-compose-blue?logo=docker)
 ![Python Version](https://img.shields.io/badge/python-3.12%2B-blue)
-![Lint](https://github.com/Zeecka/AperiSolve/actions/workflows/lint.yml/badge.svg)
 ![Black Code Style](https://img.shields.io/badge/code%20style-black-000000.svg)
-![CI](https://github.com/Zeecka/AperiSolve/actions/workflows/release.yml/badge.svg)
-![GitHub Stars](https://img.shields.io/github/stars/Zeecka/AperiSolve?style=social)
-![GitHub Forks](https://img.shields.io/github/forks/Zeecka/AperiSolve?style=social)
+
+![License](https://img.shields.io/github/license/Zeecka/AperiSolve)
 ![GitHub Issues](https://img.shields.io/github/issues/Zeecka/AperiSolve)
 ![GitHub Pull Requests](https://img.shields.io/github/issues-pr/Zeecka/AperiSolve)
 ![Last Commit](https://img.shields.io/github/last-commit/Zeecka/AperiSolve)
