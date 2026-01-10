@@ -1,6 +1,6 @@
 services:
   web:
-    #image: ghcr.io/zeecka/aperisolve:latest
+    #image: ghcr.io/zeecka/aperisolve:prod
     build: .
     container_name: aperisolve-web
     restart: always
@@ -22,7 +22,7 @@ services:
       - .env.example
 
   worker:
-    #image: ghcr.io/zeecka/aperisolve:latest
+    #image: ghcr.io/zeecka/aperisolve:prod
     build: .
     container_name: aperisolve-worker
     restart: always
@@ -40,6 +40,7 @@ services:
       - .env.example
 
   initdb:
+    #image: ghcr.io/zeecka/aperisolve:prod
     build: .
     container_name: aperisolve-initdb
     command: python -m aperisolve.utils.init_db
