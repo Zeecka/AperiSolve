@@ -22,8 +22,8 @@ from sqlalchemy import (
     String,
 )
 
-from aperisolve.config import MAX_PENDING_TIME, MAX_STORE_TIME, RESULT_FOLDER
-from aperisolve.utils.utils import get_resolutions, get_valid_depth_color_pairs
+from .config import MAX_PENDING_TIME, MAX_STORE_TIME, RESULT_FOLDER
+from .utils.utils import get_resolutions, get_valid_depth_color_pairs
 
 db: SQLAlchemy = SQLAlchemy()
 
