@@ -427,6 +427,11 @@ def create_app() -> Flask:
 
         return send_file(output_file, as_attachment=True)
 
+    @app.route("/ads.txt")
+    def google_ads() -> str:
+        """Google Ads required file"""
+        return "google.com, pub-2324718887045017, DIRECT, f08c47fec0942fa0"
+
     return app
 
 
