@@ -138,7 +138,7 @@ jobs:
 
             FLASK_DEBUG=${{ vars.FLASK_DEBUG }}
 
-            RQ_DASHBOARD_REDIS_URL=${{ vars.REDIS_URL }}
+            RQ_DASHBOARD_REDIS_URL=${{ vars.RQ_DASHBOARD_REDIS_URL }}
 
             POSTGRES_DB=${{ secrets.POSTGRES_DB }}
             POSTGRES_USER=${{ secrets.POSTGRES_USER }}
@@ -154,6 +154,6 @@ jobs:
 
             # Pull images and deploy
             docker compose pull
-            docker compose down
+            docker compose down -v
             docker compose up -d
             docker image prune -f
