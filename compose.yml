@@ -5,7 +5,7 @@ services:
     container_name: aperisolve-web
     restart: always
     ports:
-      - "5000:5000"
+      - "${WEB_APP_PORT:-5000}:5000"
     volumes:
       - apresults:/app/aperisolve/results
     depends_on:

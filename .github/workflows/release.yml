@@ -129,6 +129,8 @@ jobs:
 
             # create .env
             cat <<EOF > .env
+            WEB_APP_PORT=${{ vars.WEB_APP_PORT }}
+
             MAX_CONTENT_LENGTH=${{ vars.MAX_CONTENT_LENGTH }}
             MAX_PENDING_TIME=${{ vars.MAX_PENDING_TIME }}
             MAX_STORE_TIME=${{ vars.MAX_STORE_TIME }}
