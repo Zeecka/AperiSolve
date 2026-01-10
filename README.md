@@ -1,9 +1,16 @@
 # Aperi'Solve
 
+[![Website](https://img.shields.io/website?url=https%3A%2F%2Faperisolve.com)](https://aperisolve.com/)
 ![CI](https://github.com/Zeecka/AperiSolve/actions/workflows/release.yml/badge.svg)
 ![Lint](https://github.com/Zeecka/AperiSolve/actions/workflows/lint.yml/badge.svg)
+![Docker](https://img.shields.io/badge/docker-compose-blue?logo=docker)
+![Python Version](https://img.shields.io/badge/python-3.12%2B-blue)
 ![Black Code Style](https://img.shields.io/badge/code%20style-black-000000.svg)
-[![Website](https://img.shields.io/website?url=https%3A%2F%2Faperisolve.com)](https://aperisolve.com/)
+![License](https://img.shields.io/github/license/Zeecka/AperiSolve)
+![GitHub Issues](https://img.shields.io/github/issues/Zeecka/AperiSolve)
+![GitHub Pull Requests](https://img.shields.io/github/issues-pr/Zeecka/AperiSolve)
+![Last Commit](https://img.shields.io/github/last-commit/Zeecka/AperiSolve)
+![Contributors](https://img.shields.io/github/contributors/Zeecka/AperiSolve)
 [![Rawsec's CyberSecurity Inventory](https://inventory.raw.pm/img/badges/Rawsec-inventoried-FF5050_flat.svg)](https://inventory.raw.pm/tools.html#Aperi'Solve)
 
 <p align="center">

@@ -69,7 +69,9 @@ This project enforces:
 - **Pylint** : ignoring W0511, W0718, R0801, R0903, R0914
 - **Mypy** : ignoring unused-awaitable
 
-See [.pre-commit-config.yaml](.pre-commit-config.yaml) for the exact configuration.
+> [!TIP]
+> All tool configurations (Black, Isort, Flake8, Mypy, Pylint) are centralized in pyproject.toml.
+> You can run each tool directly and it will automatically pick up the configuration.
 
 ### Setup
 
@@ -79,33 +81,93 @@ See [.pre-commit-config.yaml](.pre-commit-config.yaml) for the exact configurati
 ```bash
 # Create & activate a virtual environment
 python3 -m venv .venv
-source .venv/bin/activate  # Linux/macOS
-# .venv\Scripts\activate    # Windows
+source .venv/bin/activate
 
-# Install dev dependencies
-pip install -r aperisolve/requirements-dev.txt
+# Install dependencies
 pip install -r aperisolve/requirements.txt
+pip install -r aperisolve/requirements-dev.txt
 ```
 
 ### Running Tools Manually
 
-Install pre-commit hooks to automatically check your code before commits:
+**Option 1 - Bash script (no pre-commit file needed)**
+
+Run this script [lint.sh](lint.sh) at the project root folder.
+
+```
+🖤 Running Black...
+All done! ✨ 🍰 ✨
+25 files left unchanged.
+📦 Running Isort...
+Skipped 2 files
+🐍 Running Flake8...
+🔍 Running Mypy...
+Success: no issues found in 25 source files
+⚡ Running Pylint...
+
+------------------------------------
+Your code has been rated at 10.00/10
+
+✅ All checks passed!
+```
+
+**Option 2 - Pre-Commit hook**
+
+Create a pre-commit hooks file [.pre-commit-config.yaml](#) at the project root folder.
+
+```bash
+repos:
+- repo: https://github.com/psf/black
+  rev: 25.12.0
+  hooks:
+  - id: black
+    args: ['--line-length', '100']
+- repo: https://github.com/pycqa/isort
+  rev: 7.0.0
+  hooks:
+  - id: isort
+    args: ['--profile', 'black']
+- repo: https://github.com/PyCQA/flake8
+  rev: 7.3.0
+  hooks:
+  - id: flake8
+    args: ['--extend-ignore','E203,E501,W503']
+- repo: https://github.com/pylint-dev/pylint
+  rev: v4.0.4
+  hooks:
+  - id: pylint
+    args: ['--disable', 'W0511,W0718,R0801,R0903,R0914']
+    language: system
+- repo: local
+  hooks:
+    - id: mypy
+      name: mypy
+      entry: mypy
+      types: [python]
+      language: system
+      pass_filenames: true
+      args:
+        [
+          "--disallow-any-generics",
+          "--disallow-untyped-def",
+          "--follow-imports",
+          "skip",
+          "--ignore-missing-imports",
+          "--disable-error-code",
+          "unused-awaitable",
+        ]
+```
+
+Then run the following command so each staged files will be checked while commited.
 
 ```bash
 pre-commit install
 ```
 
-Check for issues:
+You can also do a manual pass on all files before commiting:
 
 ```bash
 pre-commit run --all-files
-```
-
-Format code:
-
-```bash
-black . --line-length 100
-isort . --profile black
 ```
 
 > [!NOTE]
