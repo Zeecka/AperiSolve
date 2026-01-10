@@ -6,7 +6,6 @@
 ![Docker](https://img.shields.io/badge/docker-compose-blue?logo=docker)
 ![Python Version](https://img.shields.io/badge/python-3.12%2B-blue)
 ![Black Code Style](https://img.shields.io/badge/code%20style-black-000000.svg)
-
 ![License](https://img.shields.io/github/license/Zeecka/AperiSolve)
 ![GitHub Issues](https://img.shields.io/github/issues/Zeecka/AperiSolve)
 ![GitHub Pull Requests](https://img.shields.io/github/issues-pr/Zeecka/AperiSolve)
