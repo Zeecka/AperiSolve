@@ -13,8 +13,16 @@ jobs:
     - name: Get release version
       run: echo "RELEASE_VERSION=${GITHUB_REF#refs/tags/}" >> $GITHUB_ENV
 
-    - name: Downcase username
-      run: echo "lower_actor=${GITHUB_ACTOR,,}" >> $GITHUB_ENV
+    - name: Determine tag type (prod vs main)
+      id: tag_type
+      run: |
+        if [[ "${{ env.RELEASE_VERSION }}" == *"-prod"* ]]; then
+          echo "is_prod_tag=true" >> $GITHUB_OUTPUT
+          echo "📦 Prod tag detected - will push :latest-prod"
+        else
+          echo "is_prod_tag=false" >> $GITHUB_OUTPUT
+          echo "📦 Main tag detected - will push :latest"
+        fi
 
     - name: Checkout
       uses: actions/checkout@v4
@@ -32,11 +40,120 @@ jobs:
         username: ${{ github.actor }}
         password: ${{ secrets.GITHUB_TOKEN }}
 
-    - name: Build and push Docker images
+    # Build and push for PROD tags (X.X.X-prod)
+    - name: Build and push Docker images (prod)
+      if: steps.tag_type.outputs.is_prod_tag == 'true'
       uses: docker/build-push-action@v6.9.0
       with:
         context: ./
         push: true
         tags: |
-          ghcr.io/${{ env.lower_actor }}/aperisolve:${{ env.RELEASE_VERSION }}
-          ghcr.io/${{ env.lower_actor }}/aperisolve:latest-prod
+          ghcr.io/zeecka/aperisolve:${{ env.RELEASE_VERSION }}
+          ghcr.io/zeecka/aperisolve:prod
+
+    # Build and push for MAIN tags (X.X.X)
+    - name: Build and push Docker images (main)
+      if: steps.tag_type.outputs.is_prod_tag == 'false'
+      uses: docker/build-push-action@v6.9.0
+      with:
+        context: ./
+        push: true
+        tags: |
+          ghcr.io/zeecka/aperisolve:${{ env.RELEASE_VERSION }}
+          ghcr.io/zeecka/aperisolve:latest
+
+  deploy:
+    runs-on: ubuntu-latest
+    needs: docker-releases
+    environment: prod
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Check if tag is from prod branch
+        id: check
+        run: |
+          TAG_REF="${GITHUB_REF#refs/tags/}"
+          echo "Tag: $TAG_REF"
+          echo "Commit SHA: $GITHUB_SHA"
+
+          # Get branches containing this commit
+          BRANCHES=$(git branch -r --contains HEAD)
+          echo "Branches containing this commit: $BRANCHES"
+
+          # Check if commit is on prod branch
+          if echo "$BRANCHES" | grep -q "origin/prod"; then
+            # Additional check: ensure this commit is at the HEAD of prod
+            # This prevents deployment if the same commit exists on multiple branches
+            PROD_HEAD=$(git rev-parse origin/prod)
+            TAG_COMMIT=$(git rev-parse HEAD)
+
+            echo "Prod HEAD: $PROD_HEAD"
+            echo "Tag commit: $TAG_COMMIT"
+
+            if [ "$PROD_HEAD" = "$TAG_COMMIT" ]; then
+              echo "is_prod=true" >> $GITHUB_OUTPUT
+              echo "✅ Tag is at prod branch HEAD - will deploy"
+            else
+              echo "is_prod=false" >> $GITHUB_OUTPUT
+              echo "⚠️ Commit is on prod but not at HEAD - skipping deployment"
+            fi
+          else
+            echo "is_prod=false" >> $GITHUB_OUTPUT
+            echo "❌ Tag is not from prod branch - skipping deployment"
+          fi
+
+      # wait for 120 seconds
+      - name: Wait for image propagation
+        if: steps.check.outputs.is_prod == 'true'
+        run: |
+          echo "Waiting 120 seconds for image to propagate in registry..."
+          sleep 120
+
+      - name: Deploy to production server
+        if: steps.check.outputs.is_prod == 'true'
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.PROD_SSH_HOST }}
+          username: ${{ secrets.PROD_SSH_USER }}
+          key: ${{ secrets.PROD_SSH_KEY }}
+          script: |
+            set -e
+            cd /root/AperiSolve
+
+            # update code
+            git pull
+
+            # create .env
+            cat <<EOF > .env
+            MAX_CONTENT_LENGTH=${{ vars.MAX_CONTENT_LENGTH }}
+            MAX_PENDING_TIME=${{ vars.MAX_PENDING_TIME }}
+            MAX_STORE_TIME=${{ vars.MAX_STORE_TIME }}
+            CLEAR_AT_RESTART=${{ vars.CLEAR_AT_RESTART }}
+            SKIP_IHDR_FILL=${{ vars.SKIP_IHDR_FILL }}
+
+            FLASK_DEBUG=${{ vars.FLASK_DEBUG }}
+            FLASK_ENV=${{ vars.FLASK_ENV }}
+
+            RQ_DASHBOARD_REDIS_URL=${{ secrets.REDIS_URL }}
+
+            POSTGRES_USER=${{ secrets.POSTGRES_USER }}
+            POSTGRES_PASSWORD=${{ secrets.POSTGRES_PASSWORD }}
+            POSTGRES_DB=${{ secrets.POSTGRES_DB }}
+            DB_URI=${{ secrets.DATABASE_URL }}
+
+            SENTRY_DSN=${{ secrets.SENTRY_DSN }}
+            SENTRY_TRACES_SAMPLE_RATE=${{ secrets.SENTRY_TRACES_SAMPLE_RATE }}
+            SENTRY_PROFILES_SAMPLE_RATE=${{ secrets.SENTRY_PROFILES_SAMPLE_RATE }}
+            SENTRY_RELEASE=${{ secrets.SENTRY_RELEASE }}
+            SENTRY_ENVIRONMENT=${{ secrets.SENTRY_ENVIRONMENT }}
+            EOF
+
+            # Pull images and deploy
+            docker compose pull
+            docker compose down
+            docker compose up -d
+            docker image prune -f

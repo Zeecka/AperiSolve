@@ -60,41 +60,119 @@ Contributions to the web interface are welcome:
 ## Code Style & Quality
 
 > [!IMPORTANT]
-> Please follow the code style and run linters before submitting.
+> Follow the project’s code style and run linters before submitting any code.
 
-The project adheres to:
-
-- **Black** (line length 100)
-- **Isort** (profile black)
-- **Flake8** (ignoring E203, E501, W503)
-- **Pylint** (ignoring W0718, R0903, R0801)
-- **Mypy** (ignoring unused-awaitable)
-
-See [.pre-commit-config.yaml](.pre-commit-config.yaml) for exact configuration.
-
-### Running Linters Locally
+This project enforces:
+- **Black** : line length 100
+- **Isort** : profile black
+- **Flake8** : ignoring E203, E501, W503
+- **Pylint** : ignoring W0511, W0718, R0801, R0903, R0914
+- **Mypy** : ignoring unused-awaitable
 
 > [!TIP]
-> Install pre-commit hooks to automatically check your code before commits:
-> ```bash
-> pip install pre-commit
-> pre-commit install
-> ```
+> All tool configurations (Black, Isort, Flake8, Mypy, Pylint) are centralized in pyproject.toml.
+> You can run each tool directly and it will automatically pick up the configuration.
 
-**Manual checks:**
+### Setup
+
+> [!TIP]
+> Use a virtual environment and install development dependencies:
+
 ```bash
-# Format code
-black . --line-length 100
-isort . --profile black
+# Create & activate a virtual environment
+python3 -m venv .venv
+source .venv/bin/activate
 
-# Check for issues
-flake8 .
-pylint **/*.py
-mypy .
+# Install dependencies
+pip install -r aperisolve/requirements.txt
+pip install -r aperisolve/requirements-dev.txt
+```
+
+### Running Tools Manually
+
+**Option 1 - Bash script (no pre-commit file needed)**
+
+Run this script [lint.sh](lint.sh) at the project root folder.
+
+```
+🖤 Running Black...
+All done! ✨ 🍰 ✨
+25 files left unchanged.
+📦 Running Isort...
+Skipped 2 files
+🐍 Running Flake8...
+🔍 Running Mypy...
+Success: no issues found in 25 source files
+⚡ Running Pylint...
+
+------------------------------------
+Your code has been rated at 10.00/10
+
+✅ All checks passed!
+```
+
+**Option 2 - Pre-Commit hook**
+
+Create a pre-commit hooks file [.pre-commit-config.yaml](#) at the project root folder.
+
+```bash
+repos:
+- repo: https://github.com/psf/black
+  rev: 25.12.0
+  hooks:
+  - id: black
+    args: ['--line-length', '100']
+- repo: https://github.com/pycqa/isort
+  rev: 7.0.0
+  hooks:
+  - id: isort
+    args: ['--profile', 'black']
+- repo: https://github.com/PyCQA/flake8
+  rev: 7.3.0
+  hooks:
+  - id: flake8
+    args: ['--extend-ignore','E203,E501,W503']
+- repo: https://github.com/pylint-dev/pylint
+  rev: v4.0.4
+  hooks:
+  - id: pylint
+    args: ['--disable', 'W0511,W0718,R0801,R0903,R0914']
+    language: system
+- repo: local
+  hooks:
+    - id: mypy
+      name: mypy
+      entry: mypy
+      types: [python]
+      language: system
+      pass_filenames: true
+      args:
+        [
+          "--disallow-any-generics",
+          "--disallow-untyped-def",
+          "--follow-imports",
+          "skip",
+          "--ignore-missing-imports",
+          "--disable-error-code",
+          "unused-awaitable",
+        ]
+```
+
+Then run the following command so each staged files will be checked while commited.
+
+```bash
+pre-commit install
+```
+
+You can also do a manual pass on all files before commiting:
+
+```bash
+pre-commit run --all-files
 ```
 
 > [!NOTE]
-> CI will automatically run these checks on every PR. Make sure they pass!
+> Continuous Integration (CI) runs all checks on every PR. Ensure your code passes before submitting.
+
 
 ## Pull Request Guidelines
 
@@ -148,10 +226,10 @@ docker exec -it aperisolve-web bash
 docker exec -it postgres psql -U aperiuser -d aperisolve
 
 # Backup all uploaded files
-docker cp -r aperisolve-web:/aperisolve/results /path/to/backup/location
+docker cp -r aperisolve-web:/app/aperisolve/results /path/to/backup/location
 
 # Backup a single uploaded file
-docker cp aperisolve-web:/aperisolve/results/filename.ext /path/to/backup/filename.ext
+docker cp aperisolve-web:/app/aperisolve/results/filename.ext /path/to/backup/filename.ext
 ```
 
 > [!WARNING]
