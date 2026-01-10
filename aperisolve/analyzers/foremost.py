@@ -22,7 +22,7 @@ class ForemostAnalyzer(SubprocessAnalyzer):
     def process_output(self, stdout: str, stderr: str) -> str | list[str] | dict[str, str]:
         """Process the stdout/stderr."""
         if "Processing" in stderr and "|*|" in stderr:
-            return stderr.strip().split("\n")
+            return stderr.strip().replace("\n", "")
         return []
 
 

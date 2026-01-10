@@ -1,5 +1,6 @@
 const TOOL_ORDER = [
   "decomposer",
+  "file",
   "exiftool",
   "binwalk",
   "foremost",
@@ -9,7 +10,7 @@ const TOOL_ORDER = [
   "steghide",
   "openstego",
   "zsteg",
-  "strings",
+  "strings"
 ];
 
 function escapeHtml(text) {

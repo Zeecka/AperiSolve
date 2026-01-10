@@ -146,6 +146,7 @@ And also in `aperisolve.js` in the `TOOL_ORDER` constant:
 ```js
 const TOOL_ORDER = [
   "decomposer",
+  "file",
   "exiftool",
   "binwalk",
   "mytool"  // My new tool
@@ -157,7 +158,6 @@ const TOOL_ORDER = [
   "openstego",
   "zsteg",
   "strings",
-  "image_resize",
 ];
 ```
 
