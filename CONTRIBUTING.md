@@ -251,10 +251,16 @@ RUN apt-get update && apt-get install -y \
 
 Or for tools requiring compilation:
 ```dockerfile
-RUN git clone https://github.com/tool/repo.git /tmp/tool && \
-    cd /tmp/tool && \
-    make && make install && \
-    rm -rf /tmp/tool
+# Builder stage example (jphide)
+RUN git clone https://github.com/h3xx/jphs.git /tmp/jphs && \
+    cd /tmp/jphs && \
+    make && \
+    cp jphide jpseek /usr/local/bin/ && \
+    rm -rf /tmp/jphs
+
+# Runtime stage - copy compiled binaries
+COPY --from=builder /usr/local/bin/jphide /usr/local/bin/jphide
+COPY --from=builder /usr/local/bin/jpseek /usr/local/bin/jpseek
 ```
 
 > [!NOTE]

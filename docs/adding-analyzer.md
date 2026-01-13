@@ -5,7 +5,7 @@ This guide shows you how to add a new image analysis tool to the system.
 ## Quick Start
 
 1. Create a new file in `analyzers/` from template file `template_analyzer.py`.
-2. Register it in `workers.py`, `config.py` and `aperisolve.js`.
+2. Register it in `workers.py`, `config.py` (if it extracts files) and `aperisolve.js`.
 
 ## Basic Template
 
@@ -24,7 +24,7 @@ def analyze_mytool(input_img: Path, output_dir: Path) -> None:
     analyzer.analyze()
 ```
 
-You can also see `template_analyzer.py`.
+You can also see `template_analyzer.py` or check real examples like `jpseek.py`, `steghide.py`, or `strings.py`.
 
 ## Common Scenarios
 
