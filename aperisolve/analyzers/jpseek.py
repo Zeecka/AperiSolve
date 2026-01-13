@@ -24,8 +24,8 @@ class JpseekAnalyzer(SubprocessAnalyzer):
             password = ""
         expect_cmd = (
             f"expect -c 'spawn {jpseek_cmd}; "
-            f"expect \"Passphrase:\"; "
-            f"send \"{password}\\r\"; "
+            f'expect "Passphrase:"; '
+            f'send "{password}\\r"; '
             f"expect eof'"
         )
         command = ["bash", "-c", expect_cmd]
