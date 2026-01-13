@@ -45,7 +45,8 @@ Aperi'Solve is an open-source steganalysis web platform that performs automated 
   - [steghide](https://steghide.sourceforge.net/) (extraction with password)
   - [strings](https://pubs.opengroup.org/onlinepubs/9799919799/utilities/strings.html)
   - [zsteg](https://github.com/zed-0xff/zsteg) (LSB text/data extraction)
-  - [file](https://www.darwinsys.com/file/) (MIME type and format detection)
+  - [file](https://manned.org/file.1) (MIME type and format detection)
+  - [jpseek](https://github.com/h3xx/jphs) (JPEG steganography detection and extraction)
 - Worker queue architecture for offloading heavy/slow analyzers (Redis + background workers).
 - Results stored for later browsing and download.
 

@@ -7,7 +7,7 @@ from os import getenv
 from pathlib import Path
 
 IMAGE_EXTENSIONS = [".png", ".jpg", ".jpeg", ".gif", ".bmp", ".webp", ".tiff"]
-WORKER_FILES = ["binwalk", "foremost", "steghide", "zsteg", "openstego", "pcrt"]
+WORKER_FILES = ["binwalk", "foremost", "steghide", "zsteg", "openstego", "pcrt", "jpseek"]
 
 RESULT_FOLDER = Path(__file__).parent.resolve() / "results"
 REMOVED_IMAGES_FOLDER = Path(__file__).parent.resolve() / "removed_images"

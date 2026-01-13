@@ -8,6 +8,7 @@ const TOOL_ORDER = [
   "pngcheck",
   "pcrt",
   "steghide",
+  "jpseek",
   "openstego",
   "zsteg",
   "strings"
