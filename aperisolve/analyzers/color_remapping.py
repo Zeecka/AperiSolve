@@ -1,5 +1,5 @@
 # flake8: noqa: E203,E501,W503
-# pylint: disable=C0413,W0718,R0903,R0801,W0612
+# pylint: disable=C0413,W0718,R0903,R0801,W0612,R0912
 # mypy: disable-error-code=unused-awaitable
 """Color Remapping Analyzer for Image Submissions."""
 
@@ -18,6 +18,44 @@ class ColorRemappingAnalyzer(SubprocessAnalyzer):
     def __init__(self, input_img: Path, output_dir: Path) -> None:
         super().__init__("color_remapping", input_img, output_dir)
 
+    def _normalize_image(self, img_np: np.ndarray) -> tuple[np.ndarray, int]:
+        """Normalize image to have RGB or RGBA channels.
+
+        Returns:
+            Tuple of (normalized image array, number of channels)
+        """
+        if len(img_np.shape) == 2:
+            channels = 1
+            img_np = np.expand_dims(img_np, axis=-1)
+        else:
+            channels = img_np.shape[2]
+
+        if channels < 3:
+            # Grayscale to RGB
+            img_np = np.repeat(img_np, 3, axis=2)
+            channels = 3
+        elif channels > 4:
+            # More than 4 channels, take first 3
+            img_np = img_np[..., :3]
+            channels = 3
+
+        return img_np, channels
+
+    def _create_remapped_image(self, img_np: np.ndarray, color_map: np.ndarray) -> Image.Image:
+        """Create a single remapped image using the color map."""
+        remapped = np.zeros_like(img_np)
+        for c in range(min(3, img_np.shape[2])):  # Apply to RGB channels
+            remapped[..., c] = color_map[img_np[..., c]]
+
+        # Keep alpha channel if present
+        if img_np.shape[2] == 4:
+            remapped[..., 3] = img_np[..., 3]
+            remapped_img = Image.fromarray(remapped.astype(np.uint8), mode="RGBA")
+        else:
+            remapped_img = Image.fromarray(remapped[..., :3].astype(np.uint8), mode="RGB")
+
+        return remapped_img
+
     def get_results(self, _: Optional[str] = None) -> dict[str, Any]:
         """Analyze an image submission using color remapping."""
         img = Image.open(self.input_img)
@@ -28,52 +66,15 @@ class ColorRemappingAnalyzer(SubprocessAnalyzer):
             converted = True
 
         img_np = np.array(img)
-
-        # Handle grayscale, RGB, RGBA, etc.
-        if len(img_np.shape) == 2:
-            channels = 1
-            img_np = np.expand_dims(img_np, axis=-1)
-        else:
-            channels = img_np.shape[2]
-
-        # Ensure we have at least 3 channels (RGB)
-        if channels < 3:
-            # Grayscale to RGB
-            if channels == 1:
-                img_np = np.repeat(img_np, 3, axis=2)
-            # Add alpha channel if needed
-            if channels == 3:
-                alpha = np.full((img_np.shape[0], img_np.shape[1], 1), 255, dtype=np.uint8)
-                img_np = np.concatenate([img_np, alpha], axis=2)
-        elif channels == 4:
-            # RGBA is fine
-            pass
-        else:
-            # More than 4 channels, take first 3
-            img_np = img_np[..., :3]
+        img_np, _ = self._normalize_image(img_np)
 
         image_json = []
 
         # Generate 8 random color remappings
         for i in range(8):
             # Create a random permutation of color values (0-255)
-            # For each original color value, map it to a new random value
             color_map = np.random.randint(0, 256, size=256, dtype=np.uint8)
-
-            # Apply the color remapping to each channel
-            remapped = np.zeros_like(img_np)
-            for c in range(min(3, channels)):  # Apply to RGB channels
-                remapped[..., c] = color_map[img_np[..., c]]
-
-            # Keep alpha channel if present
-            if channels == 4:
-                remapped[..., 3] = img_np[..., 3]
-
-            # Create the remapped image
-            if channels == 4:
-                remapped_img = Image.fromarray(remapped.astype(np.uint8), mode="RGBA")
-            else:
-                remapped_img = Image.fromarray(remapped[..., :3].astype(np.uint8), mode="RGB")
+            remapped_img = self._create_remapped_image(img_np, color_map)
 
             # Save the remapped image
             img_name = f"color_remapping_{i:02d}.png"
