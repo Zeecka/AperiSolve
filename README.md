@@ -34,10 +34,11 @@ Aperi'Solve is an open-source steganalysis web platform that performs automated 
 ## Key features
 
 - Visualize each bit layer (LSB and other layers) per image channel (R/G/B/Alpha).
-- Browse and download each bit-layer image.
+- Color remapping (random palette remaps with 8 generated variants)
 - Integrates and displays outputs from:
   - [binwalk](https://github.com/ReFirmLabs/binwalk) (embedded archives)
   - [exiftool](https://exiftool.org/) (metadata and geolocation)
+  - [GraphicsMagick identify](http://www.graphicsmagick.org/identify.html) (image info & properties)
   - [foremost](https://foremost.sourceforge.net/) (carved files)
   - [openstego](https://www.openstego.com/) (extraction with password)
   - [outguess](https://www.rbcafe.com/software/outguess/) (extraction with password)
@@ -49,6 +50,7 @@ Aperi'Solve is an open-source steganalysis web platform that performs automated 
   - [jpseek](https://github.com/h3xx/jphs) (JPEG steganography detection and extraction)
 - Worker queue architecture for offloading heavy/slow analyzers (Redis + background workers).
 - Results stored for later browsing and download.
+- Browse and download each generated images.
 
 ## Quick start (Docker)
 
@@ -99,4 +101,4 @@ Thanks to contributors:
 - [Philip Zimmermann](https://github.com/Philip-Zimmermann)
 
 Thanks to the open-source community:
-[binwalk](https://github.com/ReFirmLabs/binwalk), [exiftool](https://exiftool.org/), [foremost](https://foremost.sourceforge.net/), [openstego](https://www.openstego.com/), [outguess](https://www.rbcafe.com/software/outguess/), [pngcheck](https://www.libpng.org/pub/png/apps/pngcheck.html), [steghide](https://steghide.sourceforge.net/), [strings](https://pubs.opengroup.org/onlinepubs/9799919799/utilities/strings.html), [zsteg](https://github.com/zed-0xff/zsteg), ...
+[binwalk](https://github.com/ReFirmLabs/binwalk), [exiftool](https://exiftool.org/), [GraphicsMagick identify](http://www.graphicsmagick.org/identify.html), [foremost](https://foremost.sourceforge.net/), [openstego](https://www.openstego.com/), [outguess](https://www.rbcafe.com/software/outguess/), [pngcheck](https://www.libpng.org/pub/png/apps/pngcheck.html), [steghide](https://steghide.sourceforge.net/), [strings](https://pubs.opengroup.org/onlinepubs/9799919799/utilities/strings.html), [zsteg](https://github.com/zed-0xff/zsteg), ...
