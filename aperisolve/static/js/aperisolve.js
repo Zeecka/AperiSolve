@@ -521,10 +521,14 @@ function parseResult(result) {
           channels = ["Superimposed", "Red", "Green", "Blue"];
         }
 
+        let title_h3 = "";
         for (const channel of channels) {
           const images = result[tool]["images"][channel];
           if (images) {
-            analyzer.innerHTML += `<h3>${capitalize(escapeHtml(channel))}</h3>`;
+            title_h3 = capitalize(escapeHtml(channel));
+            if (title_h3 != "Color Remapping"){
+              analyzer.innerHTML += `<h3>${title_h3}</h3>`;
+            }
             for (const image of images) {
               analyzer.innerHTML += `<div class='results_img'><img src='${escapeHtml(
                 image
