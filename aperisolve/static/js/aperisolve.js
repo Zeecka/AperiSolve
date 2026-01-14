@@ -8,6 +8,7 @@ const TOOL_ORDER = [
   "outguess",
   "pngcheck",
   "pcrt",
+  "identify",
   "steghide",
   "jpseek",
   "openstego",

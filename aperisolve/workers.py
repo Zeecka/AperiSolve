@@ -19,6 +19,7 @@ from .analyzers.decomposer import analyze_decomposer
 from .analyzers.exiftool import analyze_exiftool
 from .analyzers.file import analyze_file
 from .analyzers.foremost import analyze_foremost
+from .analyzers.identify import analyze_identify
 from .analyzers.jpseek import analyze_jpseek
 from .analyzers.openstego import analyze_openstego
 from .analyzers.outguess import analyze_outguess
@@ -109,6 +110,7 @@ def analyze_image(submission_hash: str) -> None:
                 (analyze_exiftool, img_path, result_path),
                 (analyze_file, img_path, result_path),
                 (analyze_foremost, img_path, result_path),
+                (analyze_identify, img_path, result_path),
                 (analyze_jpseek, img_path, result_path, submission.password),
                 (analyze_openstego, img_path, result_path, submission.password),
                 (analyze_pngcheck, img_path, result_path),
