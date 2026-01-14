@@ -1,5 +1,6 @@
 const TOOL_ORDER = [
   "decomposer",
+  "color_remapping",
   "file",
   "exiftool",
   "binwalk",
@@ -515,18 +516,20 @@ function parseResult(result) {
         // Parse image output
         var channels = ["Superimposed", "Red", "Green", "Blue", "Alpha"];
         if (Object.keys(result[tool]["images"]).length == 1) {
-          channels = ["Grayscale"];
+          channels = Object.keys(result[tool]["images"]);
         } else if (Object.keys(result[tool]["images"]).length == 4) {
           channels = ["Superimposed", "Red", "Green", "Blue"];
         }
 
         for (const channel of channels) {
           const images = result[tool]["images"][channel];
-          analyzer.innerHTML += `<h3>${capitalize(escapeHtml(channel))}</h3>`;
-          for (const image of images) {
-            analyzer.innerHTML += `<div class='results_img'><img src='${escapeHtml(
-              image
-            )}'/></div>`;
+          if (images) {
+            analyzer.innerHTML += `<h3>${capitalize(escapeHtml(channel))}</h3>`;
+            for (const image of images) {
+              analyzer.innerHTML += `<div class='results_img'><img src='${escapeHtml(
+                image
+              )}'/></div>`;
+            }
           }
         }
       }
