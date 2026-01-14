@@ -11,6 +11,7 @@ const TOOL_ORDER = [
   "identify",
   "steghide",
   "jpseek",
+  "jsteg",
   "openstego",
   "zsteg",
   "strings"
