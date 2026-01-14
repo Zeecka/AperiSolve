@@ -47,6 +47,8 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     binutils \
     outguess \
     pngcheck \
+    graphicsmagick \
+    graphicsmagick-imagemagick-compat \
     && gem install zsteg \
     && rm -rf /var/lib/apt/lists/*
 

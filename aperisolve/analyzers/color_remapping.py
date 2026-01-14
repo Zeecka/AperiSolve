@@ -56,7 +56,7 @@ class ColorRemappingAnalyzer(SubprocessAnalyzer):
 
         return remapped_img
 
-    def get_results(self, _: Optional[str] = None) -> dict[str, Any]:
+    def get_results(self, password: Optional[str] = None) -> dict[str, Any]:
         """Analyze an image submission using color remapping."""
         img = Image.open(self.input_img)
         converted = False
@@ -65,8 +65,8 @@ class ColorRemappingAnalyzer(SubprocessAnalyzer):
             img = img.convert("RGB")
             converted = True
 
-        img_np = np.array(img)
-        img_np, _ = self._normalize_image(img_np)
+        img_np_tmp = np.array(img)
+        img_np, _channels = self._normalize_image(img_np_tmp)
 
         image_json = []
 
