@@ -65,8 +65,8 @@ class ColorRemappingAnalyzer(SubprocessAnalyzer):
             img = img.convert("RGB")
             converted = True
 
-        img_np = np.array(img)
-        img_np, _ = self._normalize_image(img_np)
+        img_np_tmp = np.array(img)
+        img_np, _ = self._normalize_image(img_np_tmp)
 
         image_json = []
 
