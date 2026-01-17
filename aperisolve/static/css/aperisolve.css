@@ -48,6 +48,11 @@ a,
     text-decoration: none;
 }
 
+a:hover {
+    color: #ccff66;
+    text-shadow: 0 0 5px #ccff66;
+}
+
 .title_link {
     text-decoration: none;
     color: inherit;
@@ -58,7 +63,7 @@ a,
     width: auto;
 }
 
-.title_text {
+.title-text {
     color: #ccff66;
     text-shadow: 0 0 5px #ccff66;
     font-size: 2.5rem;
@@ -66,7 +71,7 @@ a,
     line-height: 1;
 }
 
-.title_version {
+.title-version {
     color: #ccff66;
     text-shadow: 0 0 5px #ccff66;
     font-size: 1.25rem;
@@ -506,13 +511,7 @@ footer a i {
     width: auto;
 }
 
-#water-logo_footer {
-    height: 50px;
-    width: auto;
-    top: -6px;
-}
-
-.title_link_footer {
+.title-link-footer {
     display: flex;
     align-items: center;
     gap: 12px;
@@ -522,7 +521,7 @@ footer a i {
     transform: translateY(-15px);
 }
 
-.title_text_footer {
+.title-text-footer {
     color: #ccff66;
     text-shadow: 0 0 5px #ccff66;
     font-size: 2.5rem;
@@ -530,7 +529,7 @@ footer a i {
     line-height: 1;
 }
 
-.title_version_footer {
+.title-version-footer {
     color: #ccff66;
     text-shadow: 0 0 5px #ccff66;
     font-size: 1.25rem;
