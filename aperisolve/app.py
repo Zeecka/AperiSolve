@@ -36,6 +36,7 @@ def create_app() -> Flask:
     app = Flask(__name__)
     app.json.sort_keys = False  # type: ignore
     app.config["SQLALCHEMY_DATABASE_URI"] = os.environ.get("DB_URI")
+    app.config["PROJECT_VERSION"] = os.getenv("PROJECT_VERSION")
     app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
     app.config["MAX_CONTENT_LENGTH"] = int(os.environ.get("MAX_CONTENT_LENGTH", 1024 * 1024))
     app.config["REDIS_QUEUE"] = Queue(connection=Redis(host="redis", port=6379))
@@ -426,7 +427,13 @@ def create_app() -> Flask:
             return abort(404, description="Image not found or unsupported format")
 
         return send_file(output_file, as_attachment=True)
-
+    
+    # Returns Current Year
+    @app.context_processor
+    def return_curr_year():
+        year = datetime.today().year
+        return{"year":year}
+    
     return app
 
 
