@@ -58,11 +58,11 @@ jobs:
 
       - name: Deploy to production server
         uses: appleboy/ssh-action@v1.0.3
-        command_timeout: 30m
         with:
           host: ${{ secrets.PROD_SSH_HOST }}
           username: ${{ secrets.PROD_SSH_USER }}
           key: ${{ secrets.PROD_SSH_KEY }}
+          command_timeout: 30m
           script: |
             set -e
             cd /root/AperiSolve
