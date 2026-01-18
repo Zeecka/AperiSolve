@@ -5,7 +5,6 @@
 
 import hashlib
 import json
-import os
 import shutil
 import time
 from datetime import datetime, timezone
@@ -440,10 +439,10 @@ def create_app() -> Flask:
 
         return send_file(output_file, as_attachment=True)
 
-        @app.route("/ads.txt")
-        def google_ads() -> str:
-            """Google Ads required file"""
-            return GOOGLE_ADS_TXT
+    @app.route("/ads.txt")
+    def google_ads() -> str:
+        """Google Ads required file"""
+        return GOOGLE_ADS_TXT
 
     return app
 
