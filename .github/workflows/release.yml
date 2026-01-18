@@ -52,13 +52,13 @@ jobs:
 
       # wait for 120 seconds
       - name: Wait for image propagation
-        if: steps.check.outputs.is_prod == 'true'
         run: |
           echo "Waiting 120 seconds for image to propagate in registry..."
           sleep 120
 
       - name: Deploy to production server
         uses: appleboy/ssh-action@v1.0.3
+        command_timeout: 30m
         with:
           host: ${{ secrets.PROD_SSH_HOST }}
           username: ${{ secrets.PROD_SSH_USER }}
