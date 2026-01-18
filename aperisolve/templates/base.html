@@ -12,8 +12,9 @@
   <link href="/static/css/aperisolve.css" rel="stylesheet" />
 </head>
 
-<body class="text-light">
-  <div id="three-bg"></div>
+<body class="text-light d-flex flex-column min-vh-100">
+<div id="three-bg"></div>
+<main class="flex-grow-1">
   <div class="container mt-5">
     <a class="title_link" href="/">
       <img src="/static/img/logo.svg" alt="logo" id="water-logo"/>
@@ -39,6 +40,7 @@
 	</script>
   <script type="module" src="/static/js/background.js"></script>
   {% block footer_content %} {% endblock %}
+</main>
   {% include "footer.html" %}
 </body>
 

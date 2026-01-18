@@ -492,7 +492,9 @@ footer {
 
 @media screen and (min-width: 1800px) {
     footer {
-        position: fixed;
+        margin: 20px;
+        z-index: 1;
+        position:relative ;
         bottom: 0;
         right: 0;
         left: auto;
@@ -518,13 +520,13 @@ footer a i {
     white-space: nowrap;
     text-decoration: none;
     color: inherit;
-    transform: translateY(-15px);
+    transform: translateY(0px);
 }
 
 .title-text-footer {
     color: #ccff66;
     text-shadow: 0 0 5px #ccff66;
-    font-size: 2.5rem;
+    font-size: 1.25rem;
     font-weight: 700;
     line-height: 1;
 }
