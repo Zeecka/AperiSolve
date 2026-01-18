@@ -105,11 +105,12 @@ document.addEventListener('click', function (event) {
   // Check if the clicked element is a copy icon
   if (event.target.classList.contains('copy-icon')) {
     const icon = event.target;
-    const textarea = icon.closest('.textarea-container').querySelector('textarea');
+    const codeContainer = icon.closest('.code-container');
+    const codeBlock = codeContainer ? codeContainer.querySelector('code') : null;
 
-    if (textarea) {
-      textarea.select();
-      navigator.clipboard.writeText(textarea.value).then(() => {
+    if (codeBlock) {
+      const textToCopy = codeBlock.textContent;
+      navigator.clipboard.writeText(textToCopy).then(() => {
         icon.classList.remove('fa-copy');
         icon.classList.add('fa-check');
         setTimeout(() => {
@@ -487,16 +488,13 @@ function parseResult(result) {
       analyzer.innerHTML += `<div class="alert alert-success" role="alert">${output}</div>`;
     } else if (Array.isArray(result[tool]["output"])) {
       if (result[tool]["output"].length > 0) {
-        var texarea_content = `<div class="textarea-container">`;
-        texarea_content += `<textarea class="form-control w-100 mb-2" rows="8" readonly>`;
-        for (const line of result[tool]["output"]) {
-          texarea_content += escapeHtml(`${line}\n`);
-        }
-        texarea_content = texarea_content.trim();
-        texarea_content += `</textarea>`;
-        texarea_content += `<i class="fas fa-copy copy-icon"></i>`;
-        texarea_content += `</div>`;
-        analyzer.innerHTML += texarea_content;
+        var code_content = `<div class="code-container position-relative mb-2">`;
+        code_content += `<pre class="mb-0"><code>`;
+        code_content += result[tool]["output"].map(line => escapeHtml(line)).join('\n').trim();
+        code_content += `</code></pre>`;
+        code_content += `<i class="fas fa-copy copy-icon"></i>`;
+        code_content += `</div>`;
+        analyzer.innerHTML += code_content;
       }
     } else if (typeof result[tool]["output"] === "object") {
       var table_content = `<div class="table-container">`;
@@ -739,3 +737,4 @@ if (browseBtn) {
       xhr.send(formData);
     });
 }
+

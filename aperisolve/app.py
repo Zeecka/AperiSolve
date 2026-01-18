@@ -36,10 +36,16 @@ def create_app() -> Flask:
     app = Flask(__name__)
     app.json.sort_keys = False  # type: ignore
     app.config["SQLALCHEMY_DATABASE_URI"] = os.environ.get("DB_URI")
+    app.config["PROJECT_VERSION"] = os.getenv("PROJECT_VERSION")
     app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
     app.config["MAX_CONTENT_LENGTH"] = int(os.environ.get("MAX_CONTENT_LENGTH", 1024 * 1024))
     app.config["REDIS_QUEUE"] = Queue(connection=Redis(host="redis", port=6379))
     db.init_app(app)
+
+    @app.context_processor
+    def inject_datetime() -> dict[str, Any]:
+        """Inject datetime into all templates."""
+        return {"datetime": datetime}
 
     @app.errorhandler(413)
     def too_large(_: Any) -> tuple[Response, int]:
