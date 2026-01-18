@@ -1,8 +1,7 @@
 {% extends 'base.html' %}
 {% block body_content %}
-<div id="httperror">
-  <h1>{{ statuscode }}</h1>
-  <br>
-  <h2>{{ message }}</h2>
-</div>
+<section id="httperror" class="text-center py-5">
+  <h1 class="display-1 mb-4">{{ statuscode }}</h1>
+  <h2 class="h3 text-light-emphasis">{{ message }}</h2>
+</section>
 {% endblock %}

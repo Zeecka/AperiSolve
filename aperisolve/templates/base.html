@@ -2,33 +2,48 @@
 <html lang="en" data-bs-theme="dark">
 
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Aperi'Solve</title>
-  <link rel="icon" type="image/svg+xml" href="/static/img/logo.svg" />
-  <link href="https://fonts.googleapis.com/css2?family=Fira+Code&display=swap" rel="stylesheet" />
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta name="description" content="Aperi'Solve - Online steganography analysis platform for images">
+  <title>Aperi'Solve - Steganography Analysis</title>
+  <link rel="icon" type="image/svg+xml" href="/static/img/logo.svg">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://cdnjs.cloudflare.com">
+  <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;700&display=swap" rel="stylesheet">
   <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css" rel="stylesheet">
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet" />
-  <link href="/static/css/aperisolve.css" rel="stylesheet" />
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="/static/css/aperisolve.css" rel="stylesheet">
 </head>
 
-<body class="text-light">
+<body class="d-flex flex-column min-vh-100 text-light">
   <div id="three-bg"></div>
-  <div class="container mt-5">
-    <a class="title_link" href="/">
-      <img src="/static/img/logo.svg" alt="logo" id="water-logo"/>
-      <span class="title-text">  Aperi'Solve </span>
-      <span class="title-version">(v.{{ config["PROJECT_VERSION"] }})</span>
-      <br><br>
-    </a>
-    {% block body_content %} {% endblock %}
-  </div>
+
+  <!-- Main content area -->
+  <main class="flex-grow-1">
+    <div class="container mt-5">
+      <header class="site-header mb-4">
+        <a class="title-link d-inline-flex align-items-center text-decoration-none" href="/" aria-label="Aperi'Solve Home">
+          <img src="/static/img/logo.svg" alt="Aperi'Solve logo" class="logo-img me-3" width="80" height="80">
+          <div class="d-flex flex-column">
+            <span class="title-text">Aperi'Solve</span>
+            <span class="title-version">v.{{ config["PROJECT_VERSION"] }}</span>
+          </div>
+        </a>
+      </header>
+      {% block body_content %} {% endblock %}
+    </div>
+  </main>
+
+  <!-- Footer -->
+  {% include "footer.html" %}
+
   <!-- Modal Structure -->
   <div id="image-modal-container">
     <img id="modal-image" src="" />
   </div>
+
+  <!-- Scripts -->
   <script src="/static/js/aperisolve.js"></script>
-  <!-- Background -->
   <script type="importmap">
 		{
 			"imports": {
@@ -39,7 +54,6 @@
 	</script>
   <script type="module" src="/static/js/background.js"></script>
   {% block footer_content %} {% endblock %}
-  {% include "footer.html" %}
 </body>
 
 </html>

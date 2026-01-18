@@ -42,6 +42,11 @@ def create_app() -> Flask:
     app.config["REDIS_QUEUE"] = Queue(connection=Redis(host="redis", port=6379))
     db.init_app(app)
 
+    @app.context_processor
+    def inject_datetime() -> dict[str, Any]:
+        """Inject datetime into all templates."""
+        return {"datetime": datetime}
+
     @app.errorhandler(413)
     def too_large(_: Any) -> tuple[Response, int]:
         """Error Handler for Max File Size."""
@@ -427,13 +432,7 @@ def create_app() -> Flask:
             return abort(404, description="Image not found or unsupported format")
 
         return send_file(output_file, as_attachment=True)
-    
-    # Returns Current Year
-    @app.context_processor
-    def return_curr_year():
-        year = datetime.today().year
-        return{"year":year}
-    
+
     return app
 
 

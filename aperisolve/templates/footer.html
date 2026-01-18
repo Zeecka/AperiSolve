@@ -1,29 +1,26 @@
-<footer class="d-flex justify-content-center gap-4 my-4 flex-wrap">
-    <div>
-        <a class="title-link-footer" href="/">
-            <span class="title-text-footer">Aperi'Solve</span>
-            <span class="title-version-footer">(v.{{ config["PROJECT_VERSION"] }})  © {{ year }} </span>
+<footer class="mt-auto py-3 px-3">
+  <div class="container-fluid">
+    <div class="d-flex justify-content-between align-items-center flex-wrap gap-3">
+      <!-- Copyright -->
+      <div class="footer-text">
+        Aperi'Solve (v.{{ config["PROJECT_VERSION"] }}) © {{ datetime.today().year }}
+      </div>
+
+      <!-- Links -->
+      <div class="d-flex align-items-center gap-3 flex-wrap">
+        <a href="https://buymeacoffee.com/aperisolve" title="Buy Me A Coffee" class="footer-link">
+          <img src="https://cdn.buymeacoffee.com/buttons/v2/default-yellow.png" alt="Buy Me A Coffee" class="footer-icon-img" />
         </a>
-    </div>
-    <div>
-        <a href="https://buymeacoffee.com/aperisolve" title="Coffee" class="text-light text-decoration-none">
-            <img src="https://cdn.buymeacoffee.com/buttons/v2/default-yellow.png" alt="Buy Me A Coffee" id="coffee" />
+        <a href="/faq" title="FAQ" class="footer-link">
+          <i class="fa-regular fa-circle-question fa-lg"></i>
         </a>
-    </div>
-    <div>
-        <a href="/faq" title="FAQ" class="text-light text-decoration-none">
-            <i class="fa-regular fa-circle-question"></i>
+        <a href="https://github.com/Zeecka/AperiSolve" target="_blank" rel="noopener" title="GitHub" class="footer-link">
+          <i class="fa-brands fa-github fa-lg"></i>
         </a>
-    </div>
-    <div>
-        <a href="https://github.com/Zeecka/AperiSolve" target="_blank" title="GitHub"
-            class="text-light text-decoration-none">
-            <i class="fa-brands fa-github"></i>
+        <a href="https://x.com/Zeecka_" target="_blank" rel="noopener" title="Twitter" class="footer-link">
+          <i class="fa-brands fa-x-twitter fa-lg"></i>
         </a>
+      </div>
     </div>
-    <div>
-        <a href="https://x.com/Zeecka_" target="_blank" title="Twitter" class="text-light text-decoration-none">
-            <i class="fa-brands fa-x-twitter"></i>
-        </a>
-    </div>
+  </div>
 </footer>
