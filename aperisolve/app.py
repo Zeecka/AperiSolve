@@ -5,7 +5,6 @@
 
 import hashlib
 import json
-import os
 import shutil
 import time
 from datetime import datetime, timezone
@@ -22,7 +21,13 @@ from .utils.sentry import initialize_sentry
 initialize_sentry()
 
 from .config import (
+    CUSTOM_EXTERNAL_SCRIPT,
+    DB_URI,
+    FLASK_DEBUG,
+    GOOGLE_ADS_TXT,
     IMAGE_EXTENSIONS,
+    MAX_CONTENT_LENGTH,
+    PROJECT_VERSION,
     REMOVAL_MIN_AGE_SECONDS,
     REMOVED_IMAGES_FOLDER,
     RESULT_FOLDER,
@@ -35,10 +40,11 @@ def create_app() -> Flask:
     """Create flask application with routes."""
     app = Flask(__name__)
     app.json.sort_keys = False  # type: ignore
-    app.config["SQLALCHEMY_DATABASE_URI"] = os.environ.get("DB_URI")
-    app.config["PROJECT_VERSION"] = os.getenv("PROJECT_VERSION")
+    app.config["PROJECT_VERSION"] = PROJECT_VERSION
+    app.config["CUSTOM_EXTERNAL_SCRIPT"] = CUSTOM_EXTERNAL_SCRIPT
+    app.config["SQLALCHEMY_DATABASE_URI"] = DB_URI
     app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
-    app.config["MAX_CONTENT_LENGTH"] = int(os.environ.get("MAX_CONTENT_LENGTH", 1024 * 1024))
+    app.config["MAX_CONTENT_LENGTH"] = MAX_CONTENT_LENGTH
     app.config["REDIS_QUEUE"] = Queue(connection=Redis(host="redis", port=6379))
     db.init_app(app)
 
@@ -433,10 +439,14 @@ def create_app() -> Flask:
 
         return send_file(output_file, as_attachment=True)
 
+    @app.route("/ads.txt")
+    def google_ads() -> str:
+        """Google Ads required file"""
+        return GOOGLE_ADS_TXT
+
     return app
 
 
 if __name__ == "__main__":
     my_app = create_app()
-    debug_mode = os.environ.get("FLASK_DEBUG", "0") == "1"
-    my_app.run(host="0.0.0.0", port=5000, debug=debug_mode)
+    my_app.run(host="0.0.0.0", port=5000, debug=FLASK_DEBUG)
