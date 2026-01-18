@@ -70,8 +70,9 @@ jobs:
             # update code
             git pull
 
+            cat .env.example | grep -v '^PROJECT_VERSION=' > .env
             # create .env
-            cat <<EOF > .env
+            cat <<EOF >> .env
             WEB_APP_PORT=${{ vars.WEB_APP_PORT }}
 
             MAX_CONTENT_LENGTH=${{ vars.MAX_CONTENT_LENGTH }}
