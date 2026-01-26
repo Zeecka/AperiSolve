@@ -1,3 +1,5 @@
+@import url('https://fonts.googleapis.com/css2?family=Fira+Code:wght@300..700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Bitcount+Single:wght@100..900&display=swap');
 /* ======== Base Layout ======== */
 :root {
     /* Colors */
@@ -82,17 +84,19 @@ a:hover {
 
 .title-text {
     color: var(--theme-green);
-    text-shadow: 0 0 0.3125rem var(--theme-green-shadow);
+    text-shadow: 0 0 8px #9fef00bd;
     font-size: 2.5rem;
-    font-weight: 700;
+    font-weight: 400;
     line-height: 1;
+    font-family: var(--font-base)
 }
 
 .title-version {
     color: var(--theme-green);
-    text-shadow: 0 0 0.3125rem var(--theme-green-shadow);
+    text-shadow: 0 0 4px #9fef00bd;
     font-size: 1.25rem;
     line-height: 1;
+    margin-top: 3px;
 }
 
 /* ======== Background ======== */
@@ -125,6 +129,12 @@ form {
     border-radius: var(--border-radius);
 }
 
+.question{
+    color : var(--theme-green);
+    font-weight: 400;
+    font-family: var(--font-base);
+}
+
 /* Drop Zone */
 .drop-zone {
     background-color: var(--dark-bg);
@@ -143,7 +153,7 @@ form {
 .btn, .btn-primary, .btn-hack {
     background-color: var(--theme-green);
     color: #000;
-    font-weight: bold;
+    /* font-weight: bold; */
     border: none;
     text-shadow: none;
     transition: box-shadow 0.3s ease;
@@ -152,6 +162,23 @@ form {
 .btn:hover, .btn-primary:hover, .btn-hack:hover {
     background-color: var(--theme-green);
     box-shadow: 0 0 0.625rem var(--theme-green-shadow2);
+}
+
+/* Ensure the inline browse button inside the drop-zone shows the same hover behaviour */
+#browse-btn {
+    background-color: var(--theme-green);
+    color: #000;
+    border: none;
+    text-shadow: none;
+    transition: box-shadow 0.3s ease;
+    pointer-events: auto;
+}
+
+#browse-btn:hover {
+    background-color: var(--theme-green);
+    box-shadow: 0 0 0.625rem var(--theme-green-shadow2);
+    transform: translateY(-0.0625rem);
+    color: white;
 }
 
 /* Bootstrap color overrides */
@@ -483,9 +510,23 @@ footer {
     box-shadow: 0 -0.125rem 0.625rem var(--theme-green-shadow);
 }
 
+.footer-container{
+    display: flex;
+    flex-direction: row;
+    gap: 5px;
+    align-items: center;
+    justify-content: center;
+}
+
 .footer-text {
     color: var(--theme-green);
     font-size: 0.9rem;
+    margin: 0 !important;
+}
+
+.copyright {
+    display: inline-block;
+    transform: translateY(1px);
 }
 
 .footer-link {
@@ -494,6 +535,11 @@ footer {
     transition: color 0.3s, text-shadow 0.3s;
     display: inline-flex;
     align-items: center;
+
+}
+
+.link-container {
+    transform: translateY(-2px);
 }
 
 .footer-link:hover {
