@@ -710,6 +710,7 @@ footer {
         padding: var(--spacing-sm);
         font-size: 0.85rem;
 }
+}
 
 /* Phones */
 @media screen and (max-width: 36rem) {
