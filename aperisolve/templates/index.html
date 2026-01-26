@@ -3,7 +3,7 @@
 <form id="upload-form" class="card p-4 mb-4" method="POST" enctype="multipart/form-data">
   <!-- Description Section -->
   <section class="mb-4">
-    <h2 class="h4 mb-3">What is this?</h2>
+    <h2 class="h4 mb-3 question">What is this?</h2>
     <p class="text-light-emphasis mb-0">
       Aperi'Solve is an online platform which performs layer analysis on images.
       The platform also uses zsteg, steghide, outguess, exiftool, binwalk, foremost and strings
@@ -17,8 +17,8 @@
     <div id="drop-zone" class="drop-zone border border-2 border-dashed rounded-3 p-4 text-center">
       <p id="drag-msg" class="mb-3">📂 Drag and drop an image here or click to select</p>
       <input type="file" id="image" name="image" accept="image/*" class="visually-hidden" required>
-      <button type="button" class="btn btn-secondary" id="browse-btn" aria-label="Choose image file">
-        <i class="fa fa-folder-open me-2"></i>Choose an image
+      <button type="button" class="btn" id="browse-btn" aria-label="Choose image file">
+        Choose an image
       </button>
     </div>
   </div>
