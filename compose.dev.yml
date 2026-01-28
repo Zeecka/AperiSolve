@@ -1,7 +1,7 @@
 services:
   web:
     #image: ghcr.io/zeecka/aperisolve:latest
-    platform: linux/amd64
+    # platform: linux/amd64
     build: .
     container_name: aperisolve-web
     restart: always
@@ -24,7 +24,7 @@ services:
 
   worker:
     #image: ghcr.io/zeecka/aperisolve:latest
-    platform: linux/amd64
+    # platform: linux/amd64
     build: .
     container_name: aperisolve-worker
     restart: always
@@ -42,7 +42,7 @@ services:
       - .env.example
 
   initdb:
-    platform: linux/amd64
+    # platform: linux/amd64
     build: .
     container_name: aperisolve-initdb
     command: python -m aperisolve.utils.init_db
@@ -56,7 +56,7 @@ services:
     restart: "no"
 
   redis:
-    platform: linux/amd64
+    # platform: linux/amd64
     image: redis:7
     container_name: redis
     restart: always
@@ -64,7 +64,7 @@ services:
       - .env.example
 
   postgres:
-    platform: linux/amd64
+    # platform: linux/amd64
     image: postgres:14
     container_name: postgres
     restart: always
@@ -79,7 +79,7 @@ services:
       - .env.example
 
   rqdashboard:
-    platform: linux/amd64
+    # platform: linux/amd64
     image: eoranged/rq-dashboard
     container_name: rq-dashboard
     restart: always
