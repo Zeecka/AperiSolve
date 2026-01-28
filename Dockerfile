@@ -20,7 +20,12 @@ RUN cd /tmp/jsteg && \
 
 # Builder stage - add after other tool compilations
 RUN git clone https://github.com/h3xx/jphs.git /tmp/jphs
-RUN cd /tmp/jphs/jpeg-8a && ./configure && make
+# Ensure autotools helper scripts are up-to-date so configure recognizes aarch64
+RUN cd /tmp/jphs/jpeg-8a \
+    && wget -q -O config.guess 'https://git.savannah.gnu.org/gitweb/?p=config.git;a=blob_plain;f=config.guess' \
+    && wget -q -O config.sub 'https://git.savannah.gnu.org/gitweb/?p=config.git;a=blob_plain;f=config.sub' \
+    && chmod +x config.guess config.sub \
+    && ./configure && make
 RUN cd /tmp/jphs && sed -i 's/open(seekfilename,O_WRONLY|O_TRUNC|O_CREAT)/open(seekfilename,O_WRONLY|O_TRUNC|O_CREAT, 0644)/' jpseek.c
 RUN cd /tmp/jphs \
     && sed -i 's/^LIBS = .*/JPEG_OBJS = $(filter-out jpeg-8a\/cjpeg.o jpeg-8a\/djpeg.o jpeg-8a\/jpegtran.o jpeg-8a\/rdjpgcom.o jpeg-8a\/wrjpgcom.o,$(wildcard jpeg-8a\/\*.o))/' Makefile \
