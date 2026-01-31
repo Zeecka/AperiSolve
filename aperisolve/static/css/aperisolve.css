@@ -508,14 +508,6 @@ footer {
     box-shadow: 0 -0.125rem 0.625rem var(--theme-green-shadow);
 }
 
-.footer-container{
-    display: flex;
-    flex-direction: row;
-    gap: 5px;
-    align-items: center;
-    justify-content: center;
-}
-
 .footer-text {
     color: var(--theme-green);
     font-size: 0.9rem;
