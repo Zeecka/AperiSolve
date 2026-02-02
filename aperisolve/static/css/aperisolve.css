@@ -82,17 +82,19 @@ a:hover {
 
 .title-text {
     color: var(--theme-green);
-    text-shadow: 0 0 0.3125rem var(--theme-green-shadow);
+    text-shadow: 0 0 8px var(--theme-green-shadow2);
     font-size: 2.5rem;
-    font-weight: 700;
+    font-weight: 400;
     line-height: 1;
+    font-family: var(--font-base)
 }
 
 .title-version {
     color: var(--theme-green);
-    text-shadow: 0 0 0.3125rem var(--theme-green-shadow);
+    text-shadow: 0 0 4px var(--theme-green-shadow2);
     font-size: 1.25rem;
     line-height: 1;
+    margin-top: 3px;
 }
 
 /* ======== Background ======== */
@@ -125,6 +127,12 @@ form {
     border-radius: var(--border-radius);
 }
 
+.question{
+    color : var(--theme-green);
+    font-weight: 400;
+    font-family: var(--font-base);
+}
+
 /* Drop Zone */
 .drop-zone {
     background-color: var(--dark-bg);
@@ -143,7 +151,7 @@ form {
 .btn, .btn-primary, .btn-hack {
     background-color: var(--theme-green);
     color: #000;
-    font-weight: bold;
+    /* font-weight: bold; */
     border: none;
     text-shadow: none;
     transition: box-shadow 0.3s ease;
@@ -152,6 +160,23 @@ form {
 .btn:hover, .btn-primary:hover, .btn-hack:hover {
     background-color: var(--theme-green);
     box-shadow: 0 0 0.625rem var(--theme-green-shadow2);
+}
+
+/* Ensure the inline browse button inside the drop-zone shows the same hover behaviour */
+#browse-btn {
+    background-color: var(--theme-green);
+    color: #000;
+    border: none;
+    text-shadow: none;
+    transition: box-shadow 0.3s ease;
+    pointer-events: auto;
+}
+
+#browse-btn:hover {
+    background-color: var(--theme-green);
+    box-shadow: 0 0 0.625rem var(--theme-green-shadow2);
+    transform: translateY(-0.0625rem);
+    color: white;
 }
 
 /* Bootstrap color overrides */
@@ -486,6 +511,7 @@ footer {
 .footer-text {
     color: var(--theme-green);
     font-size: 0.9rem;
+    margin: 0 !important;
 }
 
 .footer-link {
@@ -494,6 +520,7 @@ footer {
     transition: color 0.3s, text-shadow 0.3s;
     display: inline-flex;
     align-items: center;
+
 }
 
 .footer-link:hover {
@@ -665,6 +692,7 @@ footer {
     .command {
         padding: var(--spacing-sm);
         font-size: 0.85rem;
+}
 }
 
 /* Phones */
