@@ -10,6 +10,7 @@ const TOOL_ORDER = [
   "pcrt",
   "identify",
   "steghide",
+  "stegoveritas",
   "jpseek",
   "jsteg",
   "openstego",
