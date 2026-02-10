@@ -35,6 +35,9 @@ RUN cd /tmp/jphs \
 RUN cd /tmp/jphs && make all
 RUN cd /tmp/jphs && cp jphide jpseek /usr/local/bin/
 RUN rm -rf /tmp/jphs
+RUN pip3 install stegoveritas
+RUN stegoveritas_install_deps
+RUN rm -f /usr/local/bin/binwalk
 
 # ==========================
 # Stage 2 : Image runtime minimale
@@ -62,6 +65,9 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     graphicsmagick-imagemagick-compat \
     && gem install zsteg \
     && rm -rf /var/lib/apt/lists/*
+
+RUN pip install --no-cache-dir stegoveritas && stegoveritas_install_deps \
+    && rm -f /usr/local/bin/binwalk
 
 # Install OpenStego
 COPY --from=builder /tmp/openstego.deb /tmp/openstego.deb
