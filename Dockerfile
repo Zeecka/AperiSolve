@@ -69,6 +69,21 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 RUN pip install --no-cache-dir stegoveritas && stegoveritas_install_deps \
     && rm -f /usr/local/bin/binwalk
 
+# Provide a minimal imp shim for binwalk on Python 3.14
+RUN cat <<'PY' > /usr/local/lib/python3.14/imp.py
+"""Minimal imp compatibility shim for legacy libraries."""
+
+from importlib.machinery import SourceFileLoader
+from importlib.util import module_from_spec, spec_from_loader
+
+def load_source(name, pathname):
+    loader = SourceFileLoader(name, pathname)
+    spec = spec_from_loader(name, loader)
+    module = module_from_spec(spec)
+    loader.exec_module(module)
+    return module
+PY
+
 # Install OpenStego
 COPY --from=builder /tmp/openstego.deb /tmp/openstego.deb
 RUN dpkg -i /tmp/openstego.deb || apt-get install -f -y --no-install-recommends \
