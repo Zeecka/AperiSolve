@@ -27,6 +27,7 @@ from .analyzers.outguess import analyze_outguess
 from .analyzers.pcrt import analyze_pcrt
 from .analyzers.pngcheck import analyze_pngcheck
 from .analyzers.steghide import analyze_steghide
+from .analyzers.stegoveritas import analyze_stegoveritas
 from .analyzers.strings import analyze_strings
 from .analyzers.zsteg import analyze_zsteg
 from .app import create_app
@@ -119,6 +120,7 @@ def analyze_image(submission_hash: str) -> None:
                 (analyze_pcrt, img_path, result_path),
                 (analyze_strings, img_path, result_path),
                 (analyze_steghide, img_path, result_path, submission.password),
+                (analyze_stegoveritas, img_path, result_path),
                 (analyze_zsteg, img_path, result_path),
             ]
 
