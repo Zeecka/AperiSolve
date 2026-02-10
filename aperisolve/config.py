@@ -15,16 +15,7 @@ MAX_CONTENT_LENGTH = int(getenv("MAX_CONTENT_LENGTH", "1048576"))  # 1 MB by def
 CLEAR_AT_RESTART = int(getenv("CLEAR_AT_RESTART", "0"))
 
 IMAGE_EXTENSIONS = [".png", ".jpg", ".jpeg", ".gif", ".bmp", ".webp", ".tiff"]
-WORKER_FILES = [
-	"binwalk",
-	"foremost",
-	"steghide",
-	"stegoveritas",
-	"zsteg",
-	"openstego",
-	"pcrt",
-	"jpseek",
-]
+WORKER_FILES = ["binwalk", "foremost", "steghide", "stegoveritas", "zsteg", "openstego", "pcrt", "jpseek"]
 
 GOOGLE_ADS_TXT = getenv("GOOGLE_ADS_TXT", "")
 CUSTOM_EXTERNAL_SCRIPT = getenv("CUSTOM_EXTERNAL_SCRIPT", "")
