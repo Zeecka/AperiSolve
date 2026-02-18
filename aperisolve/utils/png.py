@@ -102,7 +102,8 @@ class PNG:
         return True
 
     def _find_ancillary(
-        self, data: bytes,
+        self,
+        data: bytes,
     ) -> tuple[dict[bytes, list[bytes]], dict[bytes, list[bytes]], dict[bytes, Any]]:
         """Find ancillary chunks in PNG data with an optimized single pass."""
         ancillary = [
@@ -285,9 +286,8 @@ class PNG:
             self._log(f"Chunk crc: {str2hex(crc)}, Correct crc: {str2hex(calc_crc)}")
             self._log("Looking up CRC in database...")
 
-            if (
-                (recovered_ihdr := self._lookup_ihdr_from_db(chunk_type, crc))
-                or (recovered_ihdr := self._bruteforce_ihdr_dimensions(chunk_type, ihdr, crc))
+            if (recovered_ihdr := self._lookup_ihdr_from_db(chunk_type, crc)) or (
+                recovered_ihdr := self._bruteforce_ihdr_dimensions(chunk_type, ihdr, crc)
             ):
                 ihdr = ihdr[:8] + recovered_ihdr + crc
                 fixed = True
@@ -304,7 +304,11 @@ class PNG:
         return fixed
 
     def _fix_dos2unix(
-        self, chunk_type: bytes, chunk_data: bytes, crc: bytes, count: int,
+        self,
+        chunk_type: bytes,
+        chunk_data: bytes,
+        crc: bytes,
+        count: int,
     ) -> bytes | None:
         """Fix DOS to Unix line ending conversion."""
         pos_list = []
@@ -357,7 +361,10 @@ class PNG:
                 self._log(f"Error IDAT chunk data length at offset {int2hex(offset)}")
                 self._log(f"Length: {int2hex(length)}, Actual: {int2hex(len(chunk_data))}")
                 if fixed_data := self._fix_dos2unix(
-                    chunk_type, chunk_data, crc, abs(length - len(chunk_data)),
+                    chunk_type,
+                    chunk_data,
+                    crc,
+                    abs(length - len(chunk_data)),
                 ):
                     current_chunk = current_chunk[:8] + fixed_data + current_chunk[-4:]
                     self._log("Successfully recovered IDAT chunk data (DOS->Unix fix)")

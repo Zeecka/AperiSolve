@@ -26,7 +26,6 @@ def main() -> None:
         tables = inspector.get_table_names()
 
         if reset:
-
             # Delete result folder content
             if RESULT_FOLDER.exists():
                 for item in RESULT_FOLDER.iterdir():
@@ -47,7 +46,6 @@ def main() -> None:
             pass
 
         fill_ihdr_db()
-
 
         RESULT_FOLDER.mkdir(parents=True, exist_ok=True)
 
