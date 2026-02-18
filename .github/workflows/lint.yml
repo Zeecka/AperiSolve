@@ -25,14 +25,10 @@ jobs:
           pip install -r aperisolve/requirements-dev.txt
           pip install -r aperisolve/requirements.txt
 
-      - name: Run linters
-        uses: wearerequired/lint-action@v2
-        with:
-          black: true
-          black_args: "--line-length=100"
-          flake8: true
-          flake8_args: "--ignore=E203,E501,W503"
-          pylint: true
-          pylint_args: "--disable W0511,W0718,R0801,R0903,R0914"
-          mypy: true
-          mypy_args: "--disallow-any-generics --disallow-untyped-def --follow-imports skip --ignore-missing-imports --disable-error-code unused-awaitable"
+      - name: Run Ruff
+        run: |
+          ruff check .
+          ruff format . --check
+
+      - name: Run Pyright
+        run: pyright

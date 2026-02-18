@@ -1,24 +1,25 @@
-# flake8: noqa: E203,E501,W503
-# pylint: disable=C0413,W0718,R0903,R0801
-# mypy: disable-error-code=unused-awaitable
 """Bits Decomposer Analyzer for Image Submissions."""
 
 from pathlib import Path
-from typing import Any, Optional
+from typing import Any
 
 import numpy as np
 from PIL import Image
 
 from .base_analyzer import SubprocessAnalyzer
 
+RGB_CHANNEL_THRESHOLD = 3
+GRAYSCALE_DIMENSIONS = 2
+
 
 class DecomposerAnalyzer(SubprocessAnalyzer):
     """Analyzer for bits decomposer."""
 
     def __init__(self, input_img: Path, output_dir: Path) -> None:
+        """Initialize the decomposer analyzer."""
         super().__init__("decomposer", input_img, output_dir)
 
-    def get_results(self, _: Optional[str] = None) -> dict[str, Any]:
+    def get_results(self, _: str | None = None) -> dict[str, Any]:
         """Analyze an image submission using bits decomposition."""
         img = Image.open(self.input_img)
         converted = False
@@ -30,20 +31,14 @@ class DecomposerAnalyzer(SubprocessAnalyzer):
         img_np = np.array(img)
 
         # Handle grayscale, RGB, RGBA, etc.
-        if len(img_np.shape) == 2:
-            channels = 1
-        else:
-            channels = img_np.shape[2]
+        channels = 1 if len(img_np.shape) == GRAYSCALE_DIMENSIONS else img_np.shape[2]
 
-        if channels > 1:
-            channel_names = ["Red", "Green", "Blue", "Alpha"]
-        else:
-            channel_names = ["Grayscale"]
+        channel_names = ["Red", "Green", "Blue", "Alpha"] if channels > 1 else ["Grayscale"]
 
         image_json = {}
 
         # Add Superimposed RGB bit planes
-        if channels >= 3:
+        if channels >= RGB_CHANNEL_THRESHOLD:
             superimposed_json = []
             for bit in range(8):
                 bit_mask = 1 << bit

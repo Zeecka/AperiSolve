@@ -1,19 +1,16 @@
-# flake8: noqa: E203,E501,W503
-# pylint: disable=C0413,W0718,W0613,R0903,R0801
-# mypy: disable-error-code=unused-awaitable
 """Base Analyzer class for image analysis tools."""
 
+import asyncio
 import fcntl
 import json
-import os
-import subprocess
 import threading
 from abc import ABC
 from pathlib import Path
 from shutil import rmtree
-from typing import Any, Optional, overload
+from subprocess import CompletedProcess
+from typing import Any, overload
 
-from ..config import MAX_PENDING_TIME
+from aperisolve.config import MAX_PENDING_TIME
 
 _thread_lock = threading.Lock()
 
@@ -30,8 +27,14 @@ class SubprocessAnalyzer(ABC):
     make_folder: bool = True
 
     def __init__(
-        self, name: str, input_img: Path, output_dir: Path, has_archive: bool = False
+        self,
+        name: str,
+        input_img: Path,
+        output_dir: Path,
+        *,
+        has_archive: bool = False,
     ) -> None:
+        """Initialize analyzer metadata and execution context."""
         self.name = name
         self.input_img = input_img
         self.img = f"../{self.input_img.name}"
@@ -39,19 +42,33 @@ class SubprocessAnalyzer(ABC):
         self.has_archive = has_archive
 
     def run_command(
-        self, cmd: list[str], cwd: Optional[Path] = None
-    ) -> subprocess.CompletedProcess[str]:
+        self,
+        cmd: list[str],
+        cwd: Path | None = None,
+    ) -> CompletedProcess[str]:
         """Run a subprocess command."""
-        return subprocess.run(
-            cmd,
-            cwd=cwd,
-            capture_output=True,
-            text=True,
-            check=False,
-            timeout=MAX_PENDING_TIME,
-        )
 
-    def generate_archive(self, output_dir: Path, extracted_dir: Optional[Path] = None) -> str:
+        async def _run() -> CompletedProcess[str]:
+            process = await asyncio.create_subprocess_exec(
+                *cmd,
+                cwd=str(cwd) if cwd is not None else None,
+                stdout=asyncio.subprocess.PIPE,
+                stderr=asyncio.subprocess.PIPE,
+            )
+            stdout_raw, stderr_raw = await asyncio.wait_for(
+                process.communicate(),
+                timeout=MAX_PENDING_TIME,
+            )
+            return CompletedProcess(
+                args=cmd,
+                returncode=process.returncode,
+                stdout=stdout_raw.decode("utf-8", errors="replace"),
+                stderr=stderr_raw.decode("utf-8", errors="replace"),
+            )
+
+        return asyncio.run(_run())
+
+    def generate_archive(self, _output_dir: Path, extracted_dir: Path | None = None) -> str:
         """Zip the extracted files and remove the directory."""
         if extracted_dir is None:
             extracted_dir = self.get_extracted_dir()
@@ -68,30 +85,29 @@ class SubprocessAnalyzer(ABC):
 
         json_file.parent.mkdir(parents=True, exist_ok=True)
 
-        with _thread_lock:  # synchronizes across threads
-            with open(lock_file, "w", encoding="utf-8") as lock:
-                fcntl.flock(lock, fcntl.LOCK_EX)  # synchronizes across processes
+        with _thread_lock, lock_file.open("w", encoding="utf-8") as lock:
+            fcntl.flock(lock, fcntl.LOCK_EX)  # synchronizes across processes
 
-                try:
-                    # Read existing JSON
-                    data: dict[Any, Any] = {}
-                    if json_file.exists():
-                        try:
-                            with open(json_file, "r", encoding="utf-8") as f:
-                                data = json.load(f)
-                        except json.JSONDecodeError:
-                            data = {}
+            try:
+                # Read existing JSON
+                data: dict[Any, Any] = {}
+                if json_file.exists():
+                    try:
+                        with json_file.open(encoding="utf-8") as f:
+                            data = json.load(f)
+                    except json.JSONDecodeError:
+                        data = {}
 
-                    # Update with new data
-                    data.update(new_data)
+                # Update with new data
+                data.update(new_data)
 
-                    # Write safely to a temp file
-                    with open(tmp_file, "w", encoding="utf-8") as f:
-                        json.dump(data, f, sort_keys=False)
+                # Write safely to a temp file
+                with tmp_file.open("w", encoding="utf-8") as f:
+                    json.dump(data, f, sort_keys=False)
 
-                    os.replace(tmp_file, json_file)  # ensures file write is atomic
-                finally:
-                    fcntl.flock(lock, fcntl.LOCK_UN)
+                tmp_file.replace(json_file)  # ensures file write is atomic
+            finally:
+                fcntl.flock(lock, fcntl.LOCK_UN)
 
     def get_extracted_dir(self) -> Path:
         """Get the extracted directory path. Can be overridden but work as it is."""
@@ -103,13 +119,15 @@ class SubprocessAnalyzer(ABC):
     @overload
     def build_cmd(self, password: str) -> list[str]: ...
 
-    def build_cmd(self, password: Optional[str] = None) -> list[str]:
+    def build_cmd(self, password: str | None = None) -> list[str]:
         """Build the command to run. Can be overridden."""
+        _ = password
         if self.cmd is None:
-            raise NotImplementedError("cmd must be set or build_cmd overridden")
+            msg = "cmd must be set or build_cmd overridden"
+            raise NotImplementedError(msg)
         return self.cmd
 
-    def get_results(self, password: Optional[str] = None) -> dict[str, Any]:
+    def get_results(self, password: str | None = None) -> dict[str, Any]:
         """Get results of command before returning."""
         result: dict[str, Any]
         extracted_dir = None
@@ -128,12 +146,12 @@ class SubprocessAnalyzer(ABC):
         stderr = data.stderr
         stdout = data.stdout
 
-        zip_exist = False
+        zip_exists = False
         if extracted_dir and extracted_dir.exists() and any(extracted_dir.iterdir()):
             self.generate_archive(self.output_dir, extracted_dir)  # keep archive
-            zip_exist = True
+            zip_exists = True
 
-        if self.is_error(returncode, stdout, stderr, zip_exist):
+        if self.is_error(returncode, stdout, stderr, zip_exist=zip_exists):
             result = {
                 "status": "error",
             }
@@ -143,10 +161,10 @@ class SubprocessAnalyzer(ABC):
                 "status": "ok",
                 "output": self.process_output(stdout, stderr),
             }
-            note: Optional[str] = self.process_note(stdout, stderr)
+            note: str | None = self.process_note(stdout, stderr)
             if note:
                 result["note"] = note
-            if zip_exist:
+            if zip_exists:
                 result["download"] = f"/download/{self.output_dir.name}/{self.name}"
         return result
 
@@ -156,28 +174,29 @@ class SubprocessAnalyzer(ABC):
     @overload
     def analyze(self, password: str) -> None: ...
 
-    def analyze(self, password: Optional[str] = None) -> None:
+    def analyze(self, password: str | None = None) -> None:
         """Run the subprocess command and handle results."""
         result: dict[str, Any]
         try:
             result = self.get_results(password)
             self.update_result(result)
-        except Exception as e:
+        except (RuntimeError, ValueError, OSError, TimeoutError) as e:
             self.update_result({"status": "error", "error": str(e)})
             raise
 
-    def is_error(self, returncode: int, stdout: str, stderr: str, zip_exist: bool) -> bool:
+    def is_error(self, _returncode: int, _stdout: str, stderr: str, *, zip_exist: bool) -> bool:
         """Check if the result is an error."""
+        _ = zip_exist
         return len(stderr) > 0
 
-    def process_output(self, stdout: str, stderr: str) -> str | list[str] | dict[str, str]:
+    def process_output(self, stdout: str, _stderr: str) -> str | list[str] | dict[str, str]:
         """Process the stdout into a list of lines."""
         return [line for line in stdout.split("\n") if line] if stdout else []
 
-    def process_error(self, stdout: str, stderr: str) -> str:
+    def process_error(self, _stdout: str, stderr: str) -> str:
         """Process the stderr."""
         return stderr
 
-    def process_note(self, stdout: str, stderr: str) -> Optional[str]:
+    def process_note(self, _stdout: str, _stderr: str) -> str | None:
         """Process the stdout for informational purposes."""
         return None

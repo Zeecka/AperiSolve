@@ -1,21 +1,24 @@
-# flake8: noqa: E203,E501,W503
-# pylint: disable=C0413,W0718,R0903,R0801,W0612,R0912
-# mypy: disable-error-code=unused-awaitable
 """Color Remapping Analyzer for Image Submissions."""
 
 from pathlib import Path
-from typing import Any, Optional
+from typing import Any
 
 import numpy as np
 from PIL import Image
 
 from .base_analyzer import SubprocessAnalyzer
 
+RGB_CHANNEL_COUNT = 3
+RGBA_CHANNEL_COUNT = 4
+RANDOM_REMAPPING_COUNT = 8
+GRAYSCALE_DIMENSIONS = 2
+
 
 class ColorRemappingAnalyzer(SubprocessAnalyzer):
     """Analyzer for color remapping."""
 
     def __init__(self, input_img: Path, output_dir: Path) -> None:
+        """Initialize the color remapping analyzer."""
         super().__init__("color_remapping", input_img, output_dir)
 
     def _normalize_image(self, img_np: np.ndarray) -> tuple[np.ndarray, int]:
@@ -23,40 +26,44 @@ class ColorRemappingAnalyzer(SubprocessAnalyzer):
 
         Returns:
             Tuple of (normalized image array, number of channels)
+
         """
-        if len(img_np.shape) == 2:
+        if len(img_np.shape) == GRAYSCALE_DIMENSIONS:
             channels = 1
             img_np = np.expand_dims(img_np, axis=-1)
         else:
             channels = img_np.shape[2]
 
-        if channels < 3:
+        if channels < RGB_CHANNEL_COUNT:
             # Grayscale to RGB
-            img_np = np.repeat(img_np, 3, axis=2)
-            channels = 3
-        elif channels > 4:
+            img_np = np.repeat(img_np, RGB_CHANNEL_COUNT, axis=2)
+            channels = RGB_CHANNEL_COUNT
+        elif channels > RGBA_CHANNEL_COUNT:
             # More than 4 channels, take first 3
-            img_np = img_np[..., :3]
-            channels = 3
+            img_np = img_np[..., :RGB_CHANNEL_COUNT]
+            channels = RGB_CHANNEL_COUNT
 
         return img_np, channels
 
     def _create_remapped_image(self, img_np: np.ndarray, color_map: np.ndarray) -> Image.Image:
         """Create a single remapped image using the color map."""
         remapped = np.zeros_like(img_np)
-        for c in range(min(3, img_np.shape[2])):  # Apply to RGB channels
+        for c in range(min(RGB_CHANNEL_COUNT, img_np.shape[2])):  # Apply to RGB channels
             remapped[..., c] = color_map[img_np[..., c]]
 
         # Keep alpha channel if present
-        if img_np.shape[2] == 4:
+        if img_np.shape[2] == RGBA_CHANNEL_COUNT:
             remapped[..., 3] = img_np[..., 3]
             remapped_img = Image.fromarray(remapped.astype(np.uint8), mode="RGBA")
         else:
-            remapped_img = Image.fromarray(remapped[..., :3].astype(np.uint8), mode="RGB")
+            remapped_img = Image.fromarray(
+                remapped[..., :RGB_CHANNEL_COUNT].astype(np.uint8),
+                mode="RGB",
+            )
 
         return remapped_img
 
-    def get_results(self, password: Optional[str] = None) -> dict[str, Any]:
+    def get_results(self, _password: str | None = None) -> dict[str, Any]:
         """Analyze an image submission using color remapping."""
         img = Image.open(self.input_img)
         converted = False
@@ -71,9 +78,10 @@ class ColorRemappingAnalyzer(SubprocessAnalyzer):
         image_json = []
 
         # Generate 8 random color remappings
-        for i in range(8):
+        rng = np.random.default_rng()
+        for i in range(RANDOM_REMAPPING_COUNT):
             # Create a random permutation of color values (0-255)
-            color_map = np.random.randint(0, 256, size=256, dtype=np.uint8)
+            color_map = rng.integers(0, 256, size=256, dtype=np.uint8)
             remapped_img = self._create_remapped_image(img_np, color_map)
 
             # Save the remapped image

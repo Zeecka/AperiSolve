@@ -1,6 +1,3 @@
-# flake8: noqa: E203,E501,W503
-# pylint: disable=C0413,W0718,R0903,R0801
-# mypy: disable-error-code=unused-awaitable
 """Pngcheck Analyzer for Image Submissions."""
 
 from pathlib import Path
@@ -12,13 +9,16 @@ class PngcheckAnalyzer(SubprocessAnalyzer):
     """Analyzer for pngcheck."""
 
     def __init__(self, input_img: Path, output_dir: Path) -> None:
+        """Initialize the pngcheck analyzer."""
         super().__init__("pngcheck", input_img, output_dir)
         self.cmd = ["pngcheck", "-v", self.img]
 
-    def is_error(self, returncode: int, stdout: str, stderr: str, zip_exist: bool) -> bool:
+    def is_error(self, _returncode: int, stdout: str, _stderr: str, *, zip_exist: bool) -> bool:
+        """Check whether the file is an unsupported format."""
+        _ = zip_exist
         return "this is neither a PNG or JNG image nor a MNG stream" in stdout
 
-    def process_error(self, stdout: str, stderr: str) -> str:
+    def process_error(self, stdout: str, _stderr: str) -> str:
         """Process the stderr."""
         if "this is neither a PNG or JNG image nor a MNG stream" in stdout:
             return "The file format of the file is not supported (PNG or JNG only)."

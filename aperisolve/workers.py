@@ -1,19 +1,13 @@
-# flake8: noqa: E203,E501,W503
-# pylint: disable=C0413,W0718,R0903,R0801
-# mypy: disable-error-code=unused-awaitable
 """Asynchronous worker for analyzing image submissions."""
 
 import threading
+from collections.abc import Callable
 from pathlib import Path
-from typing import Any
 
 import sentry_sdk
+from sqlalchemy.exc import SQLAlchemyError
 
-from .utils.sentry import initialize_sentry
-
-initialize_sentry()
-
-from .analyzers.binwalk import analyze_binwalk  # pylint: disable=C0413
+from .analyzers.binwalk import analyze_binwalk
 from .analyzers.color_remapping import analyze_color_remapping
 from .analyzers.decomposer import analyze_decomposer
 from .analyzers.exiftool import analyze_exiftool
@@ -32,62 +26,36 @@ from .analyzers.zsteg import analyze_zsteg
 from .app import create_app
 from .config import RESULT_FOLDER
 from .models import Image, Submission, db
+from .utils.sentry import initialize_sentry
 
 
 def analyze_image(submission_hash: str) -> None:
-    """
-    Analyze an image submission by running multiple analysis tools concurrently.
-
-    This function retrieves a submission and its associated image from the database,
-    then executes various image analysis tools in parallel threads. The analysis tools
-    include binwalk, decomposer, exiftool, foremost, strings, pngcheck, steghide,
-    zsteg, and image resize. If deep analysis is enabled, additional tools like
-    outguess are included.
-
-    Args:
-        submission_hash (str): The unique hash identifier of the submission to analyze.
-
-    Returns:
-        None
-
-    Raises:
-        Implicitly catches and handles exceptions during analysis, setting submission
-        status to "error" if an exception occurs.
-
-    Side Effects:
-        - Queries the database for the submission and associated image
-        - Updates submission status in the database ("running" -> "completed" or "error")
-        - Creates result directories and generates analysis output files
-        - Modifies the database session and commits changes
-    """
+    """Analyze an image submission by running multiple analysis tools concurrently."""
+    initialize_sentry()
     app = create_app()
     with app.app_context():
-        submission: Submission = Submission.query.get(submission_hash)  # type: ignore
-        image = Image.query.get_or_404(submission.image_hash)  # type: ignore
-
-        if not submission or not image:  # No submission found
-            sentry_sdk.capture_message(
-                f"Submission or image not found: {submission_hash}", level="warning"
-            )
+        submission = Submission.query.get(submission_hash)
+        if submission is None:
+            sentry_sdk.capture_message(f"Submission not found: {submission_hash}", level="warning")
             return
 
-        submission.status = "running"  # type: ignore
-        db.session.commit()  # pylint: disable=no-member
+        image = Image.query.get_or_404(submission.image_hash)
+        submission.status = "running"
+        db.session.commit()
 
         try:
-            img_path: Path = Path(image.file)
-            result_path: Path = RESULT_FOLDER / str(image.hash) / str(submission.hash)
+            img_path = Path(image.file)
+            result_path = RESULT_FOLDER / str(image.hash) / str(submission.hash)
             result_path.mkdir(parents=True, exist_ok=True)
 
             threads: list[threading.Thread] = []
 
-            def run_analyzer(analyzer_func: Any, *args: Any) -> None:
+            def run_analyzer(analyzer_func: Callable[..., None], *args: object) -> None:
                 """Run an analyzer function in a separate thread."""
                 analyzer_name = analyzer_func.__name__.replace("analyze_", "")
                 try:
                     analyzer_func(*args)
-                except Exception as e:
-                    print(f"Error in {analyzer_name}: {e}")
+                except (RuntimeError, ValueError, OSError, TypeError) as exc:
                     with sentry_sdk.push_scope() as scope:
                         scope.set_tag("analyzer", analyzer_name)
                         scope.set_tag("submission_hash", submission_hash)
@@ -102,7 +70,7 @@ def analyze_image(submission_hash: str) -> None:
                             },
                         )
                         scope.fingerprint = ["analyzer-error", analyzer_name]
-                        sentry_sdk.capture_exception(e)
+                        sentry_sdk.capture_exception(exc)
 
             analyzers = [
                 (analyze_binwalk, img_path, result_path),
@@ -122,13 +90,8 @@ def analyze_image(submission_hash: str) -> None:
                 (analyze_zsteg, img_path, result_path),
             ]
 
-            # Deep analysis only
             if submission.deep_analysis:
-                analyzers.extend(
-                    [
-                        (analyze_outguess, img_path, result_path),
-                    ]
-                )
+                analyzers.append((analyze_outguess, img_path, result_path))
 
             for analyzer in analyzers:
                 thread = threading.Thread(target=run_analyzer, args=analyzer)
@@ -138,11 +101,10 @@ def analyze_image(submission_hash: str) -> None:
             for thread in threads:
                 thread.join()
 
-            submission.status = "completed"  # type: ignore
-        except Exception as e:
-            sentry_sdk.capture_exception(e)
-            submission.status = "error"  # type: ignore
+            submission.status = "completed"
+        except (RuntimeError, ValueError, OSError, TypeError, SQLAlchemyError) as exc:
+            sentry_sdk.capture_exception(exc)
+            submission.status = "error"
         finally:
-            db.session.commit()  # pylint: disable=no-member
-            # Flush Sentry events - wait up to 5 seconds for events to be sent
+            db.session.commit()
             sentry_sdk.flush(timeout=5)
