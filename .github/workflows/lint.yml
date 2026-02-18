@@ -20,15 +20,16 @@ jobs:
         with:
           python-version: 3.12
 
-      - name: Install Python dependencies
-        run: |
-          pip install -r aperisolve/requirements-dev.txt
-          pip install -r aperisolve/requirements.txt
+      - name: Set up uv
+        uses: astral-sh/setup-uv@v6
+
+      - name: Sync Python dependencies
+        run: uv sync --extra dev
 
       - name: Run Ruff
         run: |
-          ruff check .
-          ruff format . --check
+          uv run ruff check .
+          uv run ruff format . --check
 
       - name: Run Pyright
-        run: pyright
+        run: uv run pyright

@@ -27,6 +27,7 @@ dependencies = [
 dev = [
     "ruff",
     "pyright",
+    "pre-commit",
     "types-Flask-SQLAlchemy",
     "sqlalchemy-stubs"
 ]

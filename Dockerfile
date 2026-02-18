@@ -43,6 +43,9 @@ FROM python:3.14-slim
 
 WORKDIR /app
 
+# Install uv binary
+COPY --from=ghcr.io/astral-sh/uv:0.8.22 /uv /uvx /bin/
+
 # Install runtime + stego tools
 RUN apt-get update && apt-get install -y --no-install-recommends \
     expect \
@@ -69,11 +72,12 @@ RUN dpkg -i /tmp/openstego.deb || apt-get install -f -y --no-install-recommends 
     && rm -rf /tmp/openstego.deb \
     && rm -rf /var/lib/apt/lists/*
 
-# Copy app
+# Copy Python package metadata and app
+COPY pyproject.toml README.md /app/
 COPY aperisolve/ /app/aperisolve/
 
-# Install Python dependencies
-RUN pip install --no-cache-dir -r /app/aperisolve/requirements.txt
+# Install Python dependencies from pyproject.toml
+RUN uv pip install --system --no-cache /app
 
 # Copy jphide and jsteg binaries
 COPY --from=builder /usr/local/bin/jphide /usr/local/bin/jphide
