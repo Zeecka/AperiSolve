@@ -5,6 +5,7 @@
 ![Lint](https://github.com/Zeecka/AperiSolve/actions/workflows/lint.yml/badge.svg)
 ![Docker](https://img.shields.io/badge/docker-compose-blue?logo=docker)
 ![Python Version](https://img.shields.io/badge/python-3.12%2B-blue)
+![UV](https://img.shields.io/badge/package-uv-46aef7)
 ![Ruff](https://img.shields.io/badge/lint-ruff-46aef7)
 ![Pyright](https://img.shields.io/badge/types-pyright-5a45ff)
 ![License](https://img.shields.io/github/license/Zeecka/AperiSolve)
