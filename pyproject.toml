@@ -1,5 +1,5 @@
 # Minimal Python project configuration for linters and type checkers.
-# This file centralizes config for ruff and pyright.
+# This file centralizes config for ruff and ty.
 
 [project]
 name = "aperisolve"
@@ -26,7 +26,7 @@ dependencies = [
 [project.optional-dependencies]
 dev = [
     "ruff",
-    "pyright",
+    "ty",
     "pre-commit",
     "types-Flask-SQLAlchemy",
     "sqlalchemy-stubs"
@@ -42,8 +42,3 @@ target-version = "py312"
 
 [tool.ruff.lint]
 select = ["ALL"]
-
-[tool.pyright]
-include = ["aperisolve"]
-pythonVersion = "3.12"
-typeCheckingMode = "standard"

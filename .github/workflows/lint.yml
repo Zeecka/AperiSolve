@@ -31,5 +31,5 @@ jobs:
           uv run ruff check .
           uv run ruff format . --check
 
-      - name: Run Pyright
-        run: uv run pyright
+      - name: Run ty
+        run: uv run ty check aperisolve

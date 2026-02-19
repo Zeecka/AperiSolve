@@ -69,10 +69,10 @@ Contributions to the web interface are welcome:
 This project enforces:
 
 - **Ruff** : Check + Format (line length 100)
-- **Pyright** : Type checking
+- **ty** : Type checking
 
 > [!TIP]
-> All tool configurations (Ruff, Pyright) are centralized in pyproject.toml.
+> All tool configurations (Ruff, ty) are centralized in pyproject.toml.
 > You can run each tool directly and it will automatically pick up the configuration.
 
 ### Setup
@@ -96,7 +96,7 @@ Run this script [lint.sh](lint.sh) at the project root folder.
 ```
 🧹 Running Ruff lint checks...
 🎨 Running Ruff format checks...
-🔍 Running Pyright type checks...
+🔍 Running ty type checks...
 
 ✅ All checks passed!
 ```
@@ -106,7 +106,7 @@ Equivalent manual commands:
 ```bash
 ruff check .
 ruff format . --check
-pyright
+ty check aperisolve
 ```
 
 **Option 2 - Pre-Commit hook**
@@ -121,9 +121,9 @@ repos:
   - id: ruff-check
 - repo: local
   hooks:
-    - id: pyright
-      name: pyright
-      entry: pyright
+    - id: ty-check
+      name: ty-check
+      entry: ty check
       types: [python]
       language: system
       pass_filenames: true

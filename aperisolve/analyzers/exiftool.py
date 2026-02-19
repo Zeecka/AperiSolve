@@ -13,8 +13,9 @@ class ExiftoolAnalyzer(SubprocessAnalyzer):
         super().__init__("exiftool", input_img, output_dir)
         self.cmd = ["exiftool", "-a", "-u", "-g1", self.img]
 
-    def process_output(self, stdout: str, _stderr: str) -> dict[str, str]:
+    def process_output(self, stdout: str, stderr: str) -> dict[str, str]:
         """Process the stdout into a list of lines."""
+        _ = stderr
         metadata: dict[str, str] = {}
         for line in stdout.split("\n"):
             if ":" in line:

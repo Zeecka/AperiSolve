@@ -63,8 +63,9 @@ class ColorRemappingAnalyzer(SubprocessAnalyzer):
 
         return remapped_img
 
-    def get_results(self, _password: str | None = None) -> dict[str, Any]:
+    def get_results(self, password: str | None = None) -> dict[str, Any]:
         """Analyze an image submission using color remapping."""
+        _ = password
         img = Image.open(self.input_img)
         converted = False
 

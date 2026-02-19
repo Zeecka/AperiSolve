@@ -33,9 +33,9 @@ class SteghideAnalyzer(SubprocessAnalyzer):
         outfile = str(self.get_extracted_dir() / safe_hidden_file)
         return ["steghide", "extract", "-sf", self.img, "-xf", outfile, "-p", password]
 
-    def is_error(self, _returncode: int, stdout: str, stderr: str, *, zip_exist: bool) -> bool:
+    def is_error(self, returncode: int, stdout: str, stderr: str, *, zip_exist: bool) -> bool:
         """Check if the result is an error."""
-        _ = zip_exist
+        _ = returncode, zip_exist
         match = re.search(r'embedded file "([^"]+)".*', stdout + stderr)
         embedded_filename = match.group(1) if match else None
 
@@ -45,12 +45,14 @@ class SteghideAnalyzer(SubprocessAnalyzer):
         # if bad file format or wrong password, raise an error
         return embedded_filename is None and extracted_filename is None
 
-    def process_output(self, _stdout: str, stderr: str) -> str | list[str] | dict[str, str]:
+    def process_output(self, stdout: str, stderr: str) -> str | list[str] | dict[str, str]:
         """Process the stdout into a list of lines."""
+        _ = stdout
         return [line for line in stderr.split("\n") if "wrote extracted data to" in line]
 
-    def process_error(self, _stdout: str, stderr: str) -> str:
+    def process_error(self, stdout: str, stderr: str) -> str:
         """Process stderr."""
+        _ = stdout
         if "the file format of the file" in stderr and "not supported" in stderr:
             return "The file format of the file is not supported (JPEG or BMP only)."
         return stderr

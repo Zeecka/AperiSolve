@@ -7,7 +7,7 @@
 ![Python Version](https://img.shields.io/badge/python-3.12%2B-blue)
 ![UV](https://img.shields.io/badge/package-uv-46aef7)
 ![Ruff](https://img.shields.io/badge/lint-ruff-46aef7)
-![Pyright](https://img.shields.io/badge/types-pyright-5a45ff)
+![ty](https://img.shields.io/badge/types-ty-5a45ff)
 ![License](https://img.shields.io/github/license/Zeecka/AperiSolve)
 ![GitHub Issues](https://img.shields.io/github/issues/Zeecka/AperiSolve)
 ![GitHub Pull Requests](https://img.shields.io/github/issues-pr/Zeecka/AperiSolve)

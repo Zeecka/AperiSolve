@@ -59,9 +59,13 @@ class SubprocessAnalyzer(ABC):
                 process.communicate(),
                 timeout=MAX_PENDING_TIME,
             )
+            returncode = process.returncode
+            if returncode is None:
+                msg = "Subprocess exited without a return code"
+                raise RuntimeError(msg)
             return CompletedProcess(
                 args=cmd,
-                returncode=process.returncode,
+                returncode=returncode,
                 stdout=stdout_raw.decode("utf-8", errors="replace"),
                 stderr=stderr_raw.decode("utf-8", errors="replace"),
             )
@@ -184,19 +188,22 @@ class SubprocessAnalyzer(ABC):
             self.update_result({"status": "error", "error": str(e)})
             raise
 
-    def is_error(self, _returncode: int, _stdout: str, stderr: str, *, zip_exist: bool) -> bool:
+    def is_error(self, returncode: int, stdout: str, stderr: str, *, zip_exist: bool) -> bool:
         """Check if the result is an error."""
-        _ = zip_exist
+        _ = returncode, stdout, zip_exist
         return len(stderr) > 0
 
-    def process_output(self, stdout: str, _stderr: str) -> str | list[str] | dict[str, str]:
+    def process_output(self, stdout: str, stderr: str) -> str | list[str] | dict[str, str]:
         """Process the stdout into a list of lines."""
+        _ = stderr
         return [line for line in stdout.split("\n") if line] if stdout else []
 
-    def process_error(self, _stdout: str, stderr: str) -> str:
+    def process_error(self, stdout: str, stderr: str) -> str:
         """Process the stderr."""
+        _ = stdout
         return stderr
 
-    def process_note(self, _stdout: str, _stderr: str) -> str | None:
+    def process_note(self, stdout: str, stderr: str) -> str | None:
         """Process the stdout for informational purposes."""
+        _ = stdout, stderr
         return None

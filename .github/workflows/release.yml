@@ -8,6 +8,8 @@ on:
 jobs:
   docker-releases:
     runs-on: ubuntu-latest
+    env:
+      RELEASE_VERSION: ${{ github.ref_name }}
 
     steps:
     - name: Get release version

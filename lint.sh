@@ -9,7 +9,7 @@ ruff check .
 echo "🎨 Running Ruff format checks..."
 ruff format . --check
 
-echo "🔍 Running Pyright type checks..."
-pyright
+echo "🔍 Running ty type checks..."
+ty check aperisolve
 
 echo "✅ All checks passed!"

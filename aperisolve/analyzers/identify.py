@@ -13,8 +13,9 @@ class IdentifyAnalyzer(SubprocessAnalyzer):
         super().__init__("identify", input_img, output_dir)
         self.cmd = ["identify", "-verbose", self.img]
 
-    def process_output(self, stdout: str, _stderr: str) -> str | list[str]:
+    def process_output(self, stdout: str, stderr: str) -> str | list[str]:
         """Process the stdout into a list of lines."""
+        _ = stderr
         return [line for line in stdout.split("\n") if line.strip()]
 
 

@@ -13,13 +13,14 @@ class PngcheckAnalyzer(SubprocessAnalyzer):
         super().__init__("pngcheck", input_img, output_dir)
         self.cmd = ["pngcheck", "-v", self.img]
 
-    def is_error(self, _returncode: int, stdout: str, _stderr: str, *, zip_exist: bool) -> bool:
+    def is_error(self, returncode: int, stdout: str, stderr: str, *, zip_exist: bool) -> bool:
         """Check whether the file is an unsupported format."""
-        _ = zip_exist
+        _ = returncode, stderr, zip_exist
         return "this is neither a PNG or JNG image nor a MNG stream" in stdout
 
-    def process_error(self, stdout: str, _stderr: str) -> str:
+    def process_error(self, stdout: str, stderr: str) -> str:
         """Process the stderr."""
+        _ = stderr
         if "this is neither a PNG or JNG image nor a MNG stream" in stdout:
             return "The file format of the file is not supported (PNG or JNG only)."
         return stdout

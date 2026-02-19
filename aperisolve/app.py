@@ -7,6 +7,7 @@ import shutil
 import time
 from datetime import UTC, datetime
 from pathlib import Path
+from typing import Any, cast
 
 import sentry_sdk
 from flask import Flask, Response, abort, jsonify, render_template, request, send_file
@@ -33,7 +34,7 @@ from .utils.sentry import initialize_sentry
 
 def _configure_app(app: Flask) -> None:
     """Configure Flask and extension settings."""
-    app.json.sort_keys = False
+    app.config["JSON_SORT_KEYS"] = False
     app.config["PROJECT_VERSION"] = PROJECT_VERSION
     app.config["CUSTOM_EXTERNAL_SCRIPT"] = CUSTOM_EXTERNAL_SCRIPT
     app.config["SQLALCHEMY_DATABASE_URI"] = DB_URI
@@ -45,7 +46,7 @@ def _configure_app(app: Flask) -> None:
 
 def _extract_unique_ips(upload_logs: list[UploadLog]) -> set[str]:
     """Return unique non-empty uploader IP addresses from logs."""
-    return {log.ip_address for log in upload_logs if log.ip_address}
+    return {str(log.ip_address) for log in upload_logs if log.ip_address}
 
 
 def _archive_original_image(
@@ -215,7 +216,8 @@ def _upload_image(app: Flask) -> tuple[Response, int]:
         db.session.add(sub_img)
         db.session.commit()
 
-    sub_img.upload_count += 1
+    sub_img_any = cast("Any", sub_img)
+    sub_img_any.upload_count = int(sub_img_any.upload_count or 0) + 1
     db.session.commit()
 
     submission_path.mkdir(parents=True, exist_ok=True)
@@ -232,7 +234,8 @@ def _upload_image(app: Flask) -> tuple[Response, int]:
         db.session.add(submission)
         db.session.commit()
 
-    submission.status = "pending"
+    submission_any = cast("Any", submission)
+    submission_any.status = "pending"
     db.session.commit()
 
     app.config["REDIS_QUEUE"].enqueue(

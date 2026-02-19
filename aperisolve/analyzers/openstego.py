@@ -26,8 +26,9 @@ class OpenStegoAnalyzer(SubprocessAnalyzer):
         cmd += [self.img, "-xd", str(self.get_extracted_dir()), "-p", password]
         return cmd
 
-    def is_error(self, _returncode: int, _stdout: str, stderr: str, *, zip_exist: bool) -> bool:
+    def is_error(self, returncode: int, stdout: str, stderr: str, *, zip_exist: bool) -> bool:
         """Check if the result is an error."""
+        _ = returncode, stdout
         return not zip_exist and "Extracted file: " not in stderr
 
     def analyze(self, password: str | None = None) -> None:
@@ -42,12 +43,14 @@ class OpenStegoAnalyzer(SubprocessAnalyzer):
             self.update_result({"status": "error", "error": str(e)})
             raise
 
-    def process_output(self, _stdout: str, stderr: str) -> str | list[str] | dict[str, str]:
+    def process_output(self, stdout: str, stderr: str) -> str | list[str] | dict[str, str]:
         """Process the stdout/stderr."""
+        _ = stdout
         return stderr
 
-    def process_error(self, _stdout: str, stderr: str) -> str:
+    def process_error(self, stdout: str, stderr: str) -> str:
         """Process the stderr."""
+        _ = stdout
         if "OpenStego is a steganography application" in stderr:
             return "OpenStego needs a password to work."
         return stderr

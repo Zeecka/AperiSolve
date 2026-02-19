@@ -13,8 +13,9 @@ class FileAnalyzer(SubprocessAnalyzer):
         super().__init__("file", input_img, output_dir)
         self.cmd = ["file", "-b", self.img]
 
-    def process_output(self, stdout: str, _stderr: str) -> str | list[str] | dict[str, str]:
+    def process_output(self, stdout: str, stderr: str) -> str | list[str] | dict[str, str]:
         """Process the stdout into a list of lines."""
+        _ = stderr
         return stdout
 
 

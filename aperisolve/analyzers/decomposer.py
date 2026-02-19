@@ -19,8 +19,9 @@ class DecomposerAnalyzer(SubprocessAnalyzer):
         """Initialize the decomposer analyzer."""
         super().__init__("decomposer", input_img, output_dir)
 
-    def get_results(self, _: str | None = None) -> dict[str, Any]:
+    def get_results(self, password: str | None = None) -> dict[str, Any]:
         """Analyze an image submission using bits decomposition."""
+        _ = password
         img = Image.open(self.input_img)
         converted = False
 

@@ -7,6 +7,7 @@ from sentry_sdk.integrations.flask import FlaskIntegration
 from sentry_sdk.integrations.rq import RqIntegration
 from sentry_sdk.integrations.sqlalchemy import SqlalchemyIntegration
 from sentry_sdk.integrations.threading import ThreadingIntegration
+from sentry_sdk.utils import BadDsn
 
 SENTRY_DSN = os.environ.get("SENTRY_DSN")
 SENTRY_ENVIRONMENT = os.environ.get("SENTRY_ENVIRONMENT", "development")
@@ -38,7 +39,7 @@ def initialize_sentry() -> None:
             send_default_pii=False,
             enable_tracing=True,
         )
-    except sentry_sdk.utils.BadDsn:
+    except BadDsn:
         sentry_sdk.capture_message("Invalid Sentry DSN configuration", level="warning")
     except RuntimeError as exc:
         sentry_sdk.capture_exception(exc)

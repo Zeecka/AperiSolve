@@ -32,8 +32,9 @@ class PCRTAnalyzer(SubprocessAnalyzer):
         with extra_path.open("wb") as f:
             f.write(data)
 
-    def get_results(self, _password: str | None = None) -> dict[str, Any]:
+    def get_results(self, password: str | None = None) -> dict[str, Any]:
         """Analyze PNG and attempt repairs."""
+        _ = password
         try:
             with self.input_img.open("rb") as f:
                 data = f.read()
@@ -55,7 +56,7 @@ class PCRTAnalyzer(SubprocessAnalyzer):
 
             # Save repaired PNG if any fixes were made
             if fixed and png.repaired_data:
-                url = self._write_repaired_data(png.repaired_data)
+                url = self._write_repaired_data(bytes(png.repaired_data))
                 result["note"] = "PNG was repaired and saved"
                 result["png_images"] = [url]
 

@@ -18,8 +18,9 @@ class BinwalkAnalyzer(SubprocessAnalyzer):
         """Return the binwalk extraction directory."""
         return self.output_dir / f"_{self.input_img.name}.extracted"
 
-    def is_error(self, _returncode: int, _stdout: str, stderr: str, *, zip_exist: bool) -> bool:
+    def is_error(self, returncode: int, stdout: str, stderr: str, *, zip_exist: bool) -> bool:
         """Check whether binwalk execution failed."""
+        _ = returncode, stdout
         return len(stderr) > 0 and not zip_exist
 
 

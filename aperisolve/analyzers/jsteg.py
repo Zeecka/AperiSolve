@@ -13,8 +13,9 @@ class JstegAnalyzer(SubprocessAnalyzer):
         super().__init__("jsteg", input_img, output_dir)
         self.cmd = ["jsteg", "reveal", self.img]
 
-    def process_output(self, stdout: str, _stderr: str) -> str | list[str]:
+    def process_output(self, stdout: str, stderr: str) -> str | list[str]:
         """Process the stdout into lines."""
+        _ = stderr
         if stdout.strip():
             return [line for line in stdout.split("\n") if line.strip()]
         return []

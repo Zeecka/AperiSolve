@@ -6,6 +6,7 @@ import struct
 import time
 import zlib
 from datetime import UTC, datetime
+from typing import cast
 
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy import (
@@ -26,7 +27,7 @@ from aperisolve.utils.utils import get_resolutions, get_valid_depth_color_pairs
 db: SQLAlchemy = SQLAlchemy()
 
 
-class Image(db.Model):  # type: ignore[reportGeneralTypeIssues]
+class Image(db.Model):
     """Model representing an image file in the database."""
 
     hash = Column(String(64), primary_key=True, unique=True, nullable=False)
@@ -47,7 +48,7 @@ class Image(db.Model):  # type: ignore[reportGeneralTypeIssues]
     submissions = db.relationship("Submission", backref="image", lazy=True)
 
 
-class Submission(db.Model):  # type: ignore[reportGeneralTypeIssues]
+class Submission(db.Model):
     """Model representing a file submission for analysis.
 
     Submissions are defined with a filename, password, image content, and analysis option.
@@ -63,7 +64,7 @@ class Submission(db.Model):  # type: ignore[reportGeneralTypeIssues]
     image_hash = Column(String, db.ForeignKey("image.hash"), nullable=False)
 
 
-class IHDR(db.Model):  # type: ignore[reportGeneralTypeIssues]
+class IHDR(db.Model):
     """IHDR CRC lookup table with direct parameter storage."""
 
     iid = Column(Integer, primary_key=True, autoincrement=True)
@@ -76,16 +77,19 @@ class IHDR(db.Model):  # type: ignore[reportGeneralTypeIssues]
 
     def to_ihdr_bytes(self) -> bytes:
         """Convert database record to IHDR chunk data (13 bytes)."""
+        bit_depth = cast("int", self.bit_depth)
+        color_type = cast("int", self.color_type)
+        interlace = cast("int", self.interlace)
         return (
             struct.pack(">I", self.width)
             + struct.pack(">I", self.height)
             + bytes(
                 [
-                    self.bit_depth,
-                    self.color_type,
+                    bit_depth,
+                    color_type,
                     0,
                     0,
-                    self.interlace,
+                    interlace,
                 ],
             )
         )
@@ -107,7 +111,7 @@ class IHDR(db.Model):  # type: ignore[reportGeneralTypeIssues]
         return zlib.crc32(b"IHDR" + ihdr_data) & 0xFFFFFFFF
 
 
-class UploadLog(db.Model):  # type: ignore[reportGeneralTypeIssues]
+class UploadLog(db.Model):
     """Model representing upload activity logs."""
 
     id = Column(Integer, primary_key=True, autoincrement=True)

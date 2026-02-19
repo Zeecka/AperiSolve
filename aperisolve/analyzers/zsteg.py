@@ -13,9 +13,9 @@ class ZstegAnalyzer(SubprocessAnalyzer):
         super().__init__("zsteg", input_img, output_dir)
         self.cmd = ["zsteg", self.img]
 
-    def is_error(self, _returncode: int, stdout: str, stderr: str, *, zip_exist: bool) -> bool:
+    def is_error(self, returncode: int, stdout: str, stderr: str, *, zip_exist: bool) -> bool:
         """Check whether zsteg reported an error."""
-        _ = zip_exist
+        _ = returncode, zip_exist
         return bool(stderr) or "PNG::NotSupported" in stdout[:100]
 
     def process_error(self, stdout: str, stderr: str) -> str:
