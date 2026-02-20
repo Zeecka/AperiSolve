@@ -52,7 +52,11 @@ def analyze_image(submission_hash: str) -> None:
 
             def run_analyzer(analyzer_func: Callable[..., None], *args: object) -> None:
                 """Run an analyzer function in a separate thread."""
-                analyzer_name = analyzer_func.__name__.replace("analyze_", "")
+                analyzer_name = getattr(
+                    analyzer_func,
+                    "__name__",
+                    analyzer_func.__class__.__name__,
+                ).replace("analyze_", "")
                 try:
                     analyzer_func(*args)
                 except (RuntimeError, ValueError, OSError, TypeError) as exc:
