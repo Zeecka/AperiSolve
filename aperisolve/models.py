@@ -136,7 +136,9 @@ def fill_ihdr_db() -> None:
         combinations = itertools.product(resolutions, bit_color_pairs, interlace_methods)
 
         count = 0
-        with db.session.no_autoflush:
+        previous_autoflush = db.session.autoflush
+        db.session.autoflush = False
+        try:
             for (width, height), (bit_depth, color_type), interlace in combinations:
                 crc = IHDR.compute_crc(width, height, bit_depth, color_type, interlace)
                 db.session.add(
@@ -152,6 +154,8 @@ def fill_ihdr_db() -> None:
                 count += 1
                 if count % 5000 == 0:
                     db.session.commit()
+        finally:
+            db.session.autoflush = previous_autoflush
     except SQLAlchemyError:
         db.session.rollback()
 
