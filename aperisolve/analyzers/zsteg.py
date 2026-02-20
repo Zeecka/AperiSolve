@@ -1,6 +1,3 @@
-# flake8: noqa: E203,E501,W503
-# pylint: disable=C0413,W0718,R0903,R0801
-# mypy: disable-error-code=unused-awaitable
 """Zsteg Analyzer for Image Submissions."""
 
 from pathlib import Path
@@ -12,10 +9,13 @@ class ZstegAnalyzer(SubprocessAnalyzer):
     """Analyzer for zsteg."""
 
     def __init__(self, input_img: Path, output_dir: Path) -> None:
+        """Initialize the zsteg analyzer."""
         super().__init__("zsteg", input_img, output_dir)
         self.cmd = ["zsteg", self.img]
 
-    def is_error(self, returncode: int, stdout: str, stderr: str, zip_exist: bool) -> bool:
+    def is_error(self, returncode: int, stdout: str, stderr: str, *, zip_exist: bool) -> bool:
+        """Check whether zsteg reported an error."""
+        _ = returncode, zip_exist
         return bool(stderr) or "PNG::NotSupported" in stdout[:100]
 
     def process_error(self, stdout: str, stderr: str) -> str:

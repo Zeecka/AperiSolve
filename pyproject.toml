@@ -1,9 +1,9 @@
 # Minimal Python project configuration for linters and type checkers.
-# This file centralizes config for black, isort, flake8, mypy, pylint.
+# This file centralizes config for ruff and ty.
 
 [project]
 name = "aperisolve"
-version = "3.1.3"
+version = "3.2.0"
 description = "Open-source steganalysis web platform for automated image analysis and steganography detection"
 readme = "README.md"
 requires-python = ">=3.12"
@@ -11,37 +11,34 @@ license = {text = "MIT"}
 authors = [
     {name = "Zeecka"}
 ]
+dependencies = [
+    "Flask",
+    "Flask-SQLAlchemy",
+    "numpy",
+    "redis",
+    "rq",
+    "psycopg2-binary",
+    "Pillow",
+    "gunicorn",
+    "sentry-sdk[flask,sqlalchemy,rq]"
+]
 
-[tool.black]
+[project.optional-dependencies]
+dev = [
+    "ruff",
+    "ty",
+    "pre-commit",
+    "types-Flask-SQLAlchemy",
+    "sqlalchemy-stubs"
+]
+
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[tool.ruff]
 line-length = 100
-target-version = ["py312"]
+target-version = "py312"
 
-[tool.isort]
-profile = "black"
-
-[tool.flake8]
-extend-ignore = ["E203", "E501", "W503"]
-max-line-length = 100
-
-[tool.mypy]
-disallow_any_generics = true
-disallow_untyped_defs = true
-follow_imports = "skip"
-ignore_missing_imports = true
-disable_error_code = ["unused-awaitable"]
-
-[tool.pylint]
-disable = ["W0511", "W0718", "R0801", "R0903", "R0914"]
-
-[tool.pre-commit]
-skip = true
-
-[tool.doc]
-description = """
-Linting and type checking configuration for this project.
-- Black: code formatting
-- Isort: import sorting
-- Flake8: code style
-- Mypy: static typing
-- Pylint: code quality
-"""
+[tool.ruff.lint]
+select = ["ALL"]

@@ -1,6 +1,3 @@
-# flake8: noqa: E203,E501,W503
-# pylint: disable=W0718,R0903,R0801
-# mypy: disable-error-code=unused-awaitable
 """Sentry initialization for Aperisolve."""
 
 import os
@@ -10,6 +7,7 @@ from sentry_sdk.integrations.flask import FlaskIntegration
 from sentry_sdk.integrations.rq import RqIntegration
 from sentry_sdk.integrations.sqlalchemy import SqlalchemyIntegration
 from sentry_sdk.integrations.threading import ThreadingIntegration
+from sentry_sdk.utils import BadDsn
 
 SENTRY_DSN = os.environ.get("SENTRY_DSN")
 SENTRY_ENVIRONMENT = os.environ.get("SENTRY_ENVIRONMENT", "development")
@@ -20,7 +18,6 @@ SENTRY_RELEASE = os.environ.get("SENTRY_RELEASE", "1.0.0")
 
 def initialize_sentry() -> None:
     """Initialize Sentry SDK once, safely."""
-
     # No DSN → do nothing
     # Prevent double initialization (Flask + RQ, CLI, tests, etc.)
     if not SENTRY_DSN or sentry_sdk.Hub.current.client is not None:
@@ -42,7 +39,7 @@ def initialize_sentry() -> None:
             send_default_pii=False,
             enable_tracing=True,
         )
-    except sentry_sdk.utils.BadDsn as e:
-        print(f"Sentry DSN is invalid, skipping Sentry initialization: {e}")
-    except Exception as e:
-        print(f"Sentry initialization failed: {e}")
+    except BadDsn:
+        sentry_sdk.capture_message("Invalid Sentry DSN configuration", level="warning")
+    except RuntimeError as exc:
+        sentry_sdk.capture_exception(exc)

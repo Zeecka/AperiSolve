@@ -27,6 +27,7 @@ Want to add support for a new steganography or forensics tool? We'd love that!
 > Check out our detailed tutorial: [Adding a New Analyzer](docs/adding-analyzer.md)
 
 **Quick checklist for new analyzers:**
+
 - [ ] Create analyzer file in `analyzers/`
 - [ ] Extend `SubprocessAnalyzer` base class
 - [ ] Register in `workers.py`
@@ -37,6 +38,7 @@ Want to add support for a new steganography or forensics tool? We'd love that!
 ### 🐛 Bug Fixes
 
 Found a bug? Please:
+
 - Check if it's already reported in [Issues](../../issues)
 - If not, open a new issue with reproduction steps
 - Feel free to submit a PR with the fix!
@@ -44,6 +46,7 @@ Found a bug? Please:
 ### 📚 Documentation
 
 Help us improve:
+
 - Fix typos or unclear explanations
 - Add examples and use cases
 - Improve installation instructions
@@ -52,6 +55,7 @@ Help us improve:
 ### 🎨 UI/UX Improvements
 
 Contributions to the web interface are welcome:
+
 - Better error messages
 - Improved result presentation
 - Mobile responsiveness
@@ -63,14 +67,12 @@ Contributions to the web interface are welcome:
 > Follow the project’s code style and run linters before submitting any code.
 
 This project enforces:
-- **Black** : line length 100
-- **Isort** : profile black
-- **Flake8** : ignoring E203, E501, W503
-- **Pylint** : ignoring W0511, W0718, R0801, R0903, R0914
-- **Mypy** : ignoring unused-awaitable
+
+- **Ruff** : Check + Format (line length 100)
+- **ty** : Type checking
 
 > [!TIP]
-> All tool configurations (Black, Isort, Flake8, Mypy, Pylint) are centralized in pyproject.toml.
+> All tool configurations (Ruff, ty) are centralized in pyproject.toml.
 > You can run each tool directly and it will automatically pick up the configuration.
 
 ### Setup
@@ -80,12 +82,9 @@ This project enforces:
 
 ```bash
 # Create & activate a virtual environment
-python3 -m venv .venv
-source .venv/bin/activate
-
-# Install dependencies
-pip install -r aperisolve/requirements.txt
-pip install -r aperisolve/requirements-dev.txt
+uv venv
+# Install project + development dependencies from pyproject.toml
+uv sync --extra dev
 ```
 
 ### Running Tools Manually
@@ -95,20 +94,19 @@ pip install -r aperisolve/requirements-dev.txt
 Run this script [lint.sh](lint.sh) at the project root folder.
 
 ```
-🖤 Running Black...
-All done! ✨ 🍰 ✨
-25 files left unchanged.
-📦 Running Isort...
-Skipped 2 files
-🐍 Running Flake8...
-🔍 Running Mypy...
-Success: no issues found in 25 source files
-⚡ Running Pylint...
-
-------------------------------------
-Your code has been rated at 10.00/10
+🧹 Running Ruff lint checks...
+🎨 Running Ruff format checks...
+🔍 Running ty type checks...
 
 ✅ All checks passed!
+```
+
+Equivalent manual commands:
+
+```bash
+ruff check .
+ruff format . --check
+ty check aperisolve
 ```
 
 **Option 2 - Pre-Commit hook**
@@ -117,45 +115,18 @@ Create a pre-commit hooks file [.pre-commit-config.yaml](#) at the project root 
 
 ```bash
 repos:
-- repo: https://github.com/psf/black
-  rev: 25.12.0
+- repo: https://github.com/astral-sh/ruff-pre-commit
+  rev: v0.13.0
   hooks:
-  - id: black
-    args: ['--line-length', '100']
-- repo: https://github.com/pycqa/isort
-  rev: 7.0.0
-  hooks:
-  - id: isort
-    args: ['--profile', 'black']
-- repo: https://github.com/PyCQA/flake8
-  rev: 7.3.0
-  hooks:
-  - id: flake8
-    args: ['--extend-ignore','E203,E501,W503']
-- repo: https://github.com/pylint-dev/pylint
-  rev: v4.0.4
-  hooks:
-  - id: pylint
-    args: ['--disable', 'W0511,W0718,R0801,R0903,R0914']
-    language: system
+  - id: ruff-check
 - repo: local
   hooks:
-    - id: mypy
-      name: mypy
-      entry: mypy
+    - id: ty-check
+      name: ty-check
+      entry: ty check
       types: [python]
       language: system
       pass_filenames: true
-      args:
-        [
-          "--disallow-any-generics",
-          "--disallow-untyped-def",
-          "--follow-imports",
-          "skip",
-          "--ignore-missing-imports",
-          "--disable-error-code",
-          "unused-awaitable",
-        ]
 ```
 
 Then run the following command so each staged files will be checked while commited.
@@ -173,20 +144,20 @@ pre-commit run --all-files
 > [!NOTE]
 > Continuous Integration (CI) runs all checks on every PR. Ensure your code passes before submitting.
 
-
 ## Pull Request Guidelines
 
 Use clear, descriptive titles:
+
 - ✅ `Add stegdetect analyzer`
 - ✅ `Fix binwalk extraction error handling`
 - ✅ `Update documentation for password-protected tools`
 - ❌ `Update code`
 - ❌ `Fix bug`
 
-
 ### Commit Messages
 
 Write clear, concise commit messages:
+
 ```bash
 # Good
 git commit -m "Add zsteg analyzer for PNG steganography detection"
@@ -204,11 +175,10 @@ git commit -m "fix"
 
 If your contribution needs new dependencies:
 
-1. **Python packages**: Add to `requirements.txt`
+1. **Python packages**: Add to `pyproject.toml` (`[project.dependencies]` or `[project.optional-dependencies.dev]`)
 2. **System tools**: Add to `Dockerfile`
 3. **Explain why** in your PR description
 4. **Keep dependencies minimal** - avoid adding large libraries for small features
-
 
 ## Useful commands
 
@@ -234,6 +204,7 @@ docker cp aperisolve-web:/app/aperisolve/results/filename.ext /path/to/backup/fi
 
 > [!WARNING]
 > If switching between dev and production compose files, remove the `results` directory or mounted volume to avoid conflicts:
+>
 > ```bash
 > rm -rf aperisolve/results
 > ```
@@ -250,6 +221,7 @@ RUN apt-get update && apt-get install -y \
 ```
 
 Or for tools requiring compilation:
+
 ```dockerfile
 # Builder stage example (jphide)
 RUN git clone https://github.com/h3xx/jphs.git /tmp/jphs && \

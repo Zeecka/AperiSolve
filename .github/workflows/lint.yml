@@ -20,19 +20,16 @@ jobs:
         with:
           python-version: 3.12
 
-      - name: Install Python dependencies
-        run: |
-          pip install -r aperisolve/requirements-dev.txt
-          pip install -r aperisolve/requirements.txt
+      - name: Set up uv
+        uses: astral-sh/setup-uv@v6
 
-      - name: Run linters
-        uses: wearerequired/lint-action@v2
-        with:
-          black: true
-          black_args: "--line-length=100"
-          flake8: true
-          flake8_args: "--ignore=E203,E501,W503"
-          pylint: true
-          pylint_args: "--disable W0511,W0718,R0801,R0903,R0914"
-          mypy: true
-          mypy_args: "--disallow-any-generics --disallow-untyped-def --follow-imports skip --ignore-missing-imports --disable-error-code unused-awaitable"
+      - name: Sync Python dependencies
+        run: uv sync --extra dev
+
+      - name: Run Ruff
+        run: |
+          uv run ruff check .
+          uv run ruff format . --check
+
+      - name: Run ty
+        run: uv run ty check aperisolve

@@ -1,16 +1,14 @@
-# flake8: noqa: E203,E501,W503
-# pylint: disable=C0413,W0718,R0903,R0801,R0902
-# mypy: disable-error-code=unused-awaitable
-"""PNG Class for analyzer modules"""
+"""PNG Class for analyzer modules."""
 
 import itertools
 import re
 import struct
 import zlib
-from typing import Any, Optional
+from typing import Any
 
-from ..app import create_app
-from ..models import IHDR
+from aperisolve.app import create_app
+from aperisolve.models import IHDR
+
 from .utils import int2hex, str2hex
 
 __author__ = [
@@ -20,11 +18,14 @@ __author__ = [
     "sherlly (https://github.com/sherlly/PCRT)",
 ]
 
+IDAT_NOT_FOUND_OFFSET = -5
+
 
 class PNG:
     """PNG file analyzer and repair tool."""
 
     def __init__(self, data: bytes) -> None:
+        """Initialize PNG parser state for a binary payload."""
         self.data = data
         self.width = self.height = self.bits = self.mode = 0
         self.compression = self.filter = self.interlace = self.channel = 0
@@ -47,7 +48,7 @@ class PNG:
         """Check if data contains PNG signature chunks."""
         return all(p in data for p in [b"IHDR", b"IDAT", b"IEND"])
 
-    def _check_crc(self, chunk_type: bytes, chunk_data: bytes, checksum: bytes) -> Optional[bytes]:
+    def _check_crc(self, chunk_type: bytes, chunk_data: bytes, checksum: bytes) -> bytes | None:
         """Check CRC of chunk."""
         calc_crc = struct.pack("!I", zlib.crc32(chunk_type + chunk_data))
         return calc_crc if calc_crc != checksum else None
@@ -101,7 +102,8 @@ class PNG:
         return True
 
     def _find_ancillary(
-        self, data: bytes
+        self,
+        data: bytes,
     ) -> tuple[dict[bytes, list[bytes]], dict[bytes, list[bytes]], dict[bytes, Any]]:
         """Find ancillary chunks in PNG data with an optimized single pass."""
         ancillary = [
@@ -165,8 +167,10 @@ class PNG:
         return txt_content, image_content, crcs
 
     def check_chunks(self) -> bool:
-        """Copy ancillary chunks (like PLTE) from original data to repaired_data with crc
-        validation."""
+        """Copy ancillary chunks (like PLTE) from original data to repaired_data with CRC.
+
+        validation.
+        """
         critical_ancillary = [
             b"PLTE",
             b"tRNS",
@@ -222,8 +226,51 @@ class PNG:
 
         return True
 
+    def _lookup_ihdr_from_db(self, chunk_type: bytes, crc: bytes) -> bytes | None:
+        """Try to recover IHDR bytes from known CRC values in the database."""
+        crc_int = struct.unpack("!I", crc)[0]
+        app = create_app()
+        with app.app_context():
+            matches = IHDR.query.filter_by(crc=crc_int).all()
+
+        if not matches:
+            return None
+
+        self._log(f"Found {len(matches)} matching IHDR configuration(s) in database")
+        match = matches[0]
+        test_ihdr = match.to_ihdr_bytes()
+        if self._check_crc(chunk_type, test_ihdr, crc):
+            self._log("Database match found but CRC verification failed")
+            return None
+
+        self._log(
+            f"Recovered IHDR: {match.width}x{match.height}, "
+            f"bit_depth={match.bit_depth}, "
+            f"color_type={match.color_type}, "
+            f"interlace={match.interlace}",
+        )
+        return test_ihdr
+
+    def _bruteforce_ihdr_dimensions(
+        self,
+        chunk_type: bytes,
+        ihdr: bytes,
+        crc: bytes,
+    ) -> bytes | None:
+        """Fallback recovery for width and height by brute-force CRC matching."""
+        self._log("No database match found, falling back to exhaustive search...")
+        for width in range(1, 5000):
+            for height in range(1, 5000):
+                test_ihdr = struct.pack(">I", width) + struct.pack(">I", height) + ihdr[16:21]
+                if not self._check_crc(chunk_type, test_ihdr, crc):
+                    self._log(
+                        f"Found correct dimensions via exhaustive search: {width}x{height}",
+                    )
+                    return test_ihdr
+        return None
+
     def check_ihdr(self) -> bool:
-        """Check and repair IHDR chunk using database lookup - WITH OPTIMIZED EXHAUSTIVE SEARCH."""
+        """Check and repair IHDR chunk using database lookup and exhaustive fallback."""
         pos, ihdr = self._find_ihdr(self.data)
         if pos == -1:
             self._error("Lost IHDR chunk")
@@ -239,43 +286,11 @@ class PNG:
             self._log(f"Chunk crc: {str2hex(crc)}, Correct crc: {str2hex(calc_crc)}")
             self._log("Looking up CRC in database...")
 
-            crc_int = struct.unpack("!I", crc)[0]
-
-            # Database lookup
-            app = create_app()
-            with app.app_context():
-                matches = IHDR.query.filter_by(crc=crc_int).all()
-
-            if matches:
-                self._log(f"Found {len(matches)} matching IHDR configuration(s) in database")
-                match = matches[0]
-                test_ihdr = match.to_ihdr_bytes()
-
-                if not self._check_crc(chunk_type, test_ihdr, crc):
-                    ihdr = ihdr[:8] + test_ihdr + crc
-                    self._log(
-                        f"Recovered IHDR: {match.width}x{match.height}, "
-                        f"bit_depth={match.bit_depth}, "
-                        f"color_type={match.color_type}, "
-                        f"interlace={match.interlace}"
-                    )
-                    fixed = True
-                else:
-                    self._log("Database match found but CRC verification failed")
-
-            # Fallback: exhaustive search if database lookup fails
-            if not fixed:
-                self._log("No database match found, falling back to exhaustive search...")
-                for w in range(1, 5000):
-                    for h in range(1, 5000):
-                        test_ihdr = struct.pack(">I", w) + struct.pack(">I", h) + ihdr[16:21]
-                        if not self._check_crc(chunk_type, test_ihdr, crc):
-                            ihdr = ihdr[:8] + test_ihdr + crc
-                            self._log(f"Found correct dimensions via exhaustive search: {w}x{h}")
-                            fixed = True
-                            break
-                    if fixed:
-                        break
+            if (recovered_ihdr := self._lookup_ihdr_from_db(chunk_type, crc)) or (
+                recovered_ihdr := self._bruteforce_ihdr_dimensions(chunk_type, ihdr, crc)
+            ):
+                ihdr = ihdr[:8] + recovered_ihdr + crc
+                fixed = True
 
             if not fixed:
                 self._error("Could not recover IHDR dimensions")
@@ -289,8 +304,12 @@ class PNG:
         return fixed
 
     def _fix_dos2unix(
-        self, chunk_type: bytes, chunk_data: bytes, crc: bytes, count: int
-    ) -> Optional[bytes]:
+        self,
+        chunk_type: bytes,
+        chunk_data: bytes,
+        crc: bytes,
+        count: int,
+    ) -> bytes | None:
         """Fix DOS to Unix line ending conversion."""
         pos_list = []
         pos = -1
@@ -307,7 +326,7 @@ class PNG:
     def check_idat(self) -> bool:
         """Check and repair IDAT chunks."""
         idat_begin = self.data.find(b"IDAT") - 4
-        if idat_begin == -5:
+        if idat_begin == IDAT_NOT_FOUND_OFFSET:
             self._error("Lost all IDAT chunks")
             return False
 
@@ -322,43 +341,50 @@ class PNG:
         for i, pos1 in enumerate(pos_list):
             if i + 1 == len(pos_list):
                 idat_table.append(
-                    self.data[pos1 - 4 : pos_iend - 4 if pos_iend != -1 else len(self.data)]
+                    self.data[pos1 - 4 : pos_iend - 4 if pos_iend != -1 else len(self.data)],
                 )
             else:
                 idat_table.append(self.data[pos1 - 4 : pos_list[i + 1] - 4])
 
         offset = idat_begin
         fixed = False
-        for idat_chunk in idat_table:
-            length = struct.unpack("!I", idat_chunk[:4])[0]
-            chunk_type, chunk_data, crc = idat_chunk[4:8], idat_chunk[8:-4], idat_chunk[-4:]
+        for chunk in idat_table:
+            current_chunk = chunk
+            length = struct.unpack("!I", current_chunk[:4])[0]
+            chunk_type, chunk_data, crc = (
+                current_chunk[4:8],
+                current_chunk[8:-4],
+                current_chunk[-4:],
+            )
 
             if length != len(chunk_data):
                 self._log(f"Error IDAT chunk data length at offset {int2hex(offset)}")
                 self._log(f"Length: {int2hex(length)}, Actual: {int2hex(len(chunk_data))}")
                 if fixed_data := self._fix_dos2unix(
-                    chunk_type, chunk_data, crc, abs(length - len(chunk_data))
+                    chunk_type,
+                    chunk_data,
+                    crc,
+                    abs(length - len(chunk_data)),
                 ):
-                    idat_chunk = idat_chunk[:8] + fixed_data + idat_chunk[-4:]
+                    current_chunk = current_chunk[:8] + fixed_data + current_chunk[-4:]
                     self._log("Successfully recovered IDAT chunk data (DOS->Unix fix)")
                     fixed = True
                 else:
                     self._log("Failed to fix IDAT chunk, using original")
-            else:
-                if calc_crc := self._check_crc(chunk_type, chunk_data, crc):
-                    self._log(f"Error IDAT CRC at offset {int2hex(offset + 8 + length)}")
-                    self._log(f"Chunk crc: {str2hex(crc)}, Correct: {str2hex(calc_crc)}")
-                    idat_chunk = idat_chunk[:-4] + calc_crc
-                    self._log("Successfully fixed CRC")
-                    fixed = True
+            elif calc_crc := self._check_crc(chunk_type, chunk_data, crc):
+                self._log(f"Error IDAT CRC at offset {int2hex(offset + 8 + length)}")
+                self._log(f"Chunk crc: {str2hex(crc)}, Correct: {str2hex(calc_crc)}")
+                current_chunk = current_chunk[:-4] + calc_crc
+                self._log("Successfully fixed CRC")
+                fixed = True
 
-            self.repaired_data.extend(idat_chunk)
+            self.repaired_data.extend(current_chunk)
             offset += len(chunk_data) + 12
 
         self._log(f"IDAT chunk check complete at offset {int2hex(idat_begin)}")
         return fixed
 
-    def check_iend(self) -> tuple[bool, Optional[bytes]]:
+    def check_iend(self) -> tuple[bool, bytes | None]:
         """Check and repair IEND chunk."""
         standard_iend = b"\x00\x00\x00\x00IEND\xae\x42\x60\x82"
         pos = self.data.find(b"IEND")
@@ -385,9 +411,8 @@ class PNG:
         self._log("IEND chunk check complete")
         return fixed, extra_data
 
-    def repair(self) -> tuple[bool, Optional[bytes]]:
+    def repair(self) -> tuple[bool, bytes | None]:
         """Run full PNG repair process."""
-
         if not self._check_format(self.data):
             self._error("File may not be a PNG image")
             return False, None

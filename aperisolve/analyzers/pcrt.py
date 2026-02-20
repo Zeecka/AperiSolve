@@ -1,12 +1,10 @@
-# flake8: noqa: E203,E501,W503
-# pylint: disable=C0413,W0718,R0903,R0902,R0801
-# mypy: disable-error-code=unused-awaitable
 """PCRT (PNG Check & Repair Tool) Analyzer for Image Submissions."""
 
 from pathlib import Path
-from typing import Any, Optional
+from typing import Any
 
-from ..utils.png import PNG
+from aperisolve.utils.png import PNG
+
 from .base_analyzer import SubprocessAnalyzer
 
 
@@ -14,6 +12,7 @@ class PCRTAnalyzer(SubprocessAnalyzer):
     """Analyzer for PCRT (PNG Check & Repair Tool)."""
 
     def __init__(self, input_img: Path, output_dir: Path) -> None:
+        """Initialize the PCRT analyzer."""
         super().__init__("pcrt", input_img, output_dir, has_archive=True)
 
     def _write_repaired_data(self, data: bytes) -> str:
@@ -33,8 +32,9 @@ class PCRTAnalyzer(SubprocessAnalyzer):
         with extra_path.open("wb") as f:
             f.write(data)
 
-    def get_results(self, password: Optional[str] = None) -> dict[str, Any]:
+    def get_results(self, password: str | None = None) -> dict[str, Any]:
         """Analyze PNG and attempt repairs."""
+        _ = password
         try:
             with self.input_img.open("rb") as f:
                 data = f.read()
@@ -52,11 +52,11 @@ class PCRTAnalyzer(SubprocessAnalyzer):
                 return result
 
             result["status"] = "ok"
-            result["output"] = png.logs if png.logs else ["PNG appears valid, no repairs needed"]
+            result["output"] = png.logs or ["PNG appears valid, no repairs needed"]
 
             # Save repaired PNG if any fixes were made
             if fixed and png.repaired_data:
-                url = self._write_repaired_data(png.repaired_data)
+                url = self._write_repaired_data(bytes(png.repaired_data))
                 result["note"] = "PNG was repaired and saved"
                 result["png_images"] = [url]
 
@@ -67,10 +67,10 @@ class PCRTAnalyzer(SubprocessAnalyzer):
                 result["note"] = result.get("note", "") + " | Extra data found after IEND"
                 result["download"] = f"/download/{self.output_dir.name}/{self.name}"
 
+        except (ValueError, OSError, RuntimeError, TypeError) as e:
+            return {"status": "error", "error": f"Analysis failed: {e!s}"}
+        else:
             return result
-
-        except Exception as e:
-            return {"status": "error", "error": f"Analysis failed: {str(e)}"}
 
 
 def analyze_pcrt(input_img: Path, output_dir: Path) -> None:

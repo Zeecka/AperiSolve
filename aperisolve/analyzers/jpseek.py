@@ -1,10 +1,6 @@
-# flake8: noqa: E203,E501,W503
-# pylint: disable=C0413,W0718,R0903,R0801
-# mypy: disable-error-code=unused-awaitable
 """JPSeek Analyzer for Image Submissions."""
 
 from pathlib import Path
-from typing import Optional
 
 from .base_analyzer import SubprocessAnalyzer
 
@@ -13,11 +9,12 @@ class JpseekAnalyzer(SubprocessAnalyzer):
     """Analyzer for jpseek."""
 
     def __init__(self, input_img: Path, output_dir: Path) -> None:
+        """Initialize the jpseek analyzer."""
         super().__init__("jpseek", input_img, output_dir, has_archive=True)
 
-    def build_cmd(self, password: Optional[str] = None) -> list[str]:
+    def build_cmd(self, password: str | None = None) -> list[str]:
+        """Build the jpseek command wrapped with expect for password support."""
         extracted_dir = self.get_extracted_dir()
-        assert extracted_dir is not None  # since has_archive is True
         out = str(extracted_dir / "jpseek.out")
         jpseek_cmd = f"jpseek {self.img} {out}"
         if password is None:
@@ -28,9 +25,7 @@ class JpseekAnalyzer(SubprocessAnalyzer):
             f'send "{password}\\r"; '
             f"expect eof'"
         )
-        command = ["bash", "-c", expect_cmd]
-        print("Built command:", command)
-        return command
+        return ["bash", "-c", expect_cmd]
 
     def _remove_output_artifacts(self, output: str) -> str:
         extracted_dir = self.get_extracted_dir()
@@ -46,15 +41,15 @@ class JpseekAnalyzer(SubprocessAnalyzer):
         o = o.replace(f"spawn jpseek {self.img} {out_file}", "")
         return o.strip()
 
-    def is_error(self, returncode: int, stdout: str, stderr: str, zip_exist: bool) -> bool:
+    def is_error(self, returncode: int, stdout: str, stderr: str, *, zip_exist: bool) -> bool:
         """Check if the result is an error."""
-        return bool(returncode) and "File not completely recovered" not in "".join([stdout, stderr])
+        _ = zip_exist
+        return bool(returncode) and "File not completely recovered" not in f"{stdout}{stderr}"
 
     def process_error(self, stdout: str, stderr: str) -> str:
         """Process stderr."""
         output = stdout + stderr
-        output = self._remove_output_artifacts(output)
-        return output
+        return self._remove_output_artifacts(output)
 
     def process_output(self, stdout: str, stderr: str) -> str:
         """Process stdout."""
@@ -65,7 +60,7 @@ class JpseekAnalyzer(SubprocessAnalyzer):
         return output
 
 
-def analyze_jpseek(input_img: Path, output_dir: Path, password: Optional[str] = None) -> None:
+def analyze_jpseek(input_img: Path, output_dir: Path, password: str | None = None) -> None:
     """Analyze an image submission using jpseek."""
     analyzer = JpseekAnalyzer(input_img, output_dir)
     if password:

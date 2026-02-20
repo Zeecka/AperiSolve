@@ -1,11 +1,10 @@
-# flake8: noqa: E203,E501,W503
-# pylint: disable=C0413,W0718,R0903,R0801
-# mypy: disable-error-code=unused-awaitable
 """Utility functions for analyzers modules."""
 
 import binascii
 import math
-from typing import Iterable
+from collections.abc import Iterable
+
+MAX_RESOLUTION_SIZE = 10_000
 
 
 def str2hex(s: bytes) -> str:
@@ -15,12 +14,11 @@ def str2hex(s: bytes) -> str:
 
 def int2hex(i: int) -> str:
     """Convert int to hex string with 0x prefix."""
-    return "0x" + hex(i)[2:].upper()
+    return f"0x{i:X}"
 
 
 def get_resolutions() -> list[tuple[int, int]]:
-    """
-    Generate a sorted list of common display and image resolutions.
+    """Generate a sorted list of common display and image resolutions.
 
     Creates a comprehensive set of resolution tuples by combining various base widths
     with standard aspect ratios used in screens, digital displays, photography, and
@@ -42,14 +40,15 @@ def get_resolutions() -> list[tuple[int, int]]:
     Returns:
         list[tuple[int, int]]: Sorted list of (width, height) resolution tuples
                                with heights constrained between 1 and 10000 pixels.
+
     """
     base_widths = (
         list(range(16, 257, 16))  # 16 → 256
         + list(range(320, 1025, 32))  # 320 → 1024
         + list(range(1280, 2561, 64))  # 1280 → 2560
-        + list(range(3000, 4097, 128))  # 3K–4K
-        + list(range(5120, 8193, 256))  # 5K–8K
-        + [10000]  # upper bound
+        + list(range(3000, 4097, 128))  # 3K-4K
+        + list(range(5120, 8193, 256))  # 5K-8K
+        + [MAX_RESOLUTION_SIZE]  # upper bound
     )
     aspect_ratios = [
         # Screens / digital
@@ -74,15 +73,14 @@ def get_resolutions() -> list[tuple[int, int]]:
     for w in base_widths:
         for ar_w, ar_h in aspect_ratios:
             h = math.floor(round(w * ar_h / ar_w))
-            if 1 <= h <= 10000:
+            if 1 <= h <= MAX_RESOLUTION_SIZE:
                 resolutions.add((w, h))
                 resolutions.add((h, w))  # portrait / landscape
     return sorted(resolutions)
 
 
 def get_valid_depth_color_pairs() -> Iterable[tuple[int, int]]:
-    """
-    Generate valid combinations of color and bit depth values.
+    """Generate valid combinations of color and bit depth values.
 
     Yields tuples of (depth, color) representing valid color mode and bit depth
     combinations. Supports grayscale (0), RGB (2, 3, 4, 6) color modes with
@@ -91,6 +89,7 @@ def get_valid_depth_color_pairs() -> Iterable[tuple[int, int]]:
     Yields:
         tuple: A tuple of (depth, color) where depth is an integer representing
                bit depth and color is an integer representing the color mode.
+
     """
     valid_color_depth = {
         0: [1, 2, 4, 8, 16],
