@@ -73,11 +73,12 @@ RUN dpkg -i /tmp/openstego.deb || apt-get install -f -y --no-install-recommends 
     && rm -rf /var/lib/apt/lists/*
 
 # Copy Python package metadata and app
-COPY pyproject.toml README.md /app/
-COPY aperisolve/ /app/aperisolve/
+COPY pyproject.toml uv.lock ./
+COPY aperisolve/ ./aperisolve/
 
 # Install Python dependencies from pyproject.toml
-RUN uv pip install --system --no-cache /app
+RUN uv sync --frozen --no-dev
+ENV PATH="/app/.venv/bin:$PATH"
 
 # Copy jphide and jsteg binaries
 COPY --from=builder /usr/local/bin/jphide /usr/local/bin/jphide
