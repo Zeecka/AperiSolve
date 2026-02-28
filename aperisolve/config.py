@@ -1,9 +1,15 @@
 """Aperi'Solve configuration variables."""
 
+from importlib.metadata import PackageNotFoundError, version
 from os import getenv
 from pathlib import Path
 
-PROJECT_VERSION = getenv("PROJECT_VERSION", "development")
+try:
+    _package_version = version("aperisolve")
+except PackageNotFoundError:
+    _package_version = "development"
+
+PROJECT_VERSION = getenv("PROJECT_VERSION", _package_version)
 
 REMOVAL_MIN_AGE_SECONDS = int(getenv("REMOVAL_MIN_AGE_SECONDS", "300"))  # 5 minutes
 MAX_PENDING_TIME = int(getenv("MAX_PENDING_TIME", "600"))  # 10 minutes by default
