@@ -41,7 +41,10 @@ class StegoveritasAnalyzer(SubprocessAnalyzer):
     def get_results(self, password: str | None = None) -> dict[str, Any]:
         """Run stegoveritas and return grouped image results."""
         extracted_dir = self.get_extracted_dir()
-        cmd = list(map(str, self.build_cmd(password)))
+        if password:
+            cmd = list(map(str, self.build_cmd(password)))
+        else:
+            cmd = list(map(str, self.build_cmd()))
         data = self.run_command(cmd, cwd=self.output_dir)
 
         grouped_urls: dict[str, list[str]] = {}
