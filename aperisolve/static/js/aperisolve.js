@@ -10,6 +10,7 @@ const TOOL_ORDER = [
   "pcrt",
   "identify",
   "steghide",
+  "stegoveritas",
   "jpseek",
   "jsteg",
   "openstego",
@@ -514,12 +515,12 @@ function parseResult(result) {
     if (result[tool]["status"] === "ok") {
       if ("images" in result[tool]) {
         // Parse image output
-        var channels = ["Superimposed", "Red", "Green", "Blue", "Alpha"];
-        if (Object.keys(result[tool]["images"]).length == 1) {
-          channels = Object.keys(result[tool]["images"]);
-        } else if (Object.keys(result[tool]["images"]).length == 4) {
-          channels = ["Superimposed", "Red", "Green", "Blue"];
-        }
+        // Use response keys with preferred ordering for known channels.
+        var allKeys = Object.keys(result[tool]["images"]);
+        var preferredOrder = ["Superimposed", "Red", "Green", "Blue", "Alpha"];
+        var channels = preferredOrder.filter((k) => allKeys.includes(k));
+        var remaining = allKeys.filter((k) => !preferredOrder.includes(k));
+        channels = channels.concat(remaining);
 
         let title_h3 = "";
         for (const channel of channels) {
