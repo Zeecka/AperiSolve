@@ -1,4 +1,4 @@
-u# Contributing to Aperi'Solve
+# Contributing to Aperi'Solve
 
 Thank you for your interest in contributing! We welcome all contributions, whether it's bug fixes, new features, or documentation improvements.
 
