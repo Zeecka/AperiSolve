@@ -46,6 +46,7 @@ Aperi'Solve is an open-source steganalysis web platform that performs automated 
   - [outguess](https://www.rbcafe.com/software/outguess/) (extraction with password)
   - [pngcheck](https://www.libpng.org/pub/png/apps/pngcheck.html)
   - [steghide](https://steghide.sourceforge.net/) (extraction with password)
+  - [stegoveritas](https://github.com/bannsec/stegoVeritas) (image transformation and GIF frames extraction)
   - [strings](https://pubs.opengroup.org/onlinepubs/9799919799/utilities/strings.html)
   - [zsteg](https://github.com/zed-0xff/zsteg) (LSB text/data extraction)
   - [file](https://manned.org/file.1) (MIME type and format detection)
