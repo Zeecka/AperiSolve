@@ -1,6 +1,7 @@
-2026-06-03 10:21.10 [debug    ] Logging configured             extract_root=. pid=7983 vebosity_level=0
-2026-06-03 10:21.10 [info     ] Creating extraction directory  extract_root=. pid=7983
-2026-06-03 10:21.10 [info     ] Start processing file          file=/tmp/workspace/Zeecka/AperiSolve/examples/example1.png pid=7983
-2026-06-03 10:21.10 [info     ] Activated FS access restrictions; rules=[Read("/"), ReadWrite("/dev/shm"), ReadWrite("/tmp/unblob-test"), RemoveDir("/tmp/unblob-test"), RemoveFile("/tmp/unblob-test"), MakeDir("/tmp"), ReadWrite("unblob.log")], status=FullyEnforced pid=7983
-2026-06-03 10:21.11 [debug    ] Detected file-magic            magic='PNG image data, 600 x 337, 8-bit/color RGBA, non-interlaced\\012- data' path=/tmp/workspace/Zeecka/AperiSolve/examples/example1.png pid=7991
-2026-06-03 10:21.11 [debug    ] Ignoring file based on magic or extension. extension=.png magic='PNG image data, 600 x 337, 8-bit/color RGBA, non-interlaced\\012- data' path=/tmp/workspace/Zeecka/AperiSolve/examples/example1.png pid=7991
+2026-06-03 10:21.59 [debug    ] Logging configured             extract_root=. pid=8115 vebosity_level=0
+2026-06-03 10:21.59 [info     ] Creating extraction directory  extract_root=. pid=8115
+2026-06-03 10:21.59 [info     ] Start processing file          file=/tmp/workspace/Zeecka/AperiSolve/examples/example1.png pid=8115
+2026-06-03 10:21.59 [info     ] Activated FS access restrictions; rules=[Read("/"), ReadWrite("/dev/shm"), ReadWrite("/tmp/unblob-run"), RemoveDir("/tmp/unblob-run"), RemoveFile("/tmp/unblob-run"), MakeDir("/tmp"), ReadWrite("unblob.log"), ReadWrite("/tmp")], status=FullyEnforced pid=8115
+2026-06-03 10:21.59 [debug    ] Detected file-magic            magic='PNG image data, 600 x 337, 8-bit/color RGBA, non-interlaced\\012- data' path=/tmp/workspace/Zeecka/AperiSolve/examples/example1.png pid=8121
+2026-06-03 10:21.59 [debug    ] Ignoring file based on magic or extension. extension=.png magic='PNG image data, 600 x 337, 8-bit/color RGBA, non-interlaced\\012- data' path=/tmp/workspace/Zeecka/AperiSolve/examples/example1.png pid=8121
+2026-06-03 10:21.59 [info     ] JSON report written            path=/tmp/unblob-report.json pid=8115

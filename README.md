@@ -47,6 +47,7 @@ Aperi'Solve is an open-source steganalysis web platform that performs automated 
   - [pngcheck](https://www.libpng.org/pub/png/apps/pngcheck.html)
   - [steghide](https://steghide.sourceforge.net/) (extraction with password)
   - [strings](https://pubs.opengroup.org/onlinepubs/9799919799/utilities/strings.html)
+  - [unblob](https://unblob.org/) (recursive embedded file extraction)
   - [zsteg](https://github.com/zed-0xff/zsteg) (LSB text/data extraction)
   - [file](https://manned.org/file.1) (MIME type and format detection)
   - [jpseek](https://github.com/h3xx/jphs) (JPEG steganography detection and extraction)
@@ -105,4 +106,4 @@ Thanks to contributors:
 - [abneeeees](https://github.com/abneeeees)
 
 Thanks to the open-source community:
-[binwalk](https://github.com/ReFirmLabs/binwalk), [exiftool](https://exiftool.org/), [GraphicsMagick identify](http://www.graphicsmagick.org/identify.html), [foremost](https://foremost.sourceforge.net/), [openstego](https://www.openstego.com/), [outguess](https://www.rbcafe.com/software/outguess/), [pngcheck](https://www.libpng.org/pub/png/apps/pngcheck.html), [steghide](https://steghide.sourceforge.net/), [strings](https://pubs.opengroup.org/onlinepubs/9799919799/utilities/strings.html), [zsteg](https://github.com/zed-0xff/zsteg), ...
+[binwalk](https://github.com/ReFirmLabs/binwalk), [exiftool](https://exiftool.org/), [GraphicsMagick identify](http://www.graphicsmagick.org/identify.html), [foremost](https://foremost.sourceforge.net/), [openstego](https://www.openstego.com/), [outguess](https://www.rbcafe.com/software/outguess/), [pngcheck](https://www.libpng.org/pub/png/apps/pngcheck.html), [steghide](https://steghide.sourceforge.net/), [strings](https://pubs.opengroup.org/onlinepubs/9799919799/utilities/strings.html), [unblob](https://unblob.org/), [zsteg](https://github.com/zed-0xff/zsteg), ...
