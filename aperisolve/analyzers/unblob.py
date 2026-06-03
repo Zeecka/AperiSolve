@@ -23,7 +23,7 @@ class UnblobAnalyzer(SubprocessAnalyzer):
             str(self.get_report_path()),
             "--extract-dir",
             str(self.get_extracted_dir()),
-            self.img,
+            str(self.img),
         ]
 
     def get_report_path(self) -> Path:
