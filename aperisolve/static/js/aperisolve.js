@@ -13,6 +13,7 @@ const TOOL_ORDER = [
   "jpseek",
   "jsteg",
   "openstego",
+  "unblob",
   "zsteg",
   "strings"
 ];
@@ -737,4 +738,3 @@ if (browseBtn) {
       xhr.send(formData);
     });
 }
-

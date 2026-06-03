@@ -49,10 +49,20 @@ COPY --from=ghcr.io/astral-sh/uv:0.8.22 /uv /uvx /bin/
 # Install runtime + stego tools
 RUN apt-get update && apt-get install -y --no-install-recommends \
     expect \
+    android-sdk-libsparse-utils \
     default-jre \
+    e2fsprogs \
     file \
+    libhyperscan-dev \
+    liblzo2-dev \
+    lz4 \
+    lziprecover \
+    lzop \
     ruby \
+    unar \
     zip \
+    zlib1g-dev \
+    zstd \
     p7zip-full \
     binwalk \
     foremost \
@@ -63,6 +73,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     pngcheck \
     graphicsmagick \
     graphicsmagick-imagemagick-compat \
+    && python -m pip install --no-cache-dir unblob==26.3.30 \
     && gem install zsteg \
     && rm -rf /var/lib/apt/lists/*
 

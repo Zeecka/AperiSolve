@@ -22,6 +22,7 @@ from .analyzers.pcrt import analyze_pcrt
 from .analyzers.pngcheck import analyze_pngcheck
 from .analyzers.steghide import analyze_steghide
 from .analyzers.strings import analyze_strings
+from .analyzers.unblob import analyze_unblob
 from .analyzers.zsteg import analyze_zsteg
 from .app import create_app
 from .config import RESULT_FOLDER
@@ -90,6 +91,7 @@ def analyze_image(submission_hash: str) -> None:
                 (analyze_pngcheck, img_path, result_path),
                 (analyze_pcrt, img_path, result_path),
                 (analyze_strings, img_path, result_path),
+                (analyze_unblob, img_path, result_path),
                 (analyze_steghide, img_path, result_path, submission.password),
                 (analyze_zsteg, img_path, result_path),
             ]

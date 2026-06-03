@@ -1,3 +1,29 @@
+Metadata-Version: 2.4
+Name: aperisolve
+Version: 3.2.1
+Summary: Open-source steganalysis web platform for automated image analysis and steganography detection
+Author: Zeecka
+License: MIT
+Requires-Python: >=3.12
+Description-Content-Type: text/markdown
+License-File: LICENSE
+Requires-Dist: Flask
+Requires-Dist: Flask-SQLAlchemy
+Requires-Dist: numpy
+Requires-Dist: redis
+Requires-Dist: rq
+Requires-Dist: psycopg2-binary
+Requires-Dist: Pillow
+Requires-Dist: gunicorn
+Requires-Dist: sentry-sdk[flask,rq,sqlalchemy]
+Provides-Extra: dev
+Requires-Dist: ruff; extra == "dev"
+Requires-Dist: ty; extra == "dev"
+Requires-Dist: pre-commit; extra == "dev"
+Requires-Dist: types-Flask-SQLAlchemy; extra == "dev"
+Requires-Dist: sqlalchemy-stubs; extra == "dev"
+Dynamic: license-file
+
 # Aperi'Solve
 
 [![Website](https://img.shields.io/website?url=https%3A%2F%2Faperisolve.com)](https://aperisolve.com/)
@@ -47,7 +73,6 @@ Aperi'Solve is an open-source steganalysis web platform that performs automated 
   - [pngcheck](https://www.libpng.org/pub/png/apps/pngcheck.html)
   - [steghide](https://steghide.sourceforge.net/) (extraction with password)
   - [strings](https://pubs.opengroup.org/onlinepubs/9799919799/utilities/strings.html)
-  - [unblob](https://unblob.org/) (recursive embedded file extraction)
   - [zsteg](https://github.com/zed-0xff/zsteg) (LSB text/data extraction)
   - [file](https://manned.org/file.1) (MIME type and format detection)
   - [jpseek](https://github.com/h3xx/jphs) (JPEG steganography detection and extraction)
@@ -106,4 +131,4 @@ Thanks to contributors:
 - [abneeeees](https://github.com/abneeeees)
 
 Thanks to the open-source community:
-[binwalk](https://github.com/ReFirmLabs/binwalk), [exiftool](https://exiftool.org/), [GraphicsMagick identify](http://www.graphicsmagick.org/identify.html), [foremost](https://foremost.sourceforge.net/), [openstego](https://www.openstego.com/), [outguess](https://www.rbcafe.com/software/outguess/), [pngcheck](https://www.libpng.org/pub/png/apps/pngcheck.html), [steghide](https://steghide.sourceforge.net/), [strings](https://pubs.opengroup.org/onlinepubs/9799919799/utilities/strings.html), [unblob](https://unblob.org/), [zsteg](https://github.com/zed-0xff/zsteg), ...
+[binwalk](https://github.com/ReFirmLabs/binwalk), [exiftool](https://exiftool.org/), [GraphicsMagick identify](http://www.graphicsmagick.org/identify.html), [foremost](https://foremost.sourceforge.net/), [openstego](https://www.openstego.com/), [outguess](https://www.rbcafe.com/software/outguess/), [pngcheck](https://www.libpng.org/pub/png/apps/pngcheck.html), [steghide](https://steghide.sourceforge.net/), [strings](https://pubs.opengroup.org/onlinepubs/9799919799/utilities/strings.html), [zsteg](https://github.com/zed-0xff/zsteg), ...
