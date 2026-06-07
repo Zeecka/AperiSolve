@@ -3,6 +3,7 @@
 import threading
 from collections.abc import Callable
 from pathlib import Path
+import mimetypes  # Added to dynamically detect the image MIME type
 
 import sentry_sdk
 from sqlalchemy.exc import SQLAlchemyError
@@ -43,8 +44,10 @@ def analyze_image(submission_hash: str) -> None:
         submission.status = "running"
         db.session.commit()
 
+        # Define img_path earlier so it is available to the entire function scope
+        img_path = Path(image.file)
+
         try:
-            img_path = Path(image.file)
             result_path = RESULT_FOLDER / str(image.hash) / str(submission.hash)
             result_path.mkdir(parents=True, exist_ok=True)
 
@@ -58,9 +61,25 @@ def analyze_image(submission_hash: str) -> None:
                     analyzer_func.__class__.__name__,
                 ).replace("analyze_", "")
                 try:
+                    if analyzer_name == "binwalk":
+                        raise ValueError("Simulated Worker Crash for Sentry!")
                     analyzer_func(*args)
                 except (RuntimeError, ValueError, OSError, TypeError) as exc:
                     with sentry_sdk.push_scope() as scope:
+                        if img_path.exists():
+                            try:
+                                # Get the right MIME type (e.g., image/jpeg or image/png)
+                                mime_type, _ = mimetypes.guess_type(img_path)
+                                content_type = mime_type or "application/octet-stream"
+                                
+                                scope.add_attachment(
+                                    bytes=img_path.read_bytes(),
+                                    filename=submission.filename or img_path.name,
+                                    content_type=content_type
+                                )
+                            except Exception:
+                                pass  # Prevent file read issues from hiding the original error
+
                         scope.set_tag("analyzer", analyzer_name)
                         scope.set_tag("submission_hash", submission_hash)
                         scope.set_context(
@@ -107,7 +126,20 @@ def analyze_image(submission_hash: str) -> None:
 
             submission.status = "completed"
         except (RuntimeError, ValueError, OSError, TypeError, SQLAlchemyError) as exc:
-            sentry_sdk.capture_exception(exc)
+            with sentry_sdk.push_scope() as scope:
+                if img_path.exists():
+                    try:
+                        mime_type, _ = mimetypes.guess_type(img_path)
+                        content_type = mime_type or "application/octet-stream"
+                        
+                        scope.add_attachment(
+                            bytes=img_path.read_bytes(),
+                            filename=submission.filename or img_path.name,
+                            content_type=content_type
+                        )
+                    except Exception:
+                        pass
+                sentry_sdk.capture_exception(exc)
             submission.status = "error"
         finally:
             db.session.commit()
