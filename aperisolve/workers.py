@@ -61,8 +61,6 @@ def analyze_image(submission_hash: str) -> None:
                     analyzer_func.__class__.__name__,
                 ).replace("analyze_", "")
                 try:
-                    if analyzer_name == "binwalk":
-                        raise ValueError("Simulated Worker Crash for Sentry!")
                     analyzer_func(*args)
                 except (RuntimeError, ValueError, OSError, TypeError) as exc:
                     with sentry_sdk.push_scope() as scope:
