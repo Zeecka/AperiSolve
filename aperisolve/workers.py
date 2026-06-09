@@ -1,9 +1,9 @@
 """Asynchronous worker for analyzing image submissions."""
 
+import mimetypes  # Added to dynamically detect the image MIME type
 import threading
 from collections.abc import Callable
 from pathlib import Path
-import mimetypes  # Added to dynamically detect the image MIME type
 
 import sentry_sdk
 from sqlalchemy.exc import SQLAlchemyError
@@ -69,11 +69,11 @@ def analyze_image(submission_hash: str) -> None:
                                 # Get the right MIME type (e.g., image/jpeg or image/png)
                                 mime_type, _ = mimetypes.guess_type(img_path)
                                 content_type = mime_type or "application/octet-stream"
-                                
+
                                 scope.add_attachment(
                                     bytes=img_path.read_bytes(),
                                     filename=submission.filename or img_path.name,
-                                    content_type=content_type
+                                    content_type=content_type,
                                 )
                             except Exception:
                                 pass  # Prevent file read issues from hiding the original error
@@ -129,11 +129,11 @@ def analyze_image(submission_hash: str) -> None:
                     try:
                         mime_type, _ = mimetypes.guess_type(img_path)
                         content_type = mime_type or "application/octet-stream"
-                        
+
                         scope.add_attachment(
                             bytes=img_path.read_bytes(),
                             filename=submission.filename or img_path.name,
-                            content_type=content_type
+                            content_type=content_type,
                         )
                     except Exception:
                         pass
