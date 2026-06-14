@@ -30,7 +30,7 @@ from .models import Image, Submission, db
 from .utils.sentry import initialize_sentry
 
 
-def analyze_image(submission_hash: str) -> None: # noqa: C901, PLR0915
+def analyze_image(submission_hash: str) -> None:  # noqa: C901, PLR0915
     """Analyze an image submission by running multiple analysis tools concurrently."""
     initialize_sentry()
     app = create_app()
