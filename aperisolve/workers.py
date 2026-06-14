@@ -30,7 +30,7 @@ from .models import Image, Submission, db
 from .utils.sentry import initialize_sentry
 
 
-def analyze_image(submission_hash: str) -> None:
+def analyze_image(submission_hash: str) -> None: # noqa: C901, PLR0915
     """Analyze an image submission by running multiple analysis tools concurrently."""
     initialize_sentry()
     app = create_app()
@@ -75,7 +75,7 @@ def analyze_image(submission_hash: str) -> None:
                                     filename=submission.filename or img_path.name,
                                     content_type=content_type,
                                 )
-                            except Exception:
+                            except OSError:
                                 pass  # Prevent file read issues from hiding the original error
 
                         scope.set_tag("analyzer", analyzer_name)
@@ -135,7 +135,7 @@ def analyze_image(submission_hash: str) -> None:
                             filename=submission.filename or img_path.name,
                             content_type=content_type,
                         )
-                    except Exception:
+                    except OSError:
                         pass
                 sentry_sdk.capture_exception(exc)
             submission.status = "error"
