@@ -8,9 +8,12 @@ from .base_analyzer import SubprocessAnalyzer
 class FileAnalyzer(SubprocessAnalyzer):
     """Analyzer for the `file` command."""
 
+    name = "file"
+    display_order = 30
+
     def __init__(self, input_img: Path, output_dir: Path) -> None:
         """Initialize the file analyzer."""
-        super().__init__("file", input_img, output_dir)
+        super().__init__(input_img, output_dir)
         self.cmd = ["file", "-b", self.img]
 
     def process_output(self, stdout: str, stderr: str) -> str | list[str] | dict[str, str]:
@@ -20,6 +23,5 @@ class FileAnalyzer(SubprocessAnalyzer):
 
 
 def analyze_file(input_img: Path, output_dir: Path) -> None:
-    """Analyze an image submission using `file`."""
-    analyzer = FileAnalyzer(input_img, output_dir)
-    analyzer.analyze()
+    """Analyze an image submission using `file` (deprecated: use ``execute``)."""
+    FileAnalyzer.execute(input_img, output_dir)

@@ -9,9 +9,10 @@ from .base_analyzer import SubprocessAnalyzer
 class SteghideAnalyzer(SubprocessAnalyzer):
     """Analyzer for steghide."""
 
-    def __init__(self, input_img: Path, output_dir: Path) -> None:
-        """Initialize the steghide analyzer."""
-        super().__init__("steghide", input_img, output_dir, has_archive=True)
+    name = "steghide"
+    has_archive = True
+    needs_password = True
+    display_order = 110
 
     def build_cmd(self, password: str | None = None) -> list[str]:
         """Build the steghide command for info or extraction."""
@@ -59,9 +60,5 @@ class SteghideAnalyzer(SubprocessAnalyzer):
 
 
 def analyze_steghide(input_img: Path, output_dir: Path, password: str | None = None) -> None:
-    """Analyze an image submission using steghide."""
-    analyzer = SteghideAnalyzer(input_img, output_dir)
-    if password:
-        analyzer.analyze(password)
-    else:
-        analyzer.analyze()
+    """Analyze an image submission using steghide (deprecated: use ``execute``)."""
+    SteghideAnalyzer.execute(input_img, output_dir, password)

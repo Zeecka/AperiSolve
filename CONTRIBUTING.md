@@ -28,10 +28,10 @@ Want to add support for a new steganography or forensics tool? We'd love that!
 
 **Quick checklist for new analyzers:**
 
-- [ ] Create analyzer file in `analyzers/`
-- [ ] Extend `SubprocessAnalyzer` base class
-- [ ] Register in `workers.py`
+- [ ] Create analyzer file in `analyzers/` extending `SubprocessAnalyzer`
+      (set `name`, `display_order` and flags — registration is automatic)
 - [ ] Add tool to Docker setup if needed
+- [ ] Add the analyzer name to the expected list in `tests/test_registry.py`
 - [ ] Test with sample images
 - [ ] Update documentation
 

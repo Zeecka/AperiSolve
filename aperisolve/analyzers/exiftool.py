@@ -8,9 +8,12 @@ from .base_analyzer import SubprocessAnalyzer
 class ExiftoolAnalyzer(SubprocessAnalyzer):
     """Analyzer for exiftool."""
 
+    name = "exiftool"
+    display_order = 40
+
     def __init__(self, input_img: Path, output_dir: Path) -> None:
         """Initialize the exiftool analyzer."""
-        super().__init__("exiftool", input_img, output_dir)
+        super().__init__(input_img, output_dir)
         self.cmd = ["exiftool", "-a", "-u", "-g1", self.img]
 
     def process_output(self, stdout: str, stderr: str) -> dict[str, str]:
@@ -25,6 +28,5 @@ class ExiftoolAnalyzer(SubprocessAnalyzer):
 
 
 def analyze_exiftool(input_img: Path, output_dir: Path) -> None:
-    """Analyze an image submission using exiftool."""
-    analyzer = ExiftoolAnalyzer(input_img, output_dir)
-    analyzer.analyze()
+    """Analyze an image submission using exiftool (deprecated: use ``execute``)."""
+    ExiftoolAnalyzer.execute(input_img, output_dir)

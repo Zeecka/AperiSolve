@@ -16,6 +16,7 @@ from redis.exceptions import RedisError
 from rq import Queue
 from sqlalchemy.exc import SQLAlchemyError
 
+from .analyzers.registry import archive_tools, tool_order
 from .config import (
     CLEANUP_INTERVAL_SECONDS,
     CUSTOM_EXTERNAL_SCRIPT,
@@ -30,7 +31,6 @@ from .config import (
     REMOVED_IMAGES_FOLDER,
     RESULT_FOLDER,
     SITE_BASE_URL,
-    WORKER_FILES,
 )
 from .models import Image, Submission, UploadLog, cleanup_old_entries, db
 from .utils.sentry import initialize_sentry
@@ -47,6 +47,7 @@ def _configure_app(app: Flask) -> None:
     app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
     app.config["MAX_CONTENT_LENGTH"] = MAX_CONTENT_LENGTH
     app.config["REDIS_QUEUE"] = Queue(connection=Redis(host="redis", port=6379))
+    app.config["TOOL_ORDER"] = tool_order()
     db.init_app(app)
 
 
@@ -388,7 +389,7 @@ def _register_data_routes(app: Flask) -> None:
         output_dir = RESULT_FOLDER / str(image.hash) / str(submission.hash)
         output_file = output_dir / f"{tool}.7z"
 
-        if tool not in WORKER_FILES or not output_file.exists():
+        if tool not in archive_tools() or not output_file.exists():
             abort(404, description="Tool output not found.")
 
         return send_file(output_file, as_attachment=True)

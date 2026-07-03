@@ -17,9 +17,8 @@ GRAYSCALE_DIMENSIONS = 2
 class ColorRemappingAnalyzer(SubprocessAnalyzer):
     """Analyzer for color remapping."""
 
-    def __init__(self, input_img: Path, output_dir: Path) -> None:
-        """Initialize the color remapping analyzer."""
-        super().__init__("color_remapping", input_img, output_dir)
+    name = "color_remapping"
+    display_order = 20
 
     def _normalize_image(self, img_np: np.ndarray) -> tuple[np.ndarray, int]:
         """Normalize image to have RGB or RGBA channels.
@@ -107,6 +106,5 @@ class ColorRemappingAnalyzer(SubprocessAnalyzer):
 
 
 def analyze_color_remapping(input_img: Path, output_dir: Path) -> None:
-    """Analyze an image submission using color remapping."""
-    analyzer = ColorRemappingAnalyzer(input_img, output_dir)
-    analyzer.analyze()
+    """Analyze using color remapping (deprecated: use ``execute``)."""
+    ColorRemappingAnalyzer.execute(input_img, output_dir)

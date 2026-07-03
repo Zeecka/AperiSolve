@@ -8,38 +8,64 @@ from abc import ABC
 from pathlib import Path
 from shutil import rmtree
 from subprocess import CompletedProcess
-from typing import Any, overload
+from typing import Any, ClassVar, overload
 
 from aperisolve.config import MAX_PENDING_TIME
 
 _thread_lock = threading.Lock()
 
+# All concrete analyzer classes, registered automatically on class creation.
+# Use aperisolve.analyzers.registry to consume this (it imports every module).
+REGISTRY: list[type["SubprocessAnalyzer"]] = []
+
 
 class SubprocessAnalyzer(ABC):
-    """Analyzer that runs a subprocess command."""
+    """Analyzer that runs a subprocess command.
 
-    name: str
+    Subclasses declare their behavior with class attributes; creating the class
+    is enough to register it — no other file needs to change:
+
+    - ``name``: tool name, used as the ``results.json`` key and download URL.
+    - ``has_archive``: the tool extracts files zipped into ``<name>.7z``.
+    - ``needs_password``: the tool receives the submission password.
+    - ``deep_only``: only run when the user requests a deep analysis.
+    - ``display_order``: frontend rendering position (lower renders first).
+    - ``register``: opt-out flag for templates/abstract intermediates.
+    """
+
+    name: ClassVar[str]
+    has_archive: ClassVar[bool] = False
+    needs_password: ClassVar[bool] = False
+    deep_only: ClassVar[bool] = False
+    display_order: ClassVar[int] = 1000
+    register: ClassVar[bool] = True
+
     input_img: Path
     output_dir: Path
-    has_archive: bool
     cmd: list[str] | None = None
     img: str
     make_folder: bool = True
 
-    def __init__(
-        self,
-        name: str,
-        input_img: Path,
-        output_dir: Path,
-        *,
-        has_archive: bool = False,
-    ) -> None:
-        """Initialize analyzer metadata and execution context."""
-        self.name = name
+    def __init_subclass__(cls, **kwargs: Any) -> None:  # noqa: ANN401
+        """Register concrete analyzer subclasses declaring a ``name``."""
+        super().__init_subclass__(**kwargs)
+        if cls.register and getattr(cls, "name", None):
+            REGISTRY.append(cls)
+
+    def __init__(self, input_img: Path, output_dir: Path) -> None:
+        """Initialize analyzer execution context."""
         self.input_img = input_img
         self.img = f"../{self.input_img.name}"
         self.output_dir = output_dir
-        self.has_archive = has_archive
+
+    @classmethod
+    def execute(cls, input_img: Path, output_dir: Path, password: str | None = None) -> None:
+        """Instantiate and run this analyzer, applying the password if supported."""
+        analyzer = cls(input_img, output_dir)
+        if cls.needs_password and password:
+            analyzer.analyze(password)
+        else:
+            analyzer.analyze()
 
     def run_command(
         self,

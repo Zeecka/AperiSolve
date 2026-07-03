@@ -9,9 +9,14 @@ from .base_analyzer import SubprocessAnalyzer
 class OpenStegoAnalyzer(SubprocessAnalyzer):
     """Analyzer for openstego."""
 
+    name = "openstego"
+    has_archive = True
+    needs_password = True
+    display_order = 140
+
     def __init__(self, input_img: Path, output_dir: Path) -> None:
         """Initialize the OpenStego analyzer."""
-        super().__init__("openstego", input_img, output_dir, has_archive=True)
+        super().__init__(input_img, output_dir)
         self.algo = 0
 
     def build_cmd(self, password: str | None = None) -> list[str]:
@@ -57,9 +62,5 @@ class OpenStegoAnalyzer(SubprocessAnalyzer):
 
 
 def analyze_openstego(input_img: Path, output_dir: Path, password: str = "") -> None:
-    """Analyze an image submission using openstego."""
-    analyzer = OpenStegoAnalyzer(input_img, output_dir)
-    if password:
-        analyzer.analyze(password)
-    else:
-        analyzer.analyze()
+    """Analyze an image submission using openstego (deprecated: use ``execute``)."""
+    OpenStegoAnalyzer.execute(input_img, output_dir, password)

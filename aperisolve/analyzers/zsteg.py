@@ -8,9 +8,12 @@ from .base_analyzer import SubprocessAnalyzer
 class ZstegAnalyzer(SubprocessAnalyzer):
     """Analyzer for zsteg."""
 
+    name = "zsteg"
+    display_order = 150
+
     def __init__(self, input_img: Path, output_dir: Path) -> None:
         """Initialize the zsteg analyzer."""
-        super().__init__("zsteg", input_img, output_dir)
+        super().__init__(input_img, output_dir)
         self.cmd = ["zsteg", self.img]
 
     def is_error(self, returncode: int, stdout: str, stderr: str, *, zip_exist: bool) -> bool:
@@ -26,6 +29,5 @@ class ZstegAnalyzer(SubprocessAnalyzer):
 
 
 def analyze_zsteg(input_img: Path, output_dir: Path) -> None:
-    """Analyze an image submission using zsteg."""
-    analyzer = ZstegAnalyzer(input_img, output_dir)
-    analyzer.analyze()
+    """Analyze an image submission using zsteg (deprecated: use ``execute``)."""
+    ZstegAnalyzer.execute(input_img, output_dir)

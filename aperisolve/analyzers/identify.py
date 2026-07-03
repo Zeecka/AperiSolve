@@ -8,9 +8,12 @@ from .base_analyzer import SubprocessAnalyzer
 class IdentifyAnalyzer(SubprocessAnalyzer):
     """Analyzer for GraphicMagick identify command."""
 
+    name = "identify"
+    display_order = 100
+
     def __init__(self, input_img: Path, output_dir: Path) -> None:
         """Initialize the identify analyzer."""
-        super().__init__("identify", input_img, output_dir)
+        super().__init__(input_img, output_dir)
         self.cmd = ["identify", "-verbose", self.img]
 
     def process_output(self, stdout: str, stderr: str) -> str | list[str]:
@@ -20,6 +23,5 @@ class IdentifyAnalyzer(SubprocessAnalyzer):
 
 
 def analyze_identify(input_img: Path, output_dir: Path) -> None:
-    """Analyze an image submission using GraphicMagick identify."""
-    analyzer = IdentifyAnalyzer(input_img, output_dir)
-    analyzer.analyze()
+    """Analyze using GraphicMagick identify (deprecated: use ``execute``)."""
+    IdentifyAnalyzer.execute(input_img, output_dir)

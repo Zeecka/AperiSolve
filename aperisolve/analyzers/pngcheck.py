@@ -8,9 +8,12 @@ from .base_analyzer import SubprocessAnalyzer
 class PngcheckAnalyzer(SubprocessAnalyzer):
     """Analyzer for pngcheck."""
 
+    name = "pngcheck"
+    display_order = 80
+
     def __init__(self, input_img: Path, output_dir: Path) -> None:
         """Initialize the pngcheck analyzer."""
-        super().__init__("pngcheck", input_img, output_dir)
+        super().__init__(input_img, output_dir)
         self.cmd = ["pngcheck", "-v", self.img]
 
     def is_error(self, returncode: int, stdout: str, stderr: str, *, zip_exist: bool) -> bool:
@@ -27,6 +30,5 @@ class PngcheckAnalyzer(SubprocessAnalyzer):
 
 
 def analyze_pngcheck(input_img: Path, output_dir: Path) -> None:
-    """Analyze an image submission using pngcheck."""
-    analyzer = PngcheckAnalyzer(input_img, output_dir)
-    analyzer.analyze()
+    """Analyze an image submission using pngcheck (deprecated: use ``execute``)."""
+    PngcheckAnalyzer.execute(input_img, output_dir)

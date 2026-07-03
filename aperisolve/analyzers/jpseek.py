@@ -8,9 +8,10 @@ from .base_analyzer import SubprocessAnalyzer
 class JpseekAnalyzer(SubprocessAnalyzer):
     """Analyzer for jpseek."""
 
-    def __init__(self, input_img: Path, output_dir: Path) -> None:
-        """Initialize the jpseek analyzer."""
-        super().__init__("jpseek", input_img, output_dir, has_archive=True)
+    name = "jpseek"
+    has_archive = True
+    needs_password = True
+    display_order = 120
 
     def build_cmd(self, password: str | None = None) -> list[str]:
         """Build the jpseek command wrapped with expect for password support."""
@@ -63,9 +64,5 @@ class JpseekAnalyzer(SubprocessAnalyzer):
 
 
 def analyze_jpseek(input_img: Path, output_dir: Path, password: str | None = None) -> None:
-    """Analyze an image submission using jpseek."""
-    analyzer = JpseekAnalyzer(input_img, output_dir)
-    if password:
-        analyzer.analyze(password)
-    else:
-        analyzer.analyze()
+    """Analyze an image submission using jpseek (deprecated: use ``execute``)."""
+    JpseekAnalyzer.execute(input_img, output_dir, password)

@@ -8,9 +8,11 @@ from .base_analyzer import SubprocessAnalyzer
 class OutguessAnalyzer(SubprocessAnalyzer):
     """Analyzer for outguess."""
 
-    def __init__(self, input_img: Path, output_dir: Path) -> None:
-        """Initialize the outguess analyzer."""
-        super().__init__("outguess", input_img, output_dir, has_archive=True)
+    name = "outguess"
+    has_archive = True
+    needs_password = True
+    deep_only = True
+    display_order = 70
 
     def build_cmd(self, password: str | None = None) -> list[str]:
         """Build the outguess extraction command."""
@@ -22,9 +24,5 @@ class OutguessAnalyzer(SubprocessAnalyzer):
 
 
 def analyze_outguess(input_img: Path, output_dir: Path, password: str | None = None) -> None:
-    """Analyze an image submission using outguess."""
-    analyzer = OutguessAnalyzer(input_img, output_dir)
-    if password:
-        analyzer.analyze(password)
-    else:
-        analyzer.analyze()
+    """Analyze an image submission using outguess (deprecated: use ``execute``)."""
+    OutguessAnalyzer.execute(input_img, output_dir, password)

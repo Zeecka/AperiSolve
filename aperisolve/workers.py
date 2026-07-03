@@ -1,28 +1,13 @@
 """Asynchronous worker for analyzing image submissions."""
 
 import threading
-from collections.abc import Callable
 from pathlib import Path
 
 import sentry_sdk
 from sqlalchemy.exc import SQLAlchemyError
 
-from .analyzers.binwalk import analyze_binwalk
-from .analyzers.color_remapping import analyze_color_remapping
-from .analyzers.decomposer import analyze_decomposer
-from .analyzers.exiftool import analyze_exiftool
-from .analyzers.file import analyze_file
-from .analyzers.foremost import analyze_foremost
-from .analyzers.identify import analyze_identify
-from .analyzers.jpseek import analyze_jpseek
-from .analyzers.jsteg import analyze_jsteg
-from .analyzers.openstego import analyze_openstego
-from .analyzers.outguess import analyze_outguess
-from .analyzers.pcrt import analyze_pcrt
-from .analyzers.pngcheck import analyze_pngcheck
-from .analyzers.steghide import analyze_steghide
-from .analyzers.strings import analyze_strings
-from .analyzers.zsteg import analyze_zsteg
+from .analyzers.base_analyzer import SubprocessAnalyzer
+from .analyzers.registry import get_analyzers
 from .app import create_app
 from .config import RESULT_FOLDER
 from .models import Image, Submission, db
@@ -50,55 +35,29 @@ def analyze_image(submission_hash: str) -> None:
 
             threads: list[threading.Thread] = []
 
-            def run_analyzer(analyzer_func: Callable[..., None], *args: object) -> None:
-                """Run an analyzer function in a separate thread."""
-                analyzer_name = getattr(
-                    analyzer_func,
-                    "__name__",
-                    analyzer_func.__class__.__name__,
-                ).replace("analyze_", "")
+            def run_analyzer(analyzer_cls: type[SubprocessAnalyzer]) -> None:
+                """Run an analyzer class in a separate thread."""
                 try:
-                    analyzer_func(*args)
+                    analyzer_cls.execute(img_path, result_path, submission.password)
                 except (RuntimeError, ValueError, OSError, TypeError) as exc:
                     with sentry_sdk.push_scope() as scope:
-                        scope.set_tag("analyzer", analyzer_name)
+                        scope.set_tag("analyzer", analyzer_cls.name)
                         scope.set_tag("submission_hash", submission_hash)
                         scope.set_context(
                             "analyzer_info",
                             {
-                                "tool": analyzer_name,
+                                "tool": analyzer_cls.name,
                                 "image_path": str(img_path),
                                 "result_path": str(result_path),
                                 "filename": submission.filename,
                                 "deep_analysis": submission.deep_analysis,
                             },
                         )
-                        scope.fingerprint = ["analyzer-error", analyzer_name]
+                        scope.fingerprint = ["analyzer-error", analyzer_cls.name]
                         sentry_sdk.capture_exception(exc)
 
-            analyzers = [
-                (analyze_binwalk, img_path, result_path),
-                (analyze_color_remapping, img_path, result_path),
-                (analyze_decomposer, img_path, result_path),
-                (analyze_exiftool, img_path, result_path),
-                (analyze_file, img_path, result_path),
-                (analyze_foremost, img_path, result_path),
-                (analyze_identify, img_path, result_path),
-                (analyze_jpseek, img_path, result_path, submission.password),
-                (analyze_jsteg, img_path, result_path),
-                (analyze_openstego, img_path, result_path, submission.password),
-                (analyze_pngcheck, img_path, result_path),
-                (analyze_pcrt, img_path, result_path),
-                (analyze_strings, img_path, result_path),
-                (analyze_steghide, img_path, result_path, submission.password),
-                (analyze_zsteg, img_path, result_path),
-            ]
-
-            if submission.deep_analysis:
-                analyzers.append((analyze_outguess, img_path, result_path))
-
-            for analyzer in analyzers:
-                thread = threading.Thread(target=run_analyzer, args=analyzer)
+            for analyzer_cls in get_analyzers(deep=bool(submission.deep_analysis)):
+                thread = threading.Thread(target=run_analyzer, args=(analyzer_cls,))
                 threads.append(thread)
                 thread.start()
 

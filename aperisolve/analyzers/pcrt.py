@@ -11,9 +11,9 @@ from .base_analyzer import SubprocessAnalyzer
 class PCRTAnalyzer(SubprocessAnalyzer):
     """Analyzer for PCRT (PNG Check & Repair Tool)."""
 
-    def __init__(self, input_img: Path, output_dir: Path) -> None:
-        """Initialize the PCRT analyzer."""
-        super().__init__("pcrt", input_img, output_dir, has_archive=True)
+    name = "pcrt"
+    has_archive = True
+    display_order = 90
 
     def _write_repaired_data(self, data: bytes) -> str:
         """Write recovered image."""
@@ -74,6 +74,5 @@ class PCRTAnalyzer(SubprocessAnalyzer):
 
 
 def analyze_pcrt(input_img: Path, output_dir: Path) -> None:
-    """Analyze an image submission using PCRT."""
-    analyzer = PCRTAnalyzer(input_img, output_dir)
-    analyzer.analyze()
+    """Analyze an image submission using PCRT (deprecated: use ``execute``)."""
+    PCRTAnalyzer.execute(input_img, output_dir)

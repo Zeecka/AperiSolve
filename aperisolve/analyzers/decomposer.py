@@ -15,9 +15,8 @@ GRAYSCALE_DIMENSIONS = 2
 class DecomposerAnalyzer(SubprocessAnalyzer):
     """Analyzer for bits decomposer."""
 
-    def __init__(self, input_img: Path, output_dir: Path) -> None:
-        """Initialize the decomposer analyzer."""
-        super().__init__("decomposer", input_img, output_dir)
+    name = "decomposer"
+    display_order = 10
 
     def get_results(self, password: str | None = None) -> dict[str, Any]:
         """Analyze an image submission using bits decomposition."""
@@ -83,6 +82,5 @@ class DecomposerAnalyzer(SubprocessAnalyzer):
 
 
 def analyze_decomposer(input_img: Path, output_dir: Path) -> None:
-    """Analyze an image submission using bits decomposition."""
-    analyzer = DecomposerAnalyzer(input_img, output_dir)
-    analyzer.analyze()
+    """Analyze using bits decomposition (deprecated: use ``execute``)."""
+    DecomposerAnalyzer.execute(input_img, output_dir)

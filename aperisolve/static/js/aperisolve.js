@@ -1,4 +1,6 @@
-const TOOL_ORDER = [
+// Injected by base.html from the backend analyzer registry; the literal
+// list is only a fallback for pages served without the injection.
+const TOOL_ORDER = window.TOOL_ORDER || [
   "decomposer",
   "color_remapping",
   "file",

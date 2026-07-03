@@ -8,9 +8,13 @@ from .base_analyzer import SubprocessAnalyzer
 class BinwalkAnalyzer(SubprocessAnalyzer):
     """Analyzer for binwalk."""
 
+    name = "binwalk"
+    has_archive = True
+    display_order = 50
+
     def __init__(self, input_img: Path, output_dir: Path) -> None:
         """Initialize the binwalk analyzer."""
-        super().__init__("binwalk", input_img, output_dir, has_archive=True)
+        super().__init__(input_img, output_dir)
         self.cmd = ["binwalk", "--matryoshka", "-e", self.img, "--run-as=root"]
         self.make_folder = False  # Binwalk already create its own folder
 
@@ -25,6 +29,5 @@ class BinwalkAnalyzer(SubprocessAnalyzer):
 
 
 def analyze_binwalk(input_img: Path, output_dir: Path) -> None:
-    """Analyze an image submission using binwalk."""
-    analyzer = BinwalkAnalyzer(input_img, output_dir)
-    analyzer.analyze()
+    """Analyze an image submission using binwalk (deprecated: use ``execute``)."""
+    BinwalkAnalyzer.execute(input_img, output_dir)

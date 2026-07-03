@@ -4,27 +4,44 @@ This guide shows you how to add a new image analysis tool to the system.
 
 ## Quick Start
 
-1. Create a new file in `analyzers/` from template file `template_analyzer.py`.
-2. Register it in `workers.py`, `config.py` (if it extracts files) and `aperisolve.js`.
+1. Create one file in `analyzers/` (copy `template_analyzer.py`).
+2. Install the tool in the `Dockerfile` if it is an external binary.
+
+That's it. Analyzers are auto-discovered: every `SubprocessAnalyzer` subclass
+in `aperisolve/analyzers/` registers itself. The worker run list, the
+`/download` allow-list and the frontend rendering order are all derived from
+the class attributes — there is nothing to edit in `workers.py`, `config.py`
+or `aperisolve.js`.
 
 ## Basic Template
 
 ```python
-from pathlib import Path
-from typing import Optional
 from .base_analyzer import SubprocessAnalyzer
 
 class MyToolAnalyzer(SubprocessAnalyzer):
-    def __init__(self, input_img: Path, output_dir: Path) -> None:
-        super().__init__("mytool", input_img, output_dir)
-        self.cmd = ["mytool", self.img]
+    """Analyzer for mytool."""
 
-def analyze_mytool(input_img: Path, output_dir: Path) -> None:
-    analyzer = MyToolAnalyzer(input_img, output_dir)
-    analyzer.analyze()
+    name = "mytool"        # results.json key and download URL segment
+    display_order = 165    # frontend position (lower renders first)
+
+    def __init__(self, input_img, output_dir):
+        super().__init__(input_img, output_dir)
+        self.cmd = ["mytool", self.img]
 ```
 
-You can also see `template_analyzer.py` or check real examples like `jpseek.py`, `steghide.py`, or `strings.py`.
+You can also see `template_analyzer.py` or check real examples like
+`jpseek.py`, `steghide.py`, or `strings.py`.
+
+## Class Attributes
+
+| Attribute | Default | Meaning |
+|-----------|---------|---------|
+| `name` | *(required)* | Tool name: `results.json` key, CSS class `a-<name>`, download URL |
+| `has_archive` | `False` | The tool extracts files, zipped into `<name>.7z` and downloadable |
+| `needs_password` | `False` | The tool receives the submission password in `build_cmd()` |
+| `deep_only` | `False` | Only run when the user checks "Deep analysis" |
+| `display_order` | `1000` | Frontend rendering position (existing tools use 10–160) |
+| `register` | `True` | Set to `False` to keep a class out of the registry (templates) |
 
 ## Common Scenarios
 
@@ -34,48 +51,54 @@ Like `strings` or `exiftool` - just reads the file and outputs text:
 
 ```python
 class StringsAnalyzer(SubprocessAnalyzer):
-    def __init__(self, input_img: Path, output_dir: Path) -> None:
-        super().__init__("strings", input_img, output_dir)
+    name = "strings"
+    display_order = 160
+
+    def __init__(self, input_img, output_dir):
+        super().__init__(input_img, output_dir)
         self.cmd = ["strings", self.img]
 ```
 
 ### Tool That Extracts Files
 
-Like `binwalk` or `foremost` - extracts files that get zipped for download:
+Like `binwalk` or `foremost` - extracts files that get zipped for download.
+Set `has_archive = True`; the download route allow-list is derived from it
+automatically:
 
 ```python
 class ForemostAnalyzer(SubprocessAnalyzer):
-    def __init__(self, input_img: Path, output_dir: Path) -> None:
-        super().__init__("foremost", input_img, output_dir, has_archive=True)
+    name = "foremost"
+    has_archive = True
+    display_order = 60
+
+    def __init__(self, input_img, output_dir):
+        super().__init__(input_img, output_dir)
         self.cmd = ["foremost", "-o", str(self.get_extracted_dir()), "-i", self.img]
 ```
 
-Note the `has_archive=True` parameter.
-
-**If a tool return an archive, it's important to add the worker name in `WORKER_FILES` variable of `config.py`.**
-
 ### Tool With Password Support
 
-Like `steghide` or `openstego`:
+Like `steghide` or `openstego`. Set `needs_password = True` and accept the
+password in `build_cmd()`:
 
 ```python
 class OutguessAnalyzer(SubprocessAnalyzer):
-    def __init__(self, input_img: Path, output_dir: Path) -> None:
-        super().__init__("outguess", input_img, output_dir, has_archive=True)
+    name = "outguess"
+    has_archive = True
+    needs_password = True
+    deep_only = True
+    display_order = 70
 
-    def build_cmd(self, password: Optional[str] = None) -> list[str]:
+    def build_cmd(self, password: str | None = None) -> list[str]:
         out = str(self.get_extracted_dir() / "outguess.data")
         if password:
             return ["outguess", "-k", password, "-r", self.img, out]
         return ["outguess", "-r", self.img, out]
-
-def analyze_outguess(input_img: Path, output_dir: Path, password: Optional[str] = None) -> None:
-    analyzer = OutguessAnalyzer(input_img, output_dir)
-    if password:
-        analyzer.analyze(password)
-    else:
-        analyzer.analyze()
 ```
+
+> **Security note:** the password is user input. Always pass it as a separate
+> argv element (never interpolate it into a shell string). See `jpseek.py`
+> for a tool that needs an interactive prompt.
 
 ## Customizing Behavior
 
@@ -84,7 +107,7 @@ def analyze_outguess(input_img: Path, output_dir: Path, password: Optional[str] 
 Override `is_error()` to define what counts as an error:
 
 ```python
-def is_error(self, returncode: int, stdout: str, stderr: str, zip_exist: bool) -> bool:
+def is_error(self, returncode: int, stdout: str, stderr: str, *, zip_exist: bool) -> bool:
     # Only error if no files were extracted
     return len(stderr) > 0 and not zip_exist
 ```
@@ -115,52 +138,6 @@ def process_error(self, stdout: str, stderr: str) -> str:
     return stderr
 ```
 
-## Registering Your Analyzer
-
-Add it to `workers.py` in the `analyze_image` function:
-
-```python
-# Import at the top
-from .analyzers.mytool import analyze_mytool
-
-# Add to analyzers list
-analyzers = [
-    (analyze_binwalk, img_path, result_path),
-    (analyze_exiftool, img_path, result_path),
-    # ... other analyzers ...
-    (analyze_mytool, img_path, result_path),
-]
-
-# If it needs a password, pass submission.password:
-# (analyze_mytool, img_path, result_path, submission.password),
-
-# If only for deep analysis, add it conditionally:
-if submission.deep_analysis:
-    analyzers.extend([
-        (analyze_mytool, img_path, result_path),
-    ])
-```
-
-And also in `aperisolve.js` in the `TOOL_ORDER` constant:
-
-```js
-const TOOL_ORDER = [
-  "decomposer",
-  "file",
-  "exiftool",
-  "binwalk",
-  "mytool"  // My new tool
-  "foremost",
-  "outguess",
-  "pngcheck",
-  "pcrt",
-  "steghide",
-  "openstego",
-  "zsteg",
-  "strings",
-];
-```
-
 ## Available Methods to Override
 
 | Method | Purpose | Default Behavior |
@@ -171,6 +148,7 @@ const TOOL_ORDER = [
 | `process_error()` | Format error message | Returns stderr as-is |
 | `process_note()` | Add informational note | Returns `None` |
 | `get_extracted_dir()` | Set extraction directory | Returns `output_dir/toolname/` |
+| `get_results()` | Full control (in-process analyzers) | Runs the command pipeline |
 
 ## Output Format
 
@@ -197,39 +175,44 @@ Your analyzer produces JSON in `results.json`:
 }
 ```
 
+## Tests
+
+Add your analyzer's `name` to the expected registry list in
+`tests/test_registry.py` (it asserts the exact set of registered analyzers
+and their flags). If the tool is available on CI, consider a smoke test in
+`tests/test_analyzers.py` running it against `examples/example1.png`.
+
 ## Tips
 
 - Use `self.img` in commands (relative path), not `self.input_img`
-- Set `has_archive=True` if your tool extracts files
+- Set `has_archive = True` if your tool extracts files
 - Tools run in parallel threads - no need to worry about concurrency
 - The base class handles timeouts (10 minutes default)
 - Extracted files are automatically zipped into `.7z` archives
 - All exceptions are caught and logged to Sentry
-- Keep analyzers idempotent and write outputs to the provided `results_dir`
+- Keep analyzers idempotent and write outputs to the provided output directory
 - Return structured JSON so the frontend can render links/downloads automatically
 
 ## Example: Complete Analyzer
 
 ```python
-from pathlib import Path
 from .base_analyzer import SubprocessAnalyzer
 
 class PngcheckAnalyzer(SubprocessAnalyzer):
-    def __init__(self, input_img: Path, output_dir: Path) -> None:
-        super().__init__("pngcheck", input_img, output_dir)
+    name = "pngcheck"
+    display_order = 80
+
+    def __init__(self, input_img, output_dir):
+        super().__init__(input_img, output_dir)
         self.cmd = ["pngcheck", "-v", self.img]
 
-    def is_error(self, returncode: int, stdout: str, stderr: str, zip_exist: bool) -> bool:
+    def is_error(self, returncode, stdout, stderr, *, zip_exist):
         return "this is neither a PNG or JNG image" in stdout
 
-    def process_error(self, stdout: str, stderr: str) -> str:
+    def process_error(self, stdout, stderr):
         if "neither a PNG or JNG" in stdout:
             return "File format not supported (PNG/JNG only)"
         return stdout
-
-def analyze_pngcheck(input_img: Path, output_dir: Path) -> None:
-    analyzer = PngcheckAnalyzer(input_img, output_dir)
-    analyzer.analyze()
 ```
 
 That's it! Your analyzer will now run in parallel with the others and results will appear in the web interface.
