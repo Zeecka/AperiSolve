@@ -13,6 +13,7 @@ PROJECT_VERSION = getenv("PROJECT_VERSION", _package_version)
 
 REMOVAL_MIN_AGE_SECONDS = int(getenv("REMOVAL_MIN_AGE_SECONDS", "300"))  # 5 minutes
 MAX_PENDING_TIME = int(getenv("MAX_PENDING_TIME", "600"))  # 10 minutes by default
+CLEANUP_INTERVAL_SECONDS = int(getenv("CLEANUP_INTERVAL_SECONDS", "900"))  # 15 minutes
 MAX_STORE_TIME = int(getenv("MAX_STORE_TIME", "259200"))  # 3 days by default
 MAX_CONTENT_LENGTH = int(getenv("MAX_CONTENT_LENGTH", "1048576"))  # 1 MB by default
 CLEAR_AT_RESTART = int(getenv("CLEAR_AT_RESTART", "0"))

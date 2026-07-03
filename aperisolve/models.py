@@ -5,7 +5,7 @@ import shutil
 import struct
 import time
 import zlib
-from datetime import UTC, datetime
+from datetime import UTC, datetime, timedelta
 from typing import cast
 
 from flask_sqlalchemy import SQLAlchemy
@@ -18,6 +18,8 @@ from sqlalchemy import (
     Integer,
     SmallInteger,
     String,
+    and_,
+    or_,
 )
 from sqlalchemy.exc import SQLAlchemyError
 
@@ -59,7 +61,7 @@ class Submission(db.Model):
     password = Column(String(128))
     deep_analysis = Column(Boolean, default=False)
     status = Column(String(20), default="pending")
-    date = Column(Float, nullable=False, default=lambda: datetime.now(UTC))
+    date = Column(Float, nullable=False, default=time.time)
 
     image_hash = Column(String, db.ForeignKey("image.hash"), nullable=False)
 
@@ -161,48 +163,58 @@ def fill_ihdr_db() -> None:
 
 
 def _cleanup_submissions(now: float) -> None:
-    """Delete stale or invalid submissions."""
-    for submission in Submission.query.all():
-        if submission.status in ("pending", "running") and now - submission.date > MAX_PENDING_TIME:
-            db.session.delete(submission)
-            continue
+    """Delete stale pending submissions and completed ones whose results vanished."""
+    stale = Submission.query.filter(
+        Submission.status.in_(("pending", "running")),
+        Submission.date < now - MAX_PENDING_TIME,
+    ).all()
+    for submission in stale:
+        db.session.delete(submission)
+    db.session.commit()
 
-        if submission.status == "done":
-            result_path = RESULT_FOLDER / str(submission.image_hash) / str(submission.hash)
-            result_file = result_path / "results.json"
-            if not result_file.exists():
-                db.session.delete(submission)
-                shutil.rmtree(result_path)
+    for submission in Submission.query.filter_by(status="completed").all():
+        result_path = RESULT_FOLDER / str(submission.image_hash) / str(submission.hash)
+        if not (result_path / "results.json").exists():
+            shutil.rmtree(result_path, ignore_errors=True)
+            db.session.delete(submission)
+    db.session.commit()
 
 
 def _cleanup_images() -> None:
-    """Delete old and orphaned images with their result folders."""
-    for img in Image.query.all():
-        if img.last_submission_date.tzinfo is None:
-            img_date = img.last_submission_date.replace(tzinfo=UTC)
-        else:
-            img_date = img.last_submission_date
+    """Delete expired and orphaned images with their result folders."""
+    now = datetime.now(UTC).replace(tzinfo=None)
+    expired_cutoff = now - timedelta(seconds=MAX_STORE_TIME)
+    orphan_cutoff = now - timedelta(seconds=MAX_PENDING_TIME)
 
-        delay = datetime.now(UTC) - img_date
-        img_folder = RESULT_FOLDER / img.hash
+    candidates = Image.query.filter(
+        or_(
+            Image.last_submission_date < expired_cutoff,
+            and_(
+                ~Image.submissions.any(),
+                Image.last_submission_date < orphan_cutoff,
+            ),
+        ),
+    ).all()
 
-        if delay.total_seconds() > MAX_STORE_TIME:
+    for img in candidates:
+        try:
             for submission in img.submissions:
                 db.session.delete(submission)
-            if img_folder.exists():
-                shutil.rmtree(img_folder)
+            shutil.rmtree(RESULT_FOLDER / img.hash, ignore_errors=True)
             db.session.delete(img)
-            continue
-
-        if len(img.submissions) == 0 and delay.total_seconds() > MAX_PENDING_TIME:
-            if img_folder.exists():
-                shutil.rmtree(img_folder)
-            db.session.delete(img)
+            db.session.commit()
+        except SQLAlchemyError:
+            db.session.rollback()
 
 
 def cleanup_old_entries() -> None:
-    """Clean up old and incomplete entries from the database and file system."""
-    now = time.time()
-    _cleanup_submissions(now)
+    """Clean up old and incomplete entries from the database and file system.
+
+    Deletions are committed in small batches so one bad row cannot roll back
+    the whole sweep.
+    """
+    try:
+        _cleanup_submissions(time.time())
+    except SQLAlchemyError:
+        db.session.rollback()
     _cleanup_images()
-    db.session.commit()

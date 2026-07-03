@@ -12,16 +12,19 @@ from typing import Any, cast
 import sentry_sdk
 from flask import Flask, Response, abort, jsonify, render_template, request, send_file
 from redis import Redis
+from redis.exceptions import RedisError
 from rq import Queue
 from sqlalchemy.exc import SQLAlchemyError
 
 from .config import (
+    CLEANUP_INTERVAL_SECONDS,
     CUSTOM_EXTERNAL_SCRIPT,
     DB_URI,
     FLASK_DEBUG,
     GOOGLE_ADS_TXT,
     IMAGE_EXTENSIONS,
     MAX_CONTENT_LENGTH,
+    MAX_PENDING_TIME,
     PROJECT_VERSION,
     REMOVAL_MIN_AGE_SECONDS,
     REMOVED_IMAGES_FOLDER,
@@ -30,6 +33,8 @@ from .config import (
 )
 from .models import Image, Submission, UploadLog, cleanup_old_entries, db
 from .utils.sentry import initialize_sentry
+
+CLEANUP_LOCK_KEY = "aperisolve:cleanup-lock"
 
 
 def _configure_app(app: Flask) -> None:
@@ -148,9 +153,30 @@ def _register_page_routes(app: Flask) -> None:
         return GOOGLE_ADS_TXT
 
 
+def _run_throttled_cleanup(app: Flask) -> None:
+    """Run the DB/filesystem cleanup at most once per interval across all workers.
+
+    A Redis ``SET NX EX`` lock ensures a single gunicorn worker performs the
+    sweep per interval; every other request skips it instantly.
+    """
+    redis_conn = app.config["REDIS_QUEUE"].connection
+    try:
+        acquired = redis_conn.set(
+            CLEANUP_LOCK_KEY,
+            "1",
+            nx=True,
+            ex=CLEANUP_INTERVAL_SECONDS,
+        )
+    except RedisError as exc:
+        sentry_sdk.capture_exception(exc)
+        return
+    if acquired:
+        cleanup_old_entries()
+
+
 def _upload_image(app: Flask) -> tuple[Response, int]:
     """Handle image upload and initiate analysis."""
-    cleanup_old_entries()
+    _run_throttled_cleanup(app)
 
     if "image" not in request.files:
         return jsonify({"error": "No image provided"}), 400
@@ -241,7 +267,10 @@ def _upload_image(app: Flask) -> tuple[Response, int]:
     app.config["REDIS_QUEUE"].enqueue(
         "aperisolve.workers.analyze_image",
         submission.hash,
-        job_timeout=300,
+        # Analyzer subprocess timeouts (MAX_PENDING_TIME) must fire before RQ
+        # kills the job, so partial results get written and the submission
+        # never sticks in "running".
+        job_timeout=MAX_PENDING_TIME + 60,
     )
     return jsonify({"submission_hash": submission.hash}), 200
 
