@@ -23,7 +23,8 @@ dependencies = [
     "sentry-sdk[flask,sqlalchemy,rq]",
     "Markdown",
     "Pygments",
-    "flask-babel"
+    "flask-babel",
+    "Flask-Limiter[redis]"
 ]
 
 [project.optional-dependencies]

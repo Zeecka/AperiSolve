@@ -8,6 +8,9 @@ import os
 
 os.environ.setdefault("DB_URI", "sqlite://")
 os.environ.setdefault("SENTRY_DSN", "")
+os.environ.setdefault("RATELIMIT_STORAGE_URI", "memory://")
+# Loopback fails instantly (connection refused) instead of hanging on DNS.
+os.environ.setdefault("REDIS_URL", "redis://127.0.0.1:6399/0")
 
 import pytest
 from flask import Flask

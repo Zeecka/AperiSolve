@@ -4,7 +4,7 @@ from pathlib import Path
 from typing import Any
 
 import numpy as np
-from PIL import Image
+from PIL import Image, UnidentifiedImageError
 
 from .base_analyzer import SubprocessAnalyzer
 
@@ -21,7 +21,15 @@ class DecomposerAnalyzer(SubprocessAnalyzer):
     def get_results(self, password: str | None = None) -> dict[str, Any]:
         """Analyze an image submission using bits decomposition."""
         _ = password
-        img = Image.open(self.input_img)
+        try:
+            img = Image.open(self.input_img)
+        except UnidentifiedImageError:
+            # Corrupt/polyglot uploads are expected input, not an exception
+            # worth a Sentry report (issue #192).
+            return {
+                "status": "error",
+                "error": "Pillow cannot decode this file as an image.",
+            }
         converted = False
 
         if img.mode == "P":

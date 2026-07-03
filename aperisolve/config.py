@@ -38,3 +38,9 @@ REMOVED_IMAGES_FOLDER = Path(__file__).parent.resolve() / "removed_images"
 
 DB_URI = getenv("DB_URI", "")
 FLASK_DEBUG = bool(getenv("FLASK_DEBUG", "0") == "1")
+
+# RQ broker connection.
+REDIS_URL = getenv("REDIS_URL", "redis://redis:6379/0")
+
+# Rate limiter storage: Redis DB 1 keeps limiter keys apart from RQ (DB 0).
+RATELIMIT_STORAGE_URI = getenv("RATELIMIT_STORAGE_URI", "redis://redis:6379/1")

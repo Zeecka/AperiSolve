@@ -13,6 +13,7 @@ import sentry_sdk
 from flask import Flask, Response, abort, jsonify, redirect, render_template, request, send_file
 from flask_babel import Babel, get_locale
 from flask_babel import gettext as _
+from flask_limiter import Limiter
 from redis import Redis
 from redis.exceptions import RedisError
 from rq import Queue
@@ -33,6 +34,8 @@ from .config import (
     MAX_CONTENT_LENGTH,
     MAX_PENDING_TIME,
     PROJECT_VERSION,
+    RATELIMIT_STORAGE_URI,
+    REDIS_URL,
     REMOVAL_MIN_AGE_SECONDS,
     REMOVED_IMAGES_FOLDER,
     RESULT_FOLDER,
@@ -50,9 +53,25 @@ from .i18n import (
 from .models import Image, Submission, UploadLog, cleanup_old_entries, db
 from .pages import pages_bp
 from .utils.sentry import initialize_sentry
+from .utils.utils import get_client_ip
 from .wiki import translated_langs, wiki_bp, wiki_pages
 
 CLEANUP_LOCK_KEY = "aperisolve:cleanup-lock"
+
+
+def _is_local_request() -> bool:
+    """Report whether the client is loopback (healthcheck is never limited)."""
+    return request.remote_addr in ("127.0.0.1", "::1")
+
+
+# No default limits: pages, static files and images are never throttled.
+# Explicit per-route limits protect the expensive endpoints only.
+limiter = Limiter(
+    key_func=get_client_ip,
+    storage_uri=RATELIMIT_STORAGE_URI,
+    default_limits=[],
+    swallow_errors=True,  # a limiter/Redis outage must not take uploads down
+)
 
 
 def _configure_app(app: Flask) -> None:
@@ -63,7 +82,7 @@ def _configure_app(app: Flask) -> None:
     app.config["SQLALCHEMY_DATABASE_URI"] = DB_URI
     app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
     app.config["MAX_CONTENT_LENGTH"] = MAX_CONTENT_LENGTH
-    app.config["REDIS_QUEUE"] = Queue(connection=Redis(host="redis", port=6379))
+    app.config["REDIS_QUEUE"] = Queue(connection=Redis.from_url(REDIS_URL))
     app.config["TOOL_ORDER"] = tool_order()
     app.config["ADSENSE_CLIENT"] = ADSENSE_CLIENT
     app.config["ADSENSE_SLOT_WIKI"] = ADSENSE_SLOT_WIKI
@@ -71,6 +90,7 @@ def _configure_app(app: Flask) -> None:
     # Static asset URLs are cache-busted with ?v=<PROJECT_VERSION> in templates.
     app.config["SEND_FILE_MAX_AGE_DEFAULT"] = timedelta(days=7)
     Babel(app, locale_selector=select_locale)
+    limiter.init_app(app)
     db.init_app(app)
 
 
@@ -171,6 +191,11 @@ def _register_error_handlers(app: Flask) -> None:
     def not_found(_error: object) -> tuple[str, int]:
         """Handle not found errors."""
         return render_template("error.html", message=_("Resource not found"), statuscode=404), 404
+
+    @app.errorhandler(429)
+    def too_many_requests(_error: object) -> tuple[Response, int]:
+        """Handle rate-limit errors with the JSON shape the frontend renders."""
+        return jsonify({"error": "Too many requests, please slow down."}), 429
 
 
 def _register_page_routes(app: Flask) -> None:
@@ -298,9 +323,7 @@ def _upload_image(app: Flask) -> tuple[Response, int]:
     submission_hash = hashlib.md5(submission_data, usedforsecurity=False).hexdigest()
     submission_path = RESULT_FOLDER / img_hash / submission_hash
 
-    client_ip = request.headers.get("X-Forwarded-For", request.remote_addr)
-    if client_ip and "," in client_ip:
-        client_ip = client_ip.split(",")[0].strip()
+    client_ip = get_client_ip()
     user_agent = request.headers.get("User-Agent", "Unknown")
 
     upload_log = UploadLog(
@@ -373,10 +396,12 @@ def _register_submission_routes(app: Flask) -> None:
     """Register upload and status routes."""
 
     @app.route("/upload", methods=["POST"])
+    @limiter.limit("10 per minute; 100 per hour", exempt_when=_is_local_request)
     def upload_image() -> tuple[Response, int]:
         return _upload_image(app)
 
     @app.route("/status/<hash_val>", methods=["GET"])
+    @limiter.limit("240 per minute", exempt_when=_is_local_request)
     def get_status(hash_val: str) -> Response:
         """Get the processing status of a submission."""
         submission = Submission.query.get_or_404(hash_val)
@@ -437,6 +462,7 @@ def _register_data_routes(app: Flask) -> None:
         return response
 
     @app.route("/result/<hash_val>", methods=["GET"])
+    @limiter.limit("240 per minute", exempt_when=_is_local_request)
     def get_result(hash_val: str) -> Response | tuple[Response, int]:
         """Get the analysis results of a submission."""
         submission = Submission.query.get_or_404(hash_val)
@@ -493,6 +519,7 @@ def _register_management_routes(app: Flask) -> None:
     """Register removal and moderation routes."""
 
     @app.route("/remove/<hash_val>", methods=["POST"])
+    @limiter.limit("5 per minute", exempt_when=_is_local_request)
     def remove_image(hash_val: str) -> tuple[Response, int]:
         """Remove an image and associated results if criteria are met."""
         submission = Submission.query.get_or_404(hash_val)
@@ -537,6 +564,7 @@ def _register_management_routes(app: Flask) -> None:
         return jsonify({"message": "Image successfully removed"}), 200
 
     @app.route("/remove_password/<hash_val>", methods=["POST"])
+    @limiter.limit("5 per minute", exempt_when=_is_local_request)
     def remove_password(hash_val: str) -> tuple[Response, int]:
         """Remove a password from a submission if criteria are met."""
         submission = Submission.query.get_or_404(hash_val)

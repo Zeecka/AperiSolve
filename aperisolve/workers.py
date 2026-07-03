@@ -1,5 +1,6 @@
 """Asynchronous worker for analyzing image submissions."""
 
+import contextlib
 import threading
 from pathlib import Path
 
@@ -43,6 +44,10 @@ def analyze_image(submission_hash: str) -> None:
                     with sentry_sdk.push_scope() as scope:
                         scope.set_tag("analyzer", analyzer_cls.name)
                         scope.set_tag("submission_hash", submission_hash)
+                        # Attach the analyzed image so errors can be
+                        # reproduced from the Sentry event (issue #193).
+                        with contextlib.suppress(OSError):
+                            scope.add_attachment(path=str(img_path))
                         scope.set_context(
                             "analyzer_info",
                             {
