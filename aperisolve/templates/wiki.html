@@ -4,7 +4,7 @@
 {% block meta_description %}{{ page.description or page.title }}{% endblock %}
 {% block meta %}
 <link rel="canonical" href="{{ base_url }}{{ page.path }}">
-<link href="/static/css/pygments.css" rel="stylesheet">
+<link href="/static/css/pygments.css?v={{ config["PROJECT_VERSION"] }}" rel="stylesheet">
 <script type="application/ld+json">
 {
   "@context": "https://schema.org",

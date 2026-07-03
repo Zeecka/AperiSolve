@@ -5,7 +5,7 @@ import json
 import os
 import shutil
 import time
-from datetime import UTC, datetime
+from datetime import UTC, datetime, timedelta
 from pathlib import Path
 from typing import Any, cast
 
@@ -56,6 +56,8 @@ def _configure_app(app: Flask) -> None:
     app.config["ADSENSE_CLIENT"] = ADSENSE_CLIENT
     app.config["ADSENSE_SLOT_WIKI"] = ADSENSE_SLOT_WIKI
     app.config["ADSENSE_SLOT_INDEX"] = ADSENSE_SLOT_INDEX
+    # Static asset URLs are cache-busted with ?v=<PROJECT_VERSION> in templates.
+    app.config["SEND_FILE_MAX_AGE_DEFAULT"] = timedelta(days=7)
     db.init_app(app)
 
 
@@ -347,7 +349,34 @@ def _register_submission_routes(app: Flask) -> None:
     def get_status(hash_val: str) -> Response:
         """Get the processing status of a submission."""
         submission = Submission.query.get_or_404(hash_val)
-        return jsonify({"status": submission.status})
+        response = jsonify({"status": submission.status})
+        response.headers["Cache-Control"] = "no-store"
+        return response
+
+
+def _build_result_response(result_path: Path) -> Response | tuple[Response, int]:
+    """Build the /result response with an ETag over the raw results.json bytes.
+
+    The frontend polls this endpoint while analysis runs; the ETag turns
+    unchanged polls into 304s.
+    """
+    if not result_path.exists():
+        response = jsonify({"error": "Results not ready yet..."})
+        response.headers["Cache-Control"] = "no-store"
+        return response, 425
+
+    raw = result_path.read_bytes()
+    try:
+        results = json.loads(raw)
+    except json.JSONDecodeError:
+        response = jsonify({"error": "Results not ready yet..."})
+        response.headers["Cache-Control"] = "no-store"
+        return response, 425
+
+    response = jsonify({"results": results})
+    response.headers["Cache-Control"] = "no-cache"
+    response.set_etag(hashlib.md5(raw, usedforsecurity=False).hexdigest())
+    return cast("Response", response.make_conditional(request))
 
 
 def _register_data_routes(app: Flask) -> None:
@@ -360,7 +389,7 @@ def _register_data_routes(app: Flask) -> None:
         image = Image.query.get_or_404(submission.image_hash)
         names = [name for name in {sub.filename for sub in image.submissions} if name]
         passwords = [pwd for pwd in {sub.password for sub in image.submissions} if pwd]
-        return jsonify(
+        response = jsonify(
             {
                 "image_path": "image/" + str(Path(image.file).name),
                 "names": names,
@@ -373,21 +402,16 @@ def _register_data_routes(app: Flask) -> None:
                 "submission_date": submission.date,
             },
         )
+        response.headers["Cache-Control"] = "private, max-age=30"
+        return response
 
     @app.route("/result/<hash_val>", methods=["GET"])
-    def get_result(hash_val: str) -> tuple[Response, int]:
+    def get_result(hash_val: str) -> Response | tuple[Response, int]:
         """Get the analysis results of a submission."""
         submission = Submission.query.get_or_404(hash_val)
         image = Image.query.get_or_404(submission.image_hash)
         result_path = RESULT_FOLDER / str(image.hash) / str(submission.hash) / "results.json"
-
-        if not result_path.exists():
-            return jsonify({"error": "Results not ready yet..."}), 425
-
-        with result_path.open(encoding="utf-8") as file_obj:
-            results = json.load(file_obj)
-
-        return jsonify({"results": results}), 200
+        return _build_result_response(result_path)
 
     @app.route("/download/<hash_val>/<tool>")
     def download_output(hash_val: str, tool: str) -> Response:
@@ -400,7 +424,9 @@ def _register_data_routes(app: Flask) -> None:
         if tool not in archive_tools() or not output_file.exists():
             abort(404, description="Tool output not found.")
 
-        return send_file(output_file, as_attachment=True)
+        response = send_file(output_file, as_attachment=True)
+        response.headers["Cache-Control"] = "public, max-age=86400"
+        return response
 
     @app.route("/image/<img_name>")
     @app.route("/image/<hash_val>/<img_name>")
@@ -425,7 +451,11 @@ def _register_data_routes(app: Flask) -> None:
         if (not output_file.exists()) or (output_file.suffix.lower() not in IMAGE_EXTENSIONS):
             return abort(404, description="Image not found or unsupported format")
 
-        return send_file(output_file, as_attachment=True)
+        # URLs are content-addressed (md5 hashes), so responses never change:
+        # the ~40 derived bit-plane images per result page cache forever.
+        response = send_file(output_file, as_attachment=True)
+        response.headers["Cache-Control"] = "public, max-age=31536000, immutable"
+        return response
 
 
 def _register_management_routes(app: Flask) -> None:

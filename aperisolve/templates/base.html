@@ -24,7 +24,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@300..700&display=swap" rel="stylesheet">
   <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css" rel="stylesheet">
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet">
-  <link href="/static/css/aperisolve.css" rel="stylesheet">
+  <link href="/static/css/aperisolve.css?v={{ config["PROJECT_VERSION"] }}" rel="stylesheet">
   <script async src="{{ config["CUSTOM_EXTERNAL_SCRIPT"]}}" crossorigin="anonymous"></script>
 </head>
 
@@ -61,7 +61,7 @@
 
   <!-- Scripts -->
   <script>window.TOOL_ORDER = {{ config["TOOL_ORDER"] | tojson }};</script>
-  <script src="/static/js/aperisolve.js"></script>
+  <script src="/static/js/aperisolve.js?v={{ config["PROJECT_VERSION"] }}"></script>
   {% block background_scripts %}
   <script type="importmap">
 		{
@@ -71,7 +71,7 @@
 			}
 		}
 	</script>
-  <script type="module" src="/static/js/background.js"></script>
+  <script type="module" src="/static/js/background.js?v={{ config["PROJECT_VERSION"] }}"></script>
   {% endblock %}
   {% block footer_content %} {% endblock %}
 </body>
