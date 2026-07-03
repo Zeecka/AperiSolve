@@ -216,11 +216,12 @@ def _indexable_pages() -> list[str]:
     return ["/", *[page.path for page in wiki_pages()]]
 
 
-def _run_throttled_cleanup(app: Flask) -> None:
-    """Run the DB/filesystem cleanup at most once per interval across all workers.
+def run_cleanup_with_lock(app: Flask) -> None:
+    """Run the DB/filesystem cleanup at most once per interval, cluster-wide.
 
-    A Redis ``SET NX EX`` lock ensures a single gunicorn worker performs the
-    sweep per interval; every other request skips it instantly.
+    A Redis ``SET NX EX`` lock ensures a single process (gunicorn worker or
+    the cron scheduler) performs the sweep per interval; everyone else skips
+    instantly.
     """
     redis_conn = app.config["REDIS_QUEUE"].connection
     try:
@@ -239,7 +240,10 @@ def _run_throttled_cleanup(app: Flask) -> None:
 
 def _upload_image(app: Flask) -> tuple[Response, int]:
     """Handle image upload and initiate analysis."""
-    _run_throttled_cleanup(app)
+    # Transitional: the cron service is the primary cleanup driver; this
+    # lock-guarded call remains as a safety net and is a no-op whenever the
+    # cron job holds the interval lock.
+    run_cleanup_with_lock(app)
 
     if "image" not in request.files:
         return jsonify({"error": "No image provided"}), 400

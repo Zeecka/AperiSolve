@@ -39,6 +39,24 @@ services:
     env_file:
       - .env.example
 
+  cron:
+    #image: ghcr.io/zeecka/aperisolve:latest
+    build: .
+    container_name: aperisolve-cron
+    restart: always
+    command: rq cron aperisolve.cron --url redis://redis:6379/0
+    volumes:
+      - ./aperisolve:/app/aperisolve
+    depends_on:
+      postgres:
+        condition: service_healthy
+      initdb:
+        condition: service_completed_successfully
+      redis:
+        condition: service_started
+    env_file:
+      - .env.example
+
   initdb:
     build: .
     container_name: aperisolve-initdb
