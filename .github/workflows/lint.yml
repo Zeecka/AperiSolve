@@ -33,3 +33,6 @@ jobs:
 
       - name: Run ty
         run: uv run ty check aperisolve
+
+      - name: Run pytest
+        run: uv run pytest -q

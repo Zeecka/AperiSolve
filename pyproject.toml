@@ -28,6 +28,7 @@ dev = [
     "ruff",
     "ty",
     "pre-commit",
+    "pytest",
     "types-Flask-SQLAlchemy",
     "sqlalchemy-stubs"
 ]
@@ -42,3 +43,10 @@ target-version = "py312"
 
 [tool.ruff.lint]
 select = ["ALL"]
+
+[tool.ruff.lint.per-file-ignores]
+# Tests use asserts, magic values and env setup before imports by design.
+"tests/*" = ["S101", "INP001", "PLR2004", "E402"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]

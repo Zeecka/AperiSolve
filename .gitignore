@@ -6,3 +6,4 @@ __pycache__/
 results/
 removed_images/
 *.egg-info/
+.pytest_cache/

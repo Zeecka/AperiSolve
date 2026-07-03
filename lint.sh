@@ -12,4 +12,7 @@ ruff format . --check
 echo "🔍 Running ty type checks..."
 ty check aperisolve
 
+echo "🧪 Running pytest..."
+pytest -q
+
 echo "✅ All checks passed!"
