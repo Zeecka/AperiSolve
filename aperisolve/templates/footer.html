@@ -8,13 +8,28 @@
 
       <!-- Links -->
       <div class="d-flex align-items-center gap-3 flex-wrap link-container">
+        {% if lang_switch %}
+        <details class="lang-switcher">
+          <summary class="footer-link" title="{{ _('Language') }}">
+            <i class="fa fa-globe fa-lg"></i> {{ current_lang | upper }}
+          </summary>
+          <ul class="lang-switcher-menu">
+            {% for code, href in lang_switch %}
+            <li>
+              <a href="{{ href }}" class="footer-link {{ 'fw-bold' if code == current_lang }}"
+                onclick="document.cookie='lang={{ code }};path=/;max-age=31536000'">{{ code | upper }}</a>
+            </li>
+            {% endfor %}
+          </ul>
+        </details>
+        {% endif %}
         <a href="https://buymeacoffee.com/aperisolve" title="Buy Me A Coffee" class="footer-link">
           <img src="https://cdn.buymeacoffee.com/buttons/v2/default-yellow.png" alt="Buy Me A Coffee" class="footer-icon-img" />
         </a>
-        <a href="/wiki/" title="Wiki" class="footer-link">
+        <a href="{{ lang_prefix }}/wiki/" title="{{ _('Wiki') }}" class="footer-link">
           <i class="fa-solid fa-book-open fa-lg"></i>
         </a>
-        <a href="/wiki/cheatsheet" title="Cheatsheet" class="footer-link">
+        <a href="{{ lang_prefix }}/wiki/cheatsheet" title="{{ _('Cheatsheet') }}" class="footer-link">
           <i class="fa-regular fa-circle-question fa-lg"></i>
         </a>
         <a href="https://github.com/Zeecka/AperiSolve" target="_blank" rel="noopener" title="GitHub" class="footer-link">

@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en" data-bs-theme="dark">
+<html lang="{{ current_lang }}" data-bs-theme="dark">
 
 <head>
   <meta charset="UTF-8">
@@ -7,6 +7,11 @@
   <meta name="description" content="{% block meta_description %}Aperi'Solve - Online steganography analysis platform for images{% endblock %}">
   <title>{% block title %}Aperi'Solve - Steganography Analysis{% endblock %}</title>
   {% block meta %}{% endblock %}
+  {% if alternates %}
+  {% for code, href in alternates %}
+  <link rel="alternate" hreflang="{{ code }}" href="{{ base_url }}{{ href }}">
+  {% endfor %}
+  {% endif %}
   <meta property="og:site_name" content="Aperi'Solve">
   <meta property="og:type" content="website">
   <meta property="og:title" content="{{ self.title() }}">
@@ -43,8 +48,8 @@
           </div>
         </a>
         <nav class="header-nav" aria-label="Main navigation">
-          <a class="footer-link me-3" href="/wiki/"><i class="fa-solid fa-book-open me-1"></i>Wiki</a>
-          <a class="footer-link" href="/wiki/cheatsheet"><i class="fa-regular fa-circle-question me-1"></i>Cheatsheet</a>
+          <a class="footer-link me-3" href="{{ lang_prefix }}/wiki/"><i class="fa-solid fa-book-open me-1"></i>{{ _("Wiki") }}</a>
+          <a class="footer-link" href="{{ lang_prefix }}/wiki/cheatsheet"><i class="fa-regular fa-circle-question me-1"></i>{{ _("Cheatsheet") }}</a>
         </nav>
       </header>
       {% block body_content %} {% endblock %}
@@ -60,7 +65,10 @@
   </div>
 
   <!-- Scripts -->
-  <script>window.TOOL_ORDER = {{ config["TOOL_ORDER"] | tojson }};</script>
+  <script>
+    window.TOOL_ORDER = {{ config["TOOL_ORDER"] | tojson }};
+    window.I18N = {{ js_i18n | tojson }};
+  </script>
   <script src="/static/js/aperisolve.js?v={{ config["PROJECT_VERSION"] }}"></script>
   {% block background_scripts %}
   <script type="importmap">

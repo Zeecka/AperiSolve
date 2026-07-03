@@ -74,6 +74,34 @@ The in-app wiki (`/wiki/`) is plain Markdown — the easiest way to contribute:
   what the tool does, the exact command Aperi'Solve runs, how to read its
   output, and common CTF patterns.
 
+### 🌍 Translations
+
+The UI ships in English, French, Spanish, German, Russian, Chinese and
+Portuguese. Machine-translated drafts are welcome; native review even more so.
+
+- **UI strings** live in gettext catalogs at
+  `aperisolve/translations/<lang>/LC_MESSAGES/messages.po`. After changing
+  translatable strings in templates/Python, refresh and recompile:
+
+  ```console
+  $ pybabel extract -F babel.cfg -o messages.pot .
+  $ pybabel update -i messages.pot -d aperisolve/translations
+  $ pybabel compile -d aperisolve/translations
+  ```
+
+  Commit both the `.po` and compiled `.mo` files (the dev compose mounts the
+  source tree directly, so the runtime needs the committed `.mo`).
+- **Wiki pages** are translated by mirroring the English file:
+  `aperisolve/wiki_content/fr/cheatsheet.md` translates
+  `aperisolve/wiki_content/en/cheatsheet.md`. Untranslated pages
+  automatically fall back to English with a banner, canonicalize to the
+  English URL and stay out of the sitemap — so partial translations are
+  fine. Translating `cheatsheet.md` and the `tools/` pages is the highest
+  impact contribution.
+- Adding a new language: add its code to `PREFIX_LANGS` in
+  `aperisolve/i18n.py`, run `pybabel init -i messages.pot -d
+  aperisolve/translations -l <lang>`, and translate.
+
 ### 🎨 UI/UX Improvements
 
 Contributions to the web interface are welcome:

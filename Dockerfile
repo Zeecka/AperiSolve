@@ -80,6 +80,9 @@ COPY aperisolve/ ./aperisolve/
 RUN uv sync --frozen --no-dev
 ENV PATH="/app/.venv/bin:$PATH"
 
+# Compile gettext catalogs (source .po files are committed; .mo are built)
+RUN pybabel compile -d aperisolve/translations
+
 # Copy jphide and jsteg binaries
 COPY --from=builder /usr/local/bin/jphide /usr/local/bin/jphide
 COPY --from=builder /usr/local/bin/jpseek /usr/local/bin/jpseek

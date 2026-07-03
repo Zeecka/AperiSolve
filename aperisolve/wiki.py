@@ -9,15 +9,16 @@ from dataclasses import dataclass
 from pathlib import Path
 
 import markdown
-from flask import Blueprint, abort, render_template
+from flask import Blueprint, abort, g, render_template
 
 from .config import FLASK_DEBUG
+from .i18n import DEFAULT_LANG, PREFIX_LANGS, alternates_for, register_lang_handling
 
 WIKI_CONTENT_DIR = Path(__file__).parent.resolve() / "wiki_content"
-DEFAULT_LANG = "en"
 MARKDOWN_EXTENSIONS = ["meta", "toc", "attr_list", "fenced_code", "codehilite", "tables"]
 
 wiki_bp = Blueprint("wiki", __name__)
+register_lang_handling(wiki_bp)
 
 
 @dataclass(frozen=True)
@@ -93,16 +94,51 @@ def wiki_pages(lang: str = DEFAULT_LANG) -> list[WikiPage]:
     return sorted(pages, key=lambda page: (page.order, page.title))
 
 
+def translated_langs(slug: str) -> list[str]:
+    """Prefix languages that have a real translation of a page."""
+    return [lang for lang in PREFIX_LANGS if _resolve_page_file(lang, slug) is not None]
+
+
+def _wiki_nav(lang: str) -> list[WikiPage]:
+    """Sidebar pages in the English order, using translated titles if available."""
+    nav = []
+    for en_page in wiki_pages(DEFAULT_LANG):
+        localized = load_page(lang, en_page.slug) if lang != DEFAULT_LANG else None
+        nav.append(localized or en_page)
+    return nav
+
+
 def _render(slug: str) -> str:
-    page = load_page(DEFAULT_LANG, slug)
+    lang = g.get("lang_code") or DEFAULT_LANG
+    page = load_page(lang, slug)
+    is_fallback = False
+    if page is None and lang != DEFAULT_LANG:
+        page = load_page(DEFAULT_LANG, slug)
+        is_fallback = True
     if page is None:
         abort(404)
-    pages = wiki_pages()
+
+    if lang == DEFAULT_LANG:
+        canonical_path = page.path
+        alternates = alternates_for(page.path, [DEFAULT_LANG, *translated_langs(slug)])
+    elif is_fallback:
+        # Untranslated fallback pages canonicalize to the English URL and
+        # carry no hreflang, avoiding duplicate-content penalties.
+        canonical_path = page.path
+        alternates = None
+    else:
+        canonical_path = f"/{lang}{page.path}"
+        alternates = alternates_for(page.path, [DEFAULT_LANG, *translated_langs(slug)])
+
+    nav = _wiki_nav(lang)
     return render_template(
         "wiki.html",
         page=page,
-        nav_main=[p for p in pages if "/" not in p.slug],
-        nav_tools=[p for p in pages if p.slug.startswith("tools/")],
+        is_fallback=is_fallback,
+        canonical_path=canonical_path,
+        alternates=alternates,
+        nav_main=[p for p in nav if "/" not in p.slug],
+        nav_tools=[p for p in nav if p.slug.startswith("tools/")],
     )
 
 

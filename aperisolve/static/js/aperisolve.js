@@ -29,6 +29,12 @@ function escapeHtml(text) {
     .replace(/'/g, "&#039;");
 }
 
+// Translation lookup: window.I18N is injected by base.html; the English
+// string doubles as the key and the fallback.
+function t(text) {
+  return (window.I18N && window.I18N[text]) || text;
+}
+
 function capitalize(str) {
   if (typeof str !== "string" || str.length === 0) return str;
   return str.charAt(0).toUpperCase() + str.slice(1);
@@ -220,18 +226,18 @@ async function fetchImageInfo(submission_hash) {
   mainImgRight.appendChild(tableInfos);
 
   mainImgLeft.innerHTML += `<div id="main_image"><img src="${infoData.image_path}"/></div>`;
-  tableInfos.innerHTML += `<tr><td><i class="fa fa-backward-step"></i> First upload:</td><td>${infoData.first_submission_date}</td></tr>`;
-  tableInfos.innerHTML += `<tr><td><i class="fa fa-history"></i> Last upload:</td><td>${infoData.last_submission_date}</td></tr>`;
+  tableInfos.innerHTML += `<tr><td><i class="fa fa-backward-step"></i> ${t("First upload:")}</td><td>${infoData.first_submission_date}</td></tr>`;
+  tableInfos.innerHTML += `<tr><td><i class="fa fa-history"></i> ${t("Last upload:")}</td><td>${infoData.last_submission_date}</td></tr>`;
   if (Array.isArray(infoData.names)) {
     const nameList = infoData.names
       .map((name) => `<code>${escapeHtml(name)}</code>`)
       .join(", ");
-    tableInfos.innerHTML += `<tr><td><i class="fa fa-list"></i> Name(s):</td><td>${nameList}</td></tr>`;
+    tableInfos.innerHTML += `<tr><td><i class="fa fa-list"></i> ${t("Name(s):")}</td><td>${nameList}</td></tr>`;
   }
-  tableInfos.innerHTML += `<tr><td><i class="fa fa-balance-scale"></i> Size:</td><td>${formatBytes(
+  tableInfos.innerHTML += `<tr><td><i class="fa fa-balance-scale"></i> ${t("Size:")}</td><td>${formatBytes(
     infoData.size
   )}</td></tr>`;
-  tableInfos.innerHTML += `<tr><td><i class="fa fa-upload"></i> Upload count:</td><td>${infoData.upload_count}</td></tr>`;
+  tableInfos.innerHTML += `<tr><td><i class="fa fa-upload"></i> ${t("Upload count:")}</td><td>${infoData.upload_count}</td></tr>`;
   if (Array.isArray(infoData.passwords) && infoData.passwords.length > 0) {
     await displayPasswordsWithRemoval(tableInfos, infoData.passwords, submission_hash, infoData);
   }
@@ -245,7 +251,7 @@ async function displayPasswordsWithRemoval(tableInfos, passwords, submission_has
   const tdLabel = document.createElement("td");
   const tdContent = document.createElement("td");
 
-  tdLabel.innerHTML = '<i class="fa fa-key"></i> Common password(s):';
+  tdLabel.innerHTML = `<i class="fa fa-key"></i> ${t("Common password(s):")}`;
   tr.appendChild(tdLabel);
   tr.appendChild(tdContent);
   tableInfos.appendChild(tr);
@@ -272,7 +278,7 @@ async function displayPasswordsWithRemoval(tableInfos, passwords, submission_has
     if (canRemove) {
       const deleteIcon = document.createElement("i");
       deleteIcon.className = "fas fa-times password-delete-icon";
-      deleteIcon.title = "Remove password";
+      deleteIcon.title = t("Remove password");
       deleteIcon.dataset.submissionHash = submission_hash;
       deleteIcon.dataset.password = pwd;
       deleteIcon.style.cursor = "pointer";
@@ -391,9 +397,9 @@ async function updateRemovalUI(submission_hash, infoData) {
     if (ageSeconds < REMOVAL_MIN_AGE_SECONDS) {
       const remainingSeconds = REMOVAL_MIN_AGE_SECONDS - ageSeconds;
       removalContainer.innerHTML = `
-        <h3><i class="fa fa-trash"></i> Remove Image</h3>
-        <p>Available in <span id="removal-countdown">${remainingSeconds}</span> seconds</p>
-        <button class="btn btn-primary" disabled id="remove-btn">Remove Image</button>
+        <h3><i class="fa fa-trash"></i> ${t("Remove Image")}</h3>
+        <p>${t("Available in {s} seconds").replace("{s}", `<span id="removal-countdown">${remainingSeconds}</span>`)}</p>
+        <button class="btn btn-primary" disabled id="remove-btn">${t("Remove Image")}</button>
       `;
 
       // Clear existing interval if any
@@ -417,8 +423,8 @@ async function updateRemovalUI(submission_hash, infoData) {
     } else {
       // Check for multiple IPs - we'll do this by attempting removal
       removalContainer.innerHTML = `
-        <h3><i class="fa fa-trash"></i> Remove Image</h3>
-        <button class="btn btn-primary" id="remove-btn">Remove Image</button>
+        <h3><i class="fa fa-trash"></i> ${t("Remove Image")}</h3>
+        <button class="btn btn-primary" id="remove-btn">${t("Remove Image")}</button>
         <p id="removal-status"></p>
       `;
 
@@ -438,7 +444,7 @@ async function updateRemovalUI(submission_hash, infoData) {
           const data = await response.json();
 
           if (response.ok) {
-            statusEl.innerHTML = `<span class="text-success"><i class="fa fa-check"></i> Image successfully removed</span>`;
+            statusEl.innerHTML = `<span class="text-success"><i class="fa fa-check"></i> ${t("Image successfully removed")}</span>`;
             removeBtn.style.display = "none";
             setTimeout(() => { document.location = '/'; }, 2000);
           } else if (response.status === 403) {
@@ -449,11 +455,11 @@ async function updateRemovalUI(submission_hash, infoData) {
             }
             removeBtn.disabled = false;
           } else {
-            statusEl.innerHTML = `<span class="text-danger"><i class="fa fa-exclamation-circle"></i> Error: ${escapeHtml(data.error)}</span>`;
+            statusEl.innerHTML = `<span class="text-danger"><i class="fa fa-exclamation-circle"></i> ${t("Error:")} ${escapeHtml(data.error)}</span>`;
             removeBtn.disabled = false;
           }
         } catch (error) {
-          statusEl.innerHTML = `<span class="text-danger"><i class="fa fa-exclamation-circle"></i> Network error occurred</span>`;
+          statusEl.innerHTML = `<span class="text-danger"><i class="fa fa-exclamation-circle"></i> ${t("Network error occurred")}</span>`;
           removeBtn.disabled = false;
           console.error("Removal error:", error);
         }
@@ -529,7 +535,7 @@ function parseResult(result) {
           if (images) {
             title_h3 = capitalize(escapeHtml(channel));
             if (title_h3 != "Color Remapping"){
-              analyzer.innerHTML += `<h3>${title_h3}</h3>`;
+              analyzer.innerHTML += `<h3>${t(title_h3)}</h3>`;
             }
             for (const image of images) {
               analyzer.innerHTML += `<div class='results_img'><img src='${escapeHtml(
@@ -557,7 +563,7 @@ function parseResult(result) {
         // Parse download link
         analyzer.innerHTML += `<br/><a href="${escapeHtml(
           result[tool]["download"]
-        )}" target="_blank" class="btn btn-primary mt-2"><i class="fa fa-download"></i> Download file</a>`;
+        )}" target="_blank" class="btn btn-primary mt-2"><i class="fa fa-download"></i> ${t("Download file")}</a>`;
       }
     }
 
@@ -589,7 +595,7 @@ async function pollStatus(submission_hash) {
     }
   } else if (statusData.status === "error") {
     //resultDiv.innerHTML = "";
-    showDanger("❌ Error during the analysis.", true);
+    showDanger(t("❌ Error during the analysis."), true);
   } else {
     setTimeout(() => pollStatus(submission_hash), 1000);
     try {
@@ -681,7 +687,7 @@ if (browseBtn) {
       const progressBar = document.getElementById("progress-bar");
 
       if (!fileInput.files.length) {
-        showDanger("Please select an image.", true);
+        showDanger(t("Please select an image."), true);
       }
 
       const formData = new FormData();
@@ -714,26 +720,26 @@ if (browseBtn) {
               pollStatus(response.submission_hash);
             } else {
               showDanger(
-                "❌ Invalid server response: missing submission_hash.",
+                t("❌ Invalid server response: missing submission_hash."),
                 true
               );
             }
           } catch (e) {
-            showDanger("❌ Invalid server response.", true);
+            showDanger(t("❌ Invalid server response."), true);
           }
         } else if (xhr.status == 413) {
-          showDanger("❌ File too large. Please upload a smaller file.", true);
+          showDanger(t("❌ File too large. Please upload a smaller file."), true);
         } else {
           showDanger(`❌ HTTP error ${xhr.status}`, true);
         }
         progressBar.style.width = "100%";
-        progressBar.textContent = "Upload complete";
+        progressBar.textContent = t("Upload complete");
         const uploadForm = document.getElementById("upload-form");
         slideUp(uploadForm);
       };
 
       xhr.onerror = () => {
-        showDanger("❌ An error occurred during the transfer", true);
+        showDanger(t("❌ An error occurred during the transfer"), true);
       };
 
       xhr.send(formData);

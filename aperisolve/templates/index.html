@@ -1,8 +1,8 @@
 {% extends 'base.html' %}
-{% block title %}Aperi'Solve - Online Image Steganography Analyzer{% endblock %}
-{% block meta_description %}Free online steganography analysis: layer/bit-plane extraction plus zsteg, steghide, binwalk, exiftool, foremost, outguess and more on PNG, JPG, GIF, BMP, TIFF and WebP images.{% endblock %}
+{% block title %}{{ _("Aperi'Solve - Online Image Steganography Analyzer") }}{% endblock %}
+{% block meta_description %}{{ _("Free online steganography analysis: layer/bit-plane extraction plus zsteg, steghide, binwalk, exiftool, foremost, outguess and more on PNG, JPG, GIF, BMP, TIFF and WebP images.") }}{% endblock %}
 {% block meta %}
-<link rel="canonical" href="{{ base_url }}/">
+<link rel="canonical" href="{{ base_url }}{{ lang_prefix }}/">
 <script type="application/ld+json">
 {
   "@context": "https://schema.org",
@@ -24,43 +24,43 @@
 <form id="upload-form" class="card p-4 mb-4" method="POST" enctype="multipart/form-data">
   <!-- Description Section -->
   <section class="mb-4">
-    <h2 class="h4 mb-3 question">What is this?</h2>
+    <h2 class="h4 mb-3 question">{{ _("What is this?") }}</h2>
     <p class="text-light-emphasis mb-0">
-      Aperi'Solve is an online platform which performs layer analysis on images.
+      {{ _("Aperi'Solve is an online platform which performs layer analysis on images.
       The platform also uses zsteg, steghide, outguess, exiftool, binwalk, foremost and strings
-      for deeper steganography analysis. Supports: PNG, JPG, GIF, BMP, JPEG, JFIF, JPE, TIFF...
+      for deeper steganography analysis. Supports: PNG, JPG, GIF, BMP, JPEG, JFIF, JPE, TIFF...") }}
     </p>
   </section>
 
   <!-- Drop Zone -->
   <div class="mb-3">
-    <label for="image" class="form-label visually-hidden">Image file</label>
+    <label for="image" class="form-label visually-hidden">{{ _("Image file") }}</label>
     <div id="drop-zone" class="drop-zone border border-2 border-dashed rounded-3 p-4 text-center">
-      <p id="drag-msg" class="mb-3">📂 Drag and drop an image here or click to select</p>
+      <p id="drag-msg" class="mb-3">{{ _("📂 Drag and drop an image here or click to select") }}</p>
       <input type="file" id="image" name="image" accept="image/*" class="visually-hidden" required>
-      <button type="button" class="btn" id="browse-btn" aria-label="Choose image file">
-        <i class="fa fa-folder-open me-2"></i>Choose an image
+      <button type="button" class="btn" id="browse-btn" aria-label="{{ _('Choose image file') }}">
+        <i class="fa fa-folder-open me-2"></i>{{ _("Choose an image") }}
       </button>
     </div>
   </div>
 
   <!-- Password Field -->
   <div class="mb-3">
-    <label for="password" class="form-label">Password <small class="text-muted">(optional)</small></label>
-    <input class="form-control" type="text" name="password" id="password" placeholder="Enter password if required">
+    <label for="password" class="form-label">{{ _("Password") }} <small class="text-muted">{{ _("(optional)") }}</small></label>
+    <input class="form-control" type="text" name="password" id="password" placeholder="{{ _('Enter password if required') }}">
   </div>
 
   <!-- Deep Analysis Toggle -->
   <div class="form-check form-switch mb-4">
     <input class="form-check-input" type="checkbox" role="switch" id="deep">
     <label class="form-check-label" for="deep">
-      Deep analysis <small class="text-muted">(slower, more thorough)</small>
+      {{ _("Deep analysis") }} <small class="text-muted">{{ _("(slower, more thorough)") }}</small>
     </label>
   </div>
 
   <!-- Submit Button -->
   <button type="submit" class="btn btn-primary btn-lg w-100">
-    <i class="fa fa-upload me-2"></i>Analyze Image
+    <i class="fa fa-upload me-2"></i>{{ _("Analyze Image") }}
   </button>
 
   <!-- Progress Bar -->

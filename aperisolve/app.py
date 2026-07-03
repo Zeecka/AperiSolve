@@ -11,6 +11,8 @@ from typing import Any, cast
 
 import sentry_sdk
 from flask import Flask, Response, abort, jsonify, redirect, render_template, request, send_file
+from flask_babel import Babel, get_locale
+from flask_babel import gettext as _
 from redis import Redis
 from redis.exceptions import RedisError
 from rq import Queue
@@ -36,9 +38,19 @@ from .config import (
     RESULT_FOLDER,
     SITE_BASE_URL,
 )
+from .i18n import (
+    DEFAULT_LANG,
+    LANG_PREFIX_RULE,
+    PREFIX_LANGS,
+    SUPPORTED_LANGS,
+    js_catalog,
+    lang_prefix,
+    select_locale,
+)
 from .models import Image, Submission, UploadLog, cleanup_old_entries, db
+from .pages import pages_bp
 from .utils.sentry import initialize_sentry
-from .wiki import wiki_bp, wiki_pages
+from .wiki import translated_langs, wiki_bp, wiki_pages
 
 CLEANUP_LOCK_KEY = "aperisolve:cleanup-lock"
 
@@ -58,6 +70,7 @@ def _configure_app(app: Flask) -> None:
     app.config["ADSENSE_SLOT_INDEX"] = ADSENSE_SLOT_INDEX
     # Static asset URLs are cache-busted with ?v=<PROJECT_VERSION> in templates.
     app.config["SEND_FILE_MAX_AGE_DEFAULT"] = timedelta(days=7)
+    Babel(app, locale_selector=select_locale)
     db.init_app(app)
 
 
@@ -120,6 +133,27 @@ def _register_error_handlers(app: Flask) -> None:
         """Inject the public base URL into all templates."""
         return {"base_url": _base_url()}
 
+    @app.context_processor
+    def inject_i18n() -> dict[str, Any]:
+        """Inject language context: prefix, switcher targets, JS catalog."""
+        switch = None
+        endpoint = request.endpoint or ""
+        if endpoint.startswith(("pages.", "wiki.", "pages_i18n.", "wiki_i18n.")):
+            bare = request.path
+            prefix = lang_prefix()
+            if prefix and bare.startswith(prefix):
+                bare = bare[len(prefix) :] or "/"
+            switch = [
+                (lang, bare if lang == DEFAULT_LANG else f"/{lang}{bare}")
+                for lang in SUPPORTED_LANGS
+            ]
+        return {
+            "lang_prefix": lang_prefix(),
+            "current_lang": str(get_locale()),
+            "js_i18n": js_catalog(),
+            "lang_switch": switch,
+        }
+
     @app.errorhandler(413)
     def too_large(_: object) -> tuple[Response, int]:
         """Handle max upload size errors."""
@@ -134,33 +168,18 @@ def _register_error_handlers(app: Flask) -> None:
         return jsonify({"error": "Image size exceeded"}), 413
 
     @app.errorhandler(404)
-    def not_found(_: object) -> tuple[str, int]:
+    def not_found(_error: object) -> tuple[str, int]:
         """Handle not found errors."""
-        return render_template("error.html", message="Resource not found", statuscode=404), 404
+        return render_template("error.html", message=_("Resource not found"), statuscode=404), 404
 
 
 def _register_page_routes(app: Flask) -> None:
-    """Register static page routes."""
-
-    @app.route("/")
-    def index() -> str:
-        """Render the main index page."""
-        return render_template("index.html")
+    """Register non-translated page routes (translated pages live in pages_bp)."""
 
     @app.route("/faq")
     def faq() -> WerkzeugResponse:
         """Redirect the legacy FAQ URL to the wiki cheatsheet."""
         return redirect("/wiki/cheatsheet", code=301)
-
-    @app.route("/show")
-    def show() -> str:
-        """Show all active submissions."""
-        db_images = Image.query.all()
-        images = []
-        for img in db_images:
-            last_sub = img.submissions[-1]
-            images.append({"file": f"/image/{img.hash}", "link": f"/{last_sub.hash}"})
-        return render_template("show.html", images=images)
 
     @app.route("/<string(length=32):hash_val>", methods=["GET"])
     def result_page(hash_val: str) -> str:
@@ -212,8 +231,16 @@ def _register_page_routes(app: Flask) -> None:
 
 
 def _indexable_pages() -> list[str]:
-    """Paths that belong in the sitemap; extended by wiki/i18n pages."""
-    return ["/", *[page.path for page in wiki_pages()]]
+    """Paths that belong in the sitemap: every language version of each page.
+
+    Wiki pages only list languages with a real translation; untranslated
+    fallbacks canonicalize to English and stay out of the sitemap.
+    """
+    paths = ["/", *[f"/{lang}/" for lang in PREFIX_LANGS]]
+    for page in wiki_pages():
+        paths.append(page.path)
+        paths.extend(f"/{lang}{page.path}" for lang in translated_langs(page.slug))
+    return paths
 
 
 def run_cleanup_with_lock(app: Flask) -> None:
@@ -564,7 +591,12 @@ def create_app() -> Flask:
     _register_submission_routes(app)
     _register_data_routes(app)
     _register_management_routes(app)
+    # Translatable pages are served at the root (English) and under a
+    # language prefix (/fr/, /es/, ...) for indexable per-language URLs.
+    app.register_blueprint(pages_bp)
+    app.register_blueprint(pages_bp, url_prefix=LANG_PREFIX_RULE, name="pages_i18n")
     app.register_blueprint(wiki_bp)
+    app.register_blueprint(wiki_bp, url_prefix=LANG_PREFIX_RULE, name="wiki_i18n")
     return app
 
 

@@ -22,7 +22,8 @@ dependencies = [
     "gunicorn",
     "sentry-sdk[flask,sqlalchemy,rq]",
     "Markdown",
-    "Pygments"
+    "Pygments",
+    "flask-babel"
 ]
 
 [project.optional-dependencies]

@@ -970,3 +970,32 @@ footer {
     min-height: 0;
     margin: 0;
 }
+
+/* Language switcher (no-JS dropdown, opens upward from the footer) */
+.lang-switcher {
+    position: relative;
+}
+
+.lang-switcher summary {
+    cursor: pointer;
+    list-style: none;
+}
+
+.lang-switcher-menu {
+    position: absolute;
+    bottom: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    margin-bottom: var(--spacing-sm);
+    padding: var(--spacing-sm);
+    list-style: none;
+    background-color: var(--dark-bg);
+    border: 1px solid var(--theme-green);
+    border-radius: 0.25rem;
+    text-align: center;
+    z-index: 10;
+}
+
+.lang-switcher-menu li {
+    padding: 0.125rem 0.5rem;
+}

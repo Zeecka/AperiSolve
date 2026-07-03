@@ -3,7 +3,8 @@
 {% block title %}{{ page.title }} - Aperi'Solve{% endblock %}
 {% block meta_description %}{{ page.description or page.title }}{% endblock %}
 {% block meta %}
-<link rel="canonical" href="{{ base_url }}{{ page.path }}">
+<link rel="canonical" href="{{ base_url }}{{ canonical_path }}">
+{% if is_fallback %}<meta name="robots" content="noindex">{% endif %}
 <link href="/static/css/pygments.css?v={{ config["PROJECT_VERSION"] }}" rel="stylesheet">
 <script type="application/ld+json">
 {
@@ -38,22 +39,22 @@
 <div class="row">
   <aside class="col-lg-3 mb-4">
     <nav class="wiki-sidebar card p-3" aria-label="Wiki navigation">
-      <h2 class="h6 text-uppercase text-muted">Wiki</h2>
+      <h2 class="h6 text-uppercase text-muted">{{ _("Wiki") }}</h2>
       <ul class="nav flex-column mb-3">
         {% for nav_page in nav_main %}
         <li class="nav-item">
-          <a class="nav-link px-0 {{ 'active fw-bold' if nav_page.slug == page.slug }}" href="{{ nav_page.path }}">
+          <a class="nav-link px-0 {{ 'active fw-bold' if nav_page.slug == page.slug }}" href="{{ lang_prefix }}{{ nav_page.path }}">
             {{ nav_page.title }}
           </a>
         </li>
         {% endfor %}
       </ul>
       {% if nav_tools %}
-      <h2 class="h6 text-uppercase text-muted">Tools</h2>
+      <h2 class="h6 text-uppercase text-muted">{{ _("Tools") }}</h2>
       <ul class="nav flex-column">
         {% for nav_page in nav_tools %}
         <li class="nav-item">
-          <a class="nav-link px-0 {{ 'active fw-bold' if nav_page.slug == page.slug }}" href="{{ nav_page.path }}">
+          <a class="nav-link px-0 {{ 'active fw-bold' if nav_page.slug == page.slug }}" href="{{ lang_prefix }}{{ nav_page.path }}">
             {{ nav_page.title }}
           </a>
         </li>
@@ -66,11 +67,16 @@
   <div class="col-lg-9">
     <nav aria-label="breadcrumb">
       <ol class="breadcrumb">
-        <li class="breadcrumb-item"><a href="/">Home</a></li>
-        <li class="breadcrumb-item"><a href="/wiki/">Wiki</a></li>
+        <li class="breadcrumb-item"><a href="{{ lang_prefix }}/">{{ _("Home") }}</a></li>
+        <li class="breadcrumb-item"><a href="{{ lang_prefix }}/wiki/">{{ _("Wiki") }}</a></li>
         <li class="breadcrumb-item active" aria-current="page">{{ page.title }}</li>
       </ol>
     </nav>
+    {% if is_fallback %}
+    <div class="alert alert-info" role="alert">
+      <i class="fa fa-language me-2"></i>{{ _("This page has not been translated yet; showing the English version.") }}
+    </div>
+    {% endif %}
     <article id="cheatsheet" class="wiki-article card p-4">
       {{ page.html | safe }}
       {{ ads.ad_unit(config["ADSENSE_SLOT_WIKI"]) }}
