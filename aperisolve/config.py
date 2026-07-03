@@ -24,6 +24,10 @@ WORKER_FILES = ["binwalk", "foremost", "steghide", "zsteg", "openstego", "pcrt",
 GOOGLE_ADS_TXT = getenv("GOOGLE_ADS_TXT", "")
 CUSTOM_EXTERNAL_SCRIPT = getenv("CUSTOM_EXTERNAL_SCRIPT", "")
 
+# Public base URL (e.g. "https://www.aperisolve.com") used for canonical,
+# Open Graph and sitemap absolute links. Falls back to the request host.
+SITE_BASE_URL = getenv("SITE_BASE_URL", "").rstrip("/")
+
 
 RESULT_FOLDER = Path(__file__).parent.resolve() / "results"
 REMOVED_IMAGES_FOLDER = Path(__file__).parent.resolve() / "removed_images"

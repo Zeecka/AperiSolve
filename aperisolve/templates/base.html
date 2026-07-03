@@ -4,11 +4,23 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-  <meta name="description" content="Aperi'Solve - Online steganography analysis platform for images">
-  <title>Aperi'Solve - Steganography Analysis</title>
+  <meta name="description" content="{% block meta_description %}Aperi'Solve - Online steganography analysis platform for images{% endblock %}">
+  <title>{% block title %}Aperi'Solve - Steganography Analysis{% endblock %}</title>
+  {% block meta %}{% endblock %}
+  <meta property="og:site_name" content="Aperi'Solve">
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="{{ self.title() }}">
+  <meta property="og:description" content="{{ self.meta_description() }}">
+  <meta property="og:image" content="{{ base_url }}/static/img/og-image.png">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="{{ self.title() }}">
+  <meta name="twitter:description" content="{{ self.meta_description() }}">
+  <meta name="twitter:image" content="{{ base_url }}/static/img/og-image.png">
   <link rel="icon" type="image/svg+xml" href="/static/img/logo.svg">
   <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link rel="preconnect" href="https://cdnjs.cloudflare.com">
+  <link rel="preconnect" href="https://cdn.jsdelivr.net">
   <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@300..700&display=swap" rel="stylesheet">
   <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css" rel="stylesheet">
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet">

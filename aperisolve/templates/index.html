@@ -1,4 +1,25 @@
 {% extends 'base.html' %}
+{% block title %}Aperi'Solve - Online Image Steganography Analyzer{% endblock %}
+{% block meta_description %}Free online steganography analysis: layer/bit-plane extraction plus zsteg, steghide, binwalk, exiftool, foremost, outguess and more on PNG, JPG, GIF, BMP, TIFF and WebP images.{% endblock %}
+{% block meta %}
+<link rel="canonical" href="{{ base_url }}/">
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "WebApplication",
+  "name": "Aperi'Solve",
+  "url": "{{ base_url }}/",
+  "applicationCategory": "SecurityApplication",
+  "operatingSystem": "Any",
+  "description": "Online platform performing layer analysis and steganography detection on images with zsteg, steghide, binwalk, exiftool and more.",
+  "offers": {
+    "@type": "Offer",
+    "price": "0",
+    "priceCurrency": "USD"
+  }
+}
+</script>
+{% endblock %}
 {% block body_content %}
 <form id="upload-form" class="card p-4 mb-4" method="POST" enctype="multipart/form-data">
   <!-- Description Section -->

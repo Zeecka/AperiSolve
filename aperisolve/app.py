@@ -29,6 +29,7 @@ from .config import (
     REMOVAL_MIN_AGE_SECONDS,
     REMOVED_IMAGES_FOLDER,
     RESULT_FOLDER,
+    SITE_BASE_URL,
     WORKER_FILES,
 )
 from .models import Image, Submission, UploadLog, cleanup_old_entries, db
@@ -90,6 +91,11 @@ def _delete_submission_entities(
     db.session.commit()
 
 
+def _base_url() -> str:
+    """Public base URL for absolute links (canonical, Open Graph, sitemap)."""
+    return SITE_BASE_URL or request.url_root.rstrip("/")
+
+
 def _register_error_handlers(app: Flask) -> None:
     """Register application-wide error handlers."""
 
@@ -97,6 +103,11 @@ def _register_error_handlers(app: Flask) -> None:
     def inject_datetime() -> dict[str, type[datetime]]:
         """Inject datetime into all templates."""
         return {"datetime": datetime}
+
+    @app.context_processor
+    def inject_base_url() -> dict[str, str]:
+        """Inject the public base URL into all templates."""
+        return {"base_url": _base_url()}
 
     @app.errorhandler(413)
     def too_large(_: object) -> tuple[Response, int]:
@@ -112,9 +123,9 @@ def _register_error_handlers(app: Flask) -> None:
         return jsonify({"error": "Image size exceeded"}), 413
 
     @app.errorhandler(404)
-    def not_found(_: object) -> str:
+    def not_found(_: object) -> tuple[str, int]:
         """Handle not found errors."""
-        return render_template("error.html", message="Resource not found", statuscode=404)
+        return render_template("error.html", message="Resource not found", statuscode=404), 404
 
 
 def _register_page_routes(app: Flask) -> None:
@@ -140,9 +151,9 @@ def _register_page_routes(app: Flask) -> None:
             images.append({"file": f"/image/{img.hash}", "link": f"/{last_sub.hash}"})
         return render_template("show.html", images=images)
 
-    @app.route("/<hash_val>", methods=["GET"])
+    @app.route("/<string(length=32):hash_val>", methods=["GET"])
     def result_page(hash_val: str) -> str:
-        """Render the result page for a given submission hash."""
+        """Render the result page for a given submission hash (32-hex md5)."""
         submission = Submission.query.get_or_404(hash_val)
         Image.query.get_or_404(submission.image_hash)
         return render_template("result.html", hash_val=hash_val)
@@ -151,6 +162,47 @@ def _register_page_routes(app: Flask) -> None:
     def google_ads() -> str:
         """Serve the Google Ads required file."""
         return GOOGLE_ADS_TXT
+
+    @app.route("/robots.txt")
+    def robots_txt() -> Response:
+        """Serve crawler directives; API endpoints are not for indexing."""
+        lines = [
+            "User-agent: *",
+            *[
+                f"Disallow: {path}"
+                for path in (
+                    "/upload",
+                    "/status/",
+                    "/result/",
+                    "/infos/",
+                    "/image/",
+                    "/download/",
+                    "/remove/",
+                    "/remove_password/",
+                )
+            ],
+            "",
+            f"Sitemap: {_base_url()}/sitemap.xml",
+            "",
+        ]
+        return Response("\n".join(lines), mimetype="text/plain")
+
+    @app.route("/sitemap.xml")
+    def sitemap_xml() -> Response:
+        """Serve the sitemap of indexable pages."""
+        base = _base_url()
+        entries = "".join(f"<url><loc>{base}{path}</loc></url>" for path in _indexable_pages())
+        xml = (
+            '<?xml version="1.0" encoding="UTF-8"?>'
+            '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">'
+            f"{entries}</urlset>"
+        )
+        return Response(xml, mimetype="application/xml")
+
+
+def _indexable_pages() -> list[str]:
+    """Paths that belong in the sitemap; extended by wiki/i18n pages."""
+    return ["/", "/faq"]
 
 
 def _run_throttled_cleanup(app: Flask) -> None:
