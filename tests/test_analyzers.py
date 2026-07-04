@@ -8,9 +8,12 @@ import pytest
 
 from aperisolve.analyzers.decomposer import DecomposerAnalyzer
 from aperisolve.analyzers.file import FileAnalyzer
+from aperisolve.analyzers.outguess import OutguessAnalyzer
 from aperisolve.analyzers.strings import StringsAnalyzer
 
-EXAMPLE_IMAGE = Path(__file__).resolve().parent.parent / "examples" / "example1.png"
+REPO_ROOT = Path(__file__).resolve().parent.parent
+EXAMPLE_IMAGE = REPO_ROOT / "examples" / "example1.png"
+FIXTURES = REPO_ROOT / "tests" / "fixtures"
 
 
 def _read_results(output_dir: Path) -> dict:
@@ -47,3 +50,21 @@ def test_strings_extracts_text(tmp_path: Path) -> None:
     results = _read_results(output_dir)
     assert results["strings"]["status"] == "ok"
     assert isinstance(results["strings"]["output"], list)
+
+
+@pytest.mark.skipif(shutil.which("outguess") is None, reason="outguess binary not installed")
+def test_outguess_reports_success_on_extraction(tmp_path: Path) -> None:
+    """A non-empty extraction is reported ok with a download (regression guard).
+
+    outguess is chatty on stderr even on success, so the default is_error would
+    mark every run failed; the fixture carries a real payload keyed to the
+    passphrase below.
+    """
+    fixture = FIXTURES / "outguess.jpg"
+    output_dir = tmp_path / fixture.stem
+    output_dir.mkdir()
+    shutil.copy(fixture, tmp_path / fixture.name)
+    OutguessAnalyzer.execute(tmp_path / fixture.name, output_dir, "s3cret")
+    results = _read_results(output_dir)
+    assert results["outguess"]["status"] == "ok", results["outguess"]
+    assert results["outguess"]["download"].endswith("/outguess")

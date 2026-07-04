@@ -157,7 +157,28 @@ Equivalent manual commands:
 ruff check .
 ruff format . --check
 ty check aperisolve
+pytest -q
 ```
+
+### Tests
+
+- `pytest -q` runs the unit tests (analyzer registry, cache headers, i18n,
+  rate limits, and a couple of in-process analyzers). No services required.
+- `tests/test_webapp_analyzers.py` drives every analyzer end-to-end through
+  the real HTTP path (upload → RQ worker runs the tool → poll → results). It
+  needs the stack running and is **skipped automatically** when no server is
+  reachable, so it does not block the standard `pytest` run:
+
+  ```bash
+  docker compose -f compose.dev.yml up -d
+  pytest tests/test_webapp_analyzers.py -v   # or point APERISOLVE_BASE_URL elsewhere
+  ```
+
+  Each password/extraction tool has a fixture in `tests/fixtures/` that
+  actually contains hidden data (generated with the tool and round-trip
+  verified), so a healthy analyzer returns `ok`. When you add an analyzer,
+  add a case to `CASES` there — `test_all_analyzers_are_covered` fails if a
+  registered analyzer has no web-app test.
 
 **Option 2 - Pre-Commit hook**
 

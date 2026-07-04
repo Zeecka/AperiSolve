@@ -33,6 +33,7 @@ dev = [
     "ty",
     "pre-commit",
     "pytest",
+    "requests",
     "types-Flask-SQLAlchemy",
     "sqlalchemy-stubs"
 ]
@@ -40,6 +41,11 @@ dev = [
 [build-system]
 requires = ["setuptools>=68"]
 build-backend = "setuptools.build_meta"
+
+# Only package the application; other top-level dirs (docker/, tests/) must
+# not confuse setuptools' flat-layout auto-discovery.
+[tool.setuptools.packages.find]
+include = ["aperisolve*"]
 
 [tool.ruff]
 line-length = 100
