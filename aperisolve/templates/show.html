@@ -6,6 +6,7 @@
 {% block body_content %}
 <section id="result" class="results-section">
   <h2 class="h3 mb-4">{{ _("Browse Submissions") }}</h2>
+  {% if images %}
   <div class="row g-3">
     {% for img in images %}
     <div class="col-6 col-md-4 col-lg-3">
@@ -15,5 +16,14 @@
     </div>
     {% endfor %}
   </div>
+  {% else %}
+  <div class="text-center text-light-emphasis py-5">
+    <i class="fa fa-images fa-2x mb-3 d-block"></i>
+    <p class="mb-3">{{ _("No submissions to browse yet.") }}</p>
+    <a href="{{ lang_prefix }}/" class="btn btn-primary">
+      <i class="fa fa-upload me-2"></i>{{ _("Analyze an image") }}
+    </a>
+  </div>
+  {% endif %}
 </section>
 {% endblock %}

@@ -37,22 +37,38 @@ Aperi'Solve is an open-source steganalysis web platform that performs automated 
 
 - Visualize each bit layer (LSB and other layers) per image channel (R/G/B/Alpha).
 - Color remapping (random palette remaps with 8 generated variants)
-- Integrates and displays outputs from:
+- Runs 16 analyzers in parallel and displays their output, with per-tool
+  success/no-result badges and one-click download of extracted files:
   - [binwalk](https://github.com/ReFirmLabs/binwalk) (embedded archives)
   - [exiftool](https://exiftool.org/) (metadata and geolocation)
+  - [file](https://manned.org/file.1) (MIME type and format detection)
   - [GraphicsMagick identify](http://www.graphicsmagick.org/identify.html) (image info & properties)
   - [foremost](https://foremost.sourceforge.net/) (carved files)
+  - [jsteg](https://github.com/lukechampine/jsteg) (JPEG LSB extraction)
+  - [jpseek / jphide](https://github.com/h3xx/jphs) (JPEG steganography extraction, with password)
   - [openstego](https://www.openstego.com/) (extraction with password)
-  - [outguess](https://www.rbcafe.com/software/outguess/) (extraction with password)
+  - [outguess](https://www.rbcafe.com/software/outguess/) (extraction with password, deep analysis)
+  - [pcrt](https://github.com/sherlly/PCRT) (PNG check & repair)
   - [pngcheck](https://www.libpng.org/pub/png/apps/pngcheck.html)
   - [steghide](https://steghide.sourceforge.net/) (extraction with password)
   - [strings](https://pubs.opengroup.org/onlinepubs/9799919799/utilities/strings.html)
   - [zsteg](https://github.com/zed-0xff/zsteg) (LSB text/data extraction)
-  - [file](https://manned.org/file.1) (MIME type and format detection)
-  - [jpseek](https://github.com/h3xx/jphs) (JPEG steganography detection and extraction)
+- **In-app wiki** ([`/wiki`](https://www.aperisolve.com/wiki/)): a steganography CTF
+  cheatsheet plus a guide per analyzer, authored as Markdown.
+- **Internationalization**: UI available in English, French, Spanish, German,
+  Russian, Chinese and Portuguese under language-prefixed URLs (`/fr/`, `/es/`, …).
 - Worker queue architecture for offloading heavy/slow analyzers (Redis + background workers).
-- Results stored for later browsing and download.
-- Browse and download each generated images.
+- Content-addressed result cache, HTTP caching, and per-endpoint rate limiting.
+- Results stored temporarily for later browsing and download, then cleaned up
+  automatically by a scheduled job.
+
+## Adding an analyzer
+
+Adding an analyzer is a single file: subclass `SubprocessAnalyzer`, set a few
+class attributes (`name`, `has_archive`, `needs_password`, `deep_only`,
+`display_order`), and install the tool in the `Dockerfile`. The worker run
+list, download allow-list, and frontend order are all derived automatically.
+See [docs/adding-analyzer.md](docs/adding-analyzer.md).
 
 ## Quick start (Docker)
 
@@ -69,14 +85,44 @@ docker compose up -d
 
 Then browse url: http://localhost:5000/
 
+Ads and analytics are disabled by default; every integration (`ADSENSE_*`,
+`CUSTOM_EXTERNAL_SCRIPT`, `SITE_BASE_URL`, Sentry) is opt-in via environment
+variables documented in [`.env.example`](.env.example).
+
 ## Architecture
 
-- Flask web framework
-- Background workers that run analyzers (queue via Redis)
-- PostgreSQL stores image metadata and job statuses
-- Docker-based deployment for isolation of analyzers and services
+The stack runs as Docker Compose services:
 
-This separation keeps heavy tools (binwalk, foremost, zsteg, etc.) isolated and avoids blocking the web worker.
+- **web** — Flask app served by gunicorn (Jinja templates + vanilla JS frontend).
+- **worker** — an RQ worker that runs the analyzers for each submission,
+  fanning out to one thread per tool.
+- **cron** — an RQ cron scheduler that runs the retention cleanup off the
+  request path.
+- **postgres** — stores image metadata and submission status.
+- **redis** — RQ broker (DB 0) and rate-limiter storage (DB 1).
+- **rqdashboard** — queue monitoring on port 9181.
+
+This separation keeps heavy tools (binwalk, foremost, zsteg, etc.) isolated
+and avoids blocking the web worker. Identical submissions are deduplicated by
+a content hash, and derived images are cached with long-lived immutable HTTP
+headers, so repeat traffic is cheap.
+
+## Documentation
+
+- [docs/adding-analyzer.md](docs/adding-analyzer.md) — add a new analyzer.
+- [docs/deploy.md](docs/deploy.md) — the tag-driven production deploy flow.
+- [CONTRIBUTING.md](CONTRIBUTING.md) — dev setup, tests, wiki pages, and translations.
+
+## Testing
+
+```bash
+uv sync --extra dev
+uv run pytest -q            # unit tests (no services needed)
+
+# end-to-end analyzer tests through the running app:
+docker compose -f compose.dev.yml up -d
+uv run pytest tests/test_webapp_analyzers.py -v
+```
 
 ## Roadmap
 
@@ -105,4 +151,4 @@ Thanks to contributors:
 - [abneeeees](https://github.com/abneeeees)
 
 Thanks to the open-source community:
-[binwalk](https://github.com/ReFirmLabs/binwalk), [exiftool](https://exiftool.org/), [GraphicsMagick identify](http://www.graphicsmagick.org/identify.html), [foremost](https://foremost.sourceforge.net/), [openstego](https://www.openstego.com/), [outguess](https://www.rbcafe.com/software/outguess/), [pngcheck](https://www.libpng.org/pub/png/apps/pngcheck.html), [steghide](https://steghide.sourceforge.net/), [strings](https://pubs.opengroup.org/onlinepubs/9799919799/utilities/strings.html), [zsteg](https://github.com/zed-0xff/zsteg), ...
+[binwalk](https://github.com/ReFirmLabs/binwalk), [exiftool](https://exiftool.org/), [GraphicsMagick identify](http://www.graphicsmagick.org/identify.html), [foremost](https://foremost.sourceforge.net/), [jsteg](https://github.com/lukechampine/jsteg), [jphide/jpseek](https://github.com/h3xx/jphs), [openstego](https://www.openstego.com/), [outguess](https://www.rbcafe.com/software/outguess/), [pcrt](https://github.com/sherlly/PCRT), [pngcheck](https://www.libpng.org/pub/png/apps/pngcheck.html), [steghide](https://steghide.sourceforge.net/), [strings](https://pubs.opengroup.org/onlinepubs/9799919799/utilities/strings.html), [zsteg](https://github.com/zed-0xff/zsteg), ...

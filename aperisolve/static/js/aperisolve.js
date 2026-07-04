@@ -474,6 +474,29 @@ async function updateRemovalUI(submission_hash, infoData) {
  * Parsing results from the server
  */
 
+const WIKI_TOOLS = window.WIKI_TOOLS || [];
+const LANG_PREFIX = window.LANG_PREFIX || "";
+
+// Analyzer heading: links to the tool's wiki guide when one exists.
+function analyzerTitle(tool) {
+  const label = capitalize(tool.replace("_", " "));
+  if (WIKI_TOOLS.includes(tool)) {
+    return `<a class="analyzer-title-link" href="${LANG_PREFIX}/wiki/tools/${tool}"
+      title="${t("Learn more")}">${label} <i class="fa fa-book-open fa-2xs"></i></a>`;
+  }
+  return label;
+}
+
+// Spinner shown between upload and the first results.
+function renderAnalyzing() {
+  const resultDiv = document.getElementById("result-analyzers");
+  if (resultDiv.querySelector(".analyzer")) return; // results already streaming in
+  resultDiv.innerHTML =
+    `<div class="analyzing" role="status" aria-live="polite">` +
+    `<span class="spinner" aria-hidden="true"></span>` +
+    `<p class="mb-0">${t("Analyzing your image…")}</p></div>`;
+}
+
 function parseResult(result) {
   const resultDiv = document.getElementById("result-analyzers");
   resultDiv.innerHTML = "";
@@ -488,7 +511,11 @@ function parseResult(result) {
     analyzer.className = `analyzer a-${escapeHtml(tool)}`;
     resultDiv.appendChild(analyzer);
 
-    analyzer.innerHTML += `<h2>${capitalize(tool.replace("_", " "))}</h2>`;
+    const ok = result[tool]["status"] === "ok";
+    const badge = ok
+      ? `<span class="analyzer-badge badge-ok"><i class="fa fa-check"></i> ${t("Success")}</span>`
+      : `<span class="analyzer-badge badge-empty"><i class="fa fa-minus"></i> ${t("No result")}</span>`;
+    analyzer.innerHTML += `<div class="analyzer-header"><h2>${analyzerTitle(tool)}</h2>${badge}</div>`;
 
     // Parse text output
     if (typeof result[tool]["output"] === "string") {
@@ -567,12 +594,18 @@ function parseResult(result) {
       }
     }
 
+    // Render error and note inside the analyzer's own section (previously
+    // these were appended as detached alerts, disconnected from the heading).
     if (result[tool]["error"] && (/[^\s]/.test(result[tool]["error"]))) {
-      showDanger(result[tool]["error"]);
+      analyzer.innerHTML +=
+        `<div class="alert alert-danger mb-0" role="alert">` +
+        `<pre class="mb-0">${escapeHtml(result[tool]["error"].trim())}</pre></div>`;
     }
 
     if (result[tool]["note"] && (/[^\s]/.test(result[tool]["note"]))) {
-      showInfo(result[tool]["note"]);
+      analyzer.innerHTML +=
+        `<div class="alert alert-info mb-0 mt-2" role="alert">` +
+        `${escapeHtml(result[tool]["note"].trim())}</div>`;
     }
   }
 }
@@ -582,6 +615,7 @@ async function pollStatus(submission_hash) {
   if (!window.location.pathname.endsWith(`/${submission_hash}`)) {
     window.history.pushState({}, "", `/${submission_hash}`);
   }
+  renderAnalyzing();
   const statusResp = await fetch(`/status/${submission_hash}`);
   const statusData = await statusResp.json();
   if (statusData.status === "completed") {
@@ -601,13 +635,14 @@ async function pollStatus(submission_hash) {
     try {
       const resultResp = await fetch(`/result/${submission_hash}`);
       const resultData = await resultResp.json();
-      if ("error" in resultData) {
-        // showWarning(`❌ ${resultData.error}`, true);
-      } else if ("results" in resultData) {
+      if ("results" in resultData) {
         fetchImageInfo(submission_hash);
         parseResult(resultData.results);
+      } else {
+        renderAnalyzing();
       }
     } catch (error) {
+      renderAnalyzing();
       console.dir(error);
     }
   }

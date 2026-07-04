@@ -80,6 +80,18 @@ def load_page(lang: str, slug: str) -> WikiPage | None:
     return page
 
 
+def wiki_tool_names() -> set[str]:
+    """Analyzer names that have a ``tools/<name>`` wiki page (English source).
+
+    Used to link analyzer result headings to their guide. Cheap directory
+    listing (no markdown rendering), so it is safe to call per request.
+    """
+    tools_dir = WIKI_CONTENT_DIR / DEFAULT_LANG / "tools"
+    if not tools_dir.is_dir():
+        return set()
+    return {path.stem for path in tools_dir.glob("*.md")}
+
+
 def wiki_pages(lang: str = DEFAULT_LANG) -> list[WikiPage]:
     """All wiki pages of a language, sorted by ``Order`` then title."""
     root = WIKI_CONTENT_DIR / lang

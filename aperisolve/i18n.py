@@ -86,4 +86,8 @@ def js_catalog() -> dict[str, str]:
         ),
         "Upload complete": _("Upload complete"),
         "❌ An error occurred during the transfer": _("❌ An error occurred during the transfer"),
+        "Analyzing your image…": _("Analyzing your image…"),
+        "Success": _("Success"),
+        "No result": _("No result"),
+        "Learn more": _("Learn more"),
     }

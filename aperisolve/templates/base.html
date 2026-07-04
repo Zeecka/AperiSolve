@@ -68,6 +68,8 @@
   <script>
     window.TOOL_ORDER = {{ config["TOOL_ORDER"] | tojson }};
     window.I18N = {{ js_i18n | tojson }};
+    window.WIKI_TOOLS = {{ wiki_tools | tojson }};
+    window.LANG_PREFIX = {{ lang_prefix | tojson }};
   </script>
   <script src="/static/js/aperisolve.js?v={{ config["PROJECT_VERSION"] }}"></script>
   {% block background_scripts %}

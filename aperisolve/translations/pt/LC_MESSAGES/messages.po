@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2026-07-05 13:24+0000\n"
+"POT-Creation-Date: 2026-07-04 13:50+0000\n"
 "PO-Revision-Date: 2026-07-05 13:23+0000\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language: pt\n"
@@ -18,7 +18,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Generated-By: Babel 2.18.0\n"
 
-#: aperisolve/app.py:173
+#: aperisolve/app.py:194
 msgid "Resource not found"
 msgstr "Recurso não encontrado"
 
@@ -123,6 +123,23 @@ msgstr "Envio concluído"
 msgid "❌ An error occurred during the transfer"
 msgstr "❌ Ocorreu um erro durante a transferência"
 
+#: aperisolve/i18n.py:89
+#, fuzzy
+msgid "Analyzing your image…"
+msgstr "Analisando sua imagem…"
+
+#: aperisolve/i18n.py:90
+msgid "Success"
+msgstr "Sucesso"
+
+#: aperisolve/i18n.py:91
+msgid "No result"
+msgstr "Sem resultados"
+
+#: aperisolve/i18n.py:92
+msgid "Learn more"
+msgstr "Saiba mais"
+
 #: aperisolve/templates/base.html:51 aperisolve/templates/footer.html:29
 #: aperisolve/templates/wiki.html:42 aperisolve/templates/wiki.html:71
 msgid "Wiki"
@@ -206,6 +223,15 @@ msgstr "Analisar imagem"
 #: aperisolve/templates/show.html:8
 msgid "Browse Submissions"
 msgstr "Ver envios"
+
+#: aperisolve/templates/show.html:22
+msgid "No submissions to browse yet."
+msgstr "Ainda não há envios para explorar."
+
+#: aperisolve/templates/show.html:24
+#, fuzzy
+msgid "Analyze an image"
+msgstr "Analisar uma imagem"
 
 #: aperisolve/templates/wiki.html:53
 msgid "Tools"

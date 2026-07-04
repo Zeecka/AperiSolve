@@ -54,7 +54,7 @@ from .models import Image, Submission, UploadLog, cleanup_old_entries, db
 from .pages import pages_bp
 from .utils.sentry import initialize_sentry
 from .utils.utils import get_client_ip
-from .wiki import translated_langs, wiki_bp, wiki_pages
+from .wiki import translated_langs, wiki_bp, wiki_pages, wiki_tool_names
 
 CLEANUP_LOCK_KEY = "aperisolve:cleanup-lock"
 
@@ -172,6 +172,7 @@ def _register_error_handlers(app: Flask) -> None:
             "current_lang": str(get_locale()),
             "js_i18n": js_catalog(),
             "lang_switch": switch,
+            "wiki_tools": sorted(wiki_tool_names()),
         }
 
     @app.errorhandler(413)
