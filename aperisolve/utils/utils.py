@@ -10,16 +10,19 @@ MAX_RESOLUTION_SIZE = 10_000
 
 
 def get_client_ip() -> str:
-    """Client IP for logging and rate limiting (first X-Forwarded-For hop).
+    """Client IP for logging and rate limiting (rightmost X-Forwarded-For hop).
 
-    Note: without a trusted reverse proxy in front of the app, the header is
-    client-controlled; it is used for soft controls (upload log, removal
+    The rightmost hop is the one appended by the closest reverse proxy and is
+    the only value the client cannot forge by sending a crafted header; taking
+    the first hop would let clients rotate spoofed IPs past the rate limiter
+    and the multi-IP removal guard. Without any proxy the header itself is
+    untrusted either way; it is used for soft controls (upload log, removal
     checks, rate limits), not authentication.
     """
-    client_ip = request.headers.get("X-Forwarded-For", request.remote_addr) or ""
-    if "," in client_ip:
-        client_ip = client_ip.split(",")[0].strip()
-    return client_ip
+    forwarded = request.headers.get("X-Forwarded-For", "")
+    if forwarded:
+        return forwarded.split(",")[-1].strip()
+    return request.remote_addr or ""
 
 
 def str2hex(s: bytes) -> str:

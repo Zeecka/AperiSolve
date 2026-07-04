@@ -20,11 +20,13 @@ services:
     env_file:
       - .env
     healthcheck:
-      test: ["CMD-SHELL", "dd if=/dev/urandom of=/tmp/healthcheck.png bs=1 count=1000000 && curl -X POST -F 'image=@/tmp/healthcheck.png' http://localhost:5000/upload -s -o /dev/null -w '%{http_code}' | grep -q 200"]
-      interval: 3600s
-      timeout: 30s
+      # Read-only probe: urlopen raises (non-zero exit) on connection failure
+      # or HTTP >= 400. curl is not installed in the image.
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:5000/', timeout=10)"]
+      interval: 60s
+      timeout: 15s
       retries: 3
-      start_period: 900s
+      start_period: 60s
 
   worker:
     image: ghcr.io/zeecka/aperisolve:latest

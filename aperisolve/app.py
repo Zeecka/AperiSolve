@@ -13,11 +13,10 @@ import sentry_sdk
 from flask import Flask, Response, abort, jsonify, redirect, render_template, request, send_file
 from flask_babel import Babel, get_locale
 from flask_babel import gettext as _
-from flask_limiter import Limiter
 from redis import Redis
 from redis.exceptions import RedisError
 from rq import Queue
-from sqlalchemy.exc import SQLAlchemyError
+from sqlalchemy.exc import IntegrityError, SQLAlchemyError
 from werkzeug.wrappers.response import Response as WerkzeugResponse
 
 from .analyzers.registry import archive_tools, tool_order
@@ -31,10 +30,9 @@ from .config import (
     FLASK_DEBUG,
     GOOGLE_ADS_TXT,
     IMAGE_EXTENSIONS,
+    JOB_TIMEOUT,
     MAX_CONTENT_LENGTH,
-    MAX_PENDING_TIME,
     PROJECT_VERSION,
-    RATELIMIT_STORAGE_URI,
     REDIS_URL,
     REMOVAL_MIN_AGE_SECONDS,
     REMOVED_IMAGES_FOLDER,
@@ -50,6 +48,7 @@ from .i18n import (
     lang_prefix,
     select_locale,
 )
+from .limits import is_local_request, limiter
 from .models import Image, Submission, UploadLog, cleanup_old_entries, db
 from .pages import pages_bp
 from .utils.sentry import initialize_sentry
@@ -58,20 +57,7 @@ from .wiki import translated_langs, wiki_bp, wiki_pages, wiki_tool_names
 
 CLEANUP_LOCK_KEY = "aperisolve:cleanup-lock"
 
-
-def _is_local_request() -> bool:
-    """Report whether the client is loopback (healthcheck is never limited)."""
-    return request.remote_addr in ("127.0.0.1", "::1")
-
-
-# No default limits: pages, static files and images are never throttled.
-# Explicit per-route limits protect the expensive endpoints only.
-limiter = Limiter(
-    key_func=get_client_ip,
-    storage_uri=RATELIMIT_STORAGE_URI,
-    default_limits=[],
-    swallow_errors=True,  # a limiter/Redis outage must not take uploads down
-)
+_is_local_request = is_local_request
 
 
 def _configure_app(app: Flask) -> None:
@@ -291,6 +277,28 @@ def run_cleanup_with_lock(app: Flask) -> None:
         cleanup_old_entries()
 
 
+def _get_or_create_image(img_hash: str, new_img_path: Path, size: int) -> Image:
+    """Fetch the Image row or insert it, tolerating a concurrent insert."""
+    sub_img = Image.query.filter_by(hash=img_hash).first()
+    if sub_img is None:
+        sub_img = Image(
+            file=str(new_img_path),
+            hash=img_hash,
+            size=size,
+            upload_count=0,
+            first_submission_date=datetime.now(UTC),
+            last_submission_date=datetime.now(UTC),
+        )
+        db.session.add(sub_img)
+        try:
+            db.session.commit()
+        except IntegrityError:
+            # A concurrent identical upload won the insert race; use its row.
+            db.session.rollback()
+            sub_img = Image.query.filter_by(hash=img_hash).one()
+    return sub_img
+
+
 def _upload_image(app: Flask) -> tuple[Response, int]:
     """Handle image upload and initiate analysis."""
     # Transitional: the cron service is the primary cleanup driver; this
@@ -347,18 +355,7 @@ def _upload_image(app: Flask) -> tuple[Response, int]:
         with new_img_path.open("wb") as file_obj:
             file_obj.write(image_data)
 
-    sub_img = Image.query.filter_by(hash=img_hash).first()
-    if sub_img is None:
-        sub_img = Image(
-            file=str(new_img_path),
-            hash=img_hash,
-            size=len(image_data),
-            upload_count=0,
-            first_submission_date=datetime.now(UTC),
-            last_submission_date=datetime.now(UTC),
-        )
-        db.session.add(sub_img)
-        db.session.commit()
+    sub_img = _get_or_create_image(img_hash, new_img_path, len(image_data))
 
     sub_img_any = cast("Any", sub_img)
     sub_img_any.upload_count = int(sub_img_any.upload_count or 0) + 1
@@ -376,7 +373,12 @@ def _upload_image(app: Flask) -> tuple[Response, int]:
             image_hash=sub_img.hash,
         )
         db.session.add(submission)
-        db.session.commit()
+        try:
+            db.session.commit()
+        except IntegrityError:
+            # A concurrent identical upload won the insert race; use its row.
+            db.session.rollback()
+            submission = Submission.query.filter_by(hash=submission_hash).one()
 
     submission_any = cast("Any", submission)
     submission_any.status = "pending"
@@ -385,10 +387,10 @@ def _upload_image(app: Flask) -> tuple[Response, int]:
     app.config["REDIS_QUEUE"].enqueue(
         "aperisolve.workers.analyze_image",
         submission.hash,
-        # Analyzer subprocess timeouts (MAX_PENDING_TIME) must fire before RQ
+        # Analyzer subprocess timeouts (SUBPROCESS_TIMEOUT) must fire before RQ
         # kills the job, so partial results get written and the submission
         # never sticks in "running".
-        job_timeout=MAX_PENDING_TIME + 60,
+        job_timeout=JOB_TIMEOUT,
     )
     return jsonify({"submission_hash": submission.hash}), 200
 
@@ -440,6 +442,7 @@ def _register_data_routes(app: Flask) -> None:
     """Register metadata, results, and download routes."""
 
     @app.route("/infos/<hash_val>", methods=["GET"])
+    @limiter.limit("60 per minute", exempt_when=_is_local_request)
     def get_infos(hash_val: str) -> Response:
         """Get the metadata and information of a submission."""
         submission = Submission.query.get_or_404(hash_val)

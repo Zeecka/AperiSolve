@@ -97,6 +97,7 @@ jobs:
             EOF
 
             docker compose pull
-            docker compose down -v
+            # No -v here: volumes hold the database and stored results.
+            docker compose down
             docker compose up -d
             docker image prune -f

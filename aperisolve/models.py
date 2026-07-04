@@ -23,7 +23,7 @@ from sqlalchemy import (
 )
 from sqlalchemy.exc import SQLAlchemyError
 
-from aperisolve.config import MAX_PENDING_TIME, MAX_STORE_TIME, RESULT_FOLDER
+from aperisolve.config import MAX_STORE_TIME, RESULT_FOLDER, STALE_SUBMISSION_CUTOFF
 from aperisolve.utils.utils import get_resolutions, get_valid_depth_color_pairs
 
 db: SQLAlchemy = SQLAlchemy()
@@ -156,6 +156,7 @@ def fill_ihdr_db() -> None:
                 count += 1
                 if count % 5000 == 0:
                     db.session.commit()
+            db.session.commit()  # flush the trailing partial batch
         finally:
             db.session.autoflush = previous_autoflush
     except SQLAlchemyError:
@@ -166,7 +167,7 @@ def _cleanup_submissions(now: float) -> None:
     """Delete stale pending submissions and completed ones whose results vanished."""
     stale = Submission.query.filter(
         Submission.status.in_(("pending", "running")),
-        Submission.date < now - MAX_PENDING_TIME,
+        Submission.date < now - STALE_SUBMISSION_CUTOFF,
     ).all()
     for submission in stale:
         db.session.delete(submission)
@@ -184,7 +185,7 @@ def _cleanup_images() -> None:
     """Delete expired and orphaned images with their result folders."""
     now = datetime.now(UTC).replace(tzinfo=None)
     expired_cutoff = now - timedelta(seconds=MAX_STORE_TIME)
-    orphan_cutoff = now - timedelta(seconds=MAX_PENDING_TIME)
+    orphan_cutoff = now - timedelta(seconds=STALE_SUBMISSION_CUTOFF)
 
     candidates = Image.query.filter(
         or_(
@@ -197,14 +198,18 @@ def _cleanup_images() -> None:
     ).all()
 
     for img in candidates:
+        img_hash = str(img.hash)
         try:
             for submission in img.submissions:
                 db.session.delete(submission)
-            shutil.rmtree(RESULT_FOLDER / img.hash, ignore_errors=True)
             db.session.delete(img)
             db.session.commit()
         except SQLAlchemyError:
             db.session.rollback()
+            continue
+        # Remove files only once the DB delete is committed, so a failed
+        # commit can't leave a row pointing at vanished files.
+        shutil.rmtree(RESULT_FOLDER / img_hash, ignore_errors=True)
 
 
 def cleanup_old_entries() -> None:

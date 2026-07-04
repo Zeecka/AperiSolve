@@ -15,7 +15,20 @@ class BinwalkAnalyzer(SubprocessAnalyzer):
     def __init__(self, input_img: Path, output_dir: Path) -> None:
         """Initialize the binwalk analyzer."""
         super().__init__(input_img, output_dir)
-        self.cmd = ["binwalk", "--matryoshka", "-e", self.img, "--run-as=root"]
+        # Bounded extraction: untrusted input can be a decompression bomb, so
+        # cap recursion depth, file count and per-file size. --run-as=root is
+        # required because the container runs as root (binwalk refuses to
+        # extract otherwise); the container itself is the sandbox.
+        self.cmd = [
+            "binwalk",
+            "--matryoshka",
+            "--depth=2",
+            "--count=100",
+            "--size=10485760",
+            "-e",
+            self.img,
+            "--run-as=root",
+        ]
         self.make_folder = False  # Binwalk already create its own folder
 
     def get_extracted_dir(self) -> Path:

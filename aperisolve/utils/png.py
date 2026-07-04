@@ -3,11 +3,15 @@
 import itertools
 import re
 import struct
+import threading
+import time
 import zlib
 from typing import Any
 
-from aperisolve.app import create_app
-from aperisolve.models import IHDR
+from flask import Flask
+
+from aperisolve.config import DB_URI
+from aperisolve.models import IHDR, db
 
 from .utils import int2hex, str2hex
 
@@ -19,6 +23,32 @@ __author__ = [
 ]
 
 IDAT_NOT_FOUND_OFFSET = -5
+
+# The exhaustive width x height CRC search is pure Python and unbounded by the
+# subprocess timeout (it is not a subprocess); a crafted PNG must not be able
+# to pin a core until RQ kills the whole job.
+BRUTEFORCE_DEADLINE_SECONDS = 30
+
+_db_app: Flask | None = None
+_db_app_lock = threading.Lock()
+
+
+def _get_db_app() -> Flask:
+    """Minimal DB-only Flask app for IHDR lookups, created once.
+
+    Analyzer threads have no app context (contexts are thread-local), so one
+    must be created here — but a lightweight one, not the full application
+    (Sentry, blueprints, Babel, limiter) rebuilt on every lookup.
+    """
+    global _db_app  # noqa: PLW0603
+    with _db_app_lock:
+        if _db_app is None:
+            app = Flask("aperisolve-ihdr-lookup")
+            app.config["SQLALCHEMY_DATABASE_URI"] = DB_URI
+            app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
+            db.init_app(app)
+            _db_app = app
+    return _db_app
 
 
 class PNG:
@@ -229,8 +259,7 @@ class PNG:
     def _lookup_ihdr_from_db(self, chunk_type: bytes, crc: bytes) -> bytes | None:
         """Try to recover IHDR bytes from known CRC values in the database."""
         crc_int = struct.unpack("!I", crc)[0]
-        app = create_app()
-        with app.app_context():
+        with _get_db_app().app_context():
             matches = IHDR.query.filter_by(crc=crc_int).all()
 
         if not matches:
@@ -259,7 +288,14 @@ class PNG:
     ) -> bytes | None:
         """Fallback recovery for width and height by brute-force CRC matching."""
         self._log("No database match found, falling back to exhaustive search...")
+        deadline = time.monotonic() + BRUTEFORCE_DEADLINE_SECONDS
         for width in range(1, 5000):
+            if time.monotonic() > deadline:
+                self._log(
+                    f"Exhaustive search stopped after {BRUTEFORCE_DEADLINE_SECONDS}s "
+                    "without a match",
+                )
+                return None
             for height in range(1, 5000):
                 test_ihdr = struct.pack(">I", width) + struct.pack(">I", height) + ihdr[16:21]
                 if not self._check_crc(chunk_type, test_ihdr, crc):

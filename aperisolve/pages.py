@@ -1,8 +1,10 @@
 """Translatable page routes, registered at the root and under /<lang>/."""
 
 from flask import Blueprint, render_template
+from sqlalchemy.orm import selectinload
 
 from .i18n import alternates_for, register_lang_handling
+from .limits import is_local_request, limiter
 from .models import Image
 
 pages_bp = Blueprint("pages", __name__)
@@ -18,9 +20,15 @@ def index() -> str:
 
 
 @pages_bp.route("/show")
+@limiter.limit("30 per minute", exempt_when=is_local_request)
 def show() -> str:
     """Show the most recent submissions (bounded: the table grows unbounded)."""
-    db_images = Image.query.order_by(Image.last_submission_date.desc()).limit(MAX_SHOW_IMAGES).all()
+    db_images = (
+        Image.query.options(selectinload(Image.submissions))  # one query, no N+1
+        .order_by(Image.last_submission_date.desc())
+        .limit(MAX_SHOW_IMAGES)
+        .all()
+    )
     images = []
     for img in db_images:
         if not img.submissions:

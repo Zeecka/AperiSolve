@@ -10,9 +10,14 @@ from shutil import rmtree
 from subprocess import CompletedProcess
 from typing import Any, ClassVar, overload
 
-from aperisolve.config import MAX_PENDING_TIME
+from aperisolve.config import SUBPROCESS_TIMEOUT
 
 _thread_lock = threading.Lock()
+
+# Bytes kept from each of a subprocess's stdout/stderr. Output beyond this is
+# drained (so the child never blocks on a full pipe) but discarded, keeping
+# adversarial tool output from ballooning memory and results.json.
+MAX_CAPTURED_OUTPUT = 1_000_000
 
 # All concrete analyzer classes, registered automatically on class creation.
 # Use aperisolve.analyzers.registry to consume this (it imports every module).
@@ -74,17 +79,47 @@ class SubprocessAnalyzer(ABC):
     ) -> CompletedProcess[str]:
         """Run a subprocess command."""
 
+        async def _read_capped(stream: asyncio.StreamReader) -> str:
+            chunks: list[bytes] = []
+            total = 0
+            truncated = False
+            while chunk := await stream.read(65536):
+                take = chunk[: max(0, MAX_CAPTURED_OUTPUT - total)]
+                if take:
+                    chunks.append(take)
+                    total += len(take)
+                if len(take) < len(chunk):
+                    truncated = True
+            text = b"".join(chunks).decode("utf-8", errors="replace")
+            if truncated:
+                text += "\n[output truncated]"
+            return text
+
         async def _run() -> CompletedProcess[str]:
             process = await asyncio.create_subprocess_exec(
                 *cmd,
                 cwd=str(cwd) if cwd is not None else None,
+                stdin=asyncio.subprocess.DEVNULL,
                 stdout=asyncio.subprocess.PIPE,
                 stderr=asyncio.subprocess.PIPE,
             )
-            stdout_raw, stderr_raw = await asyncio.wait_for(
-                process.communicate(),
-                timeout=MAX_PENDING_TIME,
-            )
+            if process.stdout is None or process.stderr is None:
+                msg = "Subprocess pipes were not created"
+                raise RuntimeError(msg)
+            try:
+                stdout, stderr, _ = await asyncio.wait_for(
+                    asyncio.gather(
+                        _read_capped(process.stdout),
+                        _read_capped(process.stderr),
+                        process.wait(),
+                    ),
+                    timeout=SUBPROCESS_TIMEOUT,
+                )
+            except TimeoutError:
+                process.kill()
+                await process.wait()
+                msg = f"Command timed out after {SUBPROCESS_TIMEOUT}s: {cmd[0]}"
+                raise TimeoutError(msg) from None
             returncode = process.returncode
             if returncode is None:
                 msg = "Subprocess exited without a return code"
@@ -92,8 +127,8 @@ class SubprocessAnalyzer(ABC):
             return CompletedProcess(
                 args=cmd,
                 returncode=returncode,
-                stdout=stdout_raw.decode("utf-8", errors="replace"),
-                stderr=stderr_raw.decode("utf-8", errors="replace"),
+                stdout=stdout,
+                stderr=stderr,
             )
 
         return asyncio.run(_run())

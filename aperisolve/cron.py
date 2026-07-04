@@ -10,12 +10,12 @@ and executed by the regular worker container.
 
 from rq import cron
 
-from .config import CLEANUP_INTERVAL_SECONDS, MAX_PENDING_TIME
+from .config import CLEANUP_INTERVAL_SECONDS, JOB_TIMEOUT
 from .tasks import cleanup_job
 
 cron.register(
     cleanup_job,
     queue_name="default",
     interval=CLEANUP_INTERVAL_SECONDS,
-    job_timeout=MAX_PENDING_TIME,
+    job_timeout=JOB_TIMEOUT,
 )

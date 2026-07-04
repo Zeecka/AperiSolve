@@ -257,8 +257,11 @@ If your contribution needs new dependencies:
 # development environment (hot reload and local volumes)
 docker compose -f compose.dev.yml up --build
 
-# Stop and remove containers, networks and volumes (results are stored in a volume)
-docker compose down -v
+# Stop and remove containers and networks (keeps volumes: database and results)
+docker compose down
+
+# DANGER: also remove volumes (wipes the database and all stored results)
+# docker compose down -v
 
 # Enter web container shell
 docker exec -it aperisolve-web bash

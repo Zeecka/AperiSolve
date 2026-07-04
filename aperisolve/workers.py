@@ -25,13 +25,30 @@ def analyze_image(submission_hash: str) -> None:
             sentry_sdk.capture_message(f"Submission not found: {submission_hash}", level="warning")
             return
 
-        image = Image.query.get_or_404(submission.image_hash)
+        image = Image.query.get(submission.image_hash)
+        if image is None:
+            sentry_sdk.capture_message(
+                f"Image not found: {submission.image_hash}",
+                level="warning",
+            )
+            submission.status = "error"
+            db.session.commit()
+            return
+
         submission.status = "running"
+        # Snapshot ORM attributes before committing: the commit expires them,
+        # and the analyzer threads below must never trigger lazy loads on the
+        # shared, non-thread-safe session.
+        password = submission.password
+        filename = submission.filename
+        deep_analysis = bool(submission.deep_analysis)
+        img_file = str(image.file)
+        img_hash = str(image.hash)
         db.session.commit()
 
         try:
-            img_path = Path(image.file)
-            result_path = RESULT_FOLDER / str(image.hash) / str(submission.hash)
+            img_path = Path(img_file)
+            result_path = RESULT_FOLDER / img_hash / submission_hash
             result_path.mkdir(parents=True, exist_ok=True)
 
             threads: list[threading.Thread] = []
@@ -39,7 +56,7 @@ def analyze_image(submission_hash: str) -> None:
             def run_analyzer(analyzer_cls: type[SubprocessAnalyzer]) -> None:
                 """Run an analyzer class in a separate thread."""
                 try:
-                    analyzer_cls.execute(img_path, result_path, submission.password)
+                    analyzer_cls.execute(img_path, result_path, password)
                 except (RuntimeError, ValueError, OSError, TypeError) as exc:
                     with sentry_sdk.push_scope() as scope:
                         scope.set_tag("analyzer", analyzer_cls.name)
@@ -54,14 +71,14 @@ def analyze_image(submission_hash: str) -> None:
                                 "tool": analyzer_cls.name,
                                 "image_path": str(img_path),
                                 "result_path": str(result_path),
-                                "filename": submission.filename,
-                                "deep_analysis": submission.deep_analysis,
+                                "filename": filename,
+                                "deep_analysis": deep_analysis,
                             },
                         )
                         scope.fingerprint = ["analyzer-error", analyzer_cls.name]
                         sentry_sdk.capture_exception(exc)
 
-            for analyzer_cls in get_analyzers(deep=bool(submission.deep_analysis)):
+            for analyzer_cls in get_analyzers(deep=deep_analysis):
                 thread = threading.Thread(target=run_analyzer, args=(analyzer_cls,))
                 threads.append(thread)
                 thread.start()
