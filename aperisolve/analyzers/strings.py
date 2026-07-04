@@ -15,8 +15,3 @@ class StringsAnalyzer(SubprocessAnalyzer):
         """Initialize the strings analyzer."""
         super().__init__(input_img, output_dir)
         self.cmd = ["strings", self.img]
-
-
-def analyze_strings(input_img: Path, output_dir: Path) -> None:
-    """Analyze an image submission using strings (deprecated: use ``execute``)."""
-    StringsAnalyzer.execute(input_img, output_dir)

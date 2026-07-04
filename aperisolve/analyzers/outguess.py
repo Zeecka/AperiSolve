@@ -1,6 +1,5 @@
 """Outguess Analyzer for Image Submissions."""
 
-from pathlib import Path
 from typing import Any
 
 from .base_analyzer import SubprocessAnalyzer
@@ -42,15 +41,10 @@ class OutguessAnalyzer(SubprocessAnalyzer):
             out_file.unlink()
 
         if extracted_dir.exists() and any(extracted_dir.iterdir()):
-            self.generate_archive(self.output_dir, extracted_dir)
+            self.generate_archive(extracted_dir)
             return {
                 "status": "ok",
                 "output": [line for line in data.stderr.splitlines() if line.strip()],
                 "download": f"/download/{self.output_dir.name}/{self.name}",
             }
         return {"status": "error", "error": data.stderr.strip()}
-
-
-def analyze_outguess(input_img: Path, output_dir: Path, password: str | None = None) -> None:
-    """Analyze an image submission using outguess (deprecated: use ``execute``)."""
-    OutguessAnalyzer.execute(input_img, output_dir, password)

@@ -15,7 +15,7 @@ services:
       initdb:
         condition: service_completed_successfully
       redis:
-        condition: service_started
+        condition: service_healthy
       worker:
         condition: service_started
     env_file:
@@ -35,7 +35,7 @@ services:
       initdb:
         condition: service_completed_successfully
       redis:
-        condition: service_started
+        condition: service_healthy
     env_file:
       - .env.example
 
@@ -53,7 +53,7 @@ services:
       initdb:
         condition: service_completed_successfully
       redis:
-        condition: service_started
+        condition: service_healthy
     env_file:
       - .env.example
 
@@ -74,15 +74,22 @@ services:
     image: redis:7
     container_name: redis
     restart: always
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
     env_file:
       - .env.example
 
   postgres:
-    image: postgres:14
+    # Same major + mount path as production (compose.yml). If you had an old
+    # postgres:14 dev volume, drop it once: docker volume rm aperisolve_pgdata
+    image: postgres:18
     container_name: postgres
     restart: always
     volumes:
-      - pgdata:/var/lib/postgresql/data
+      - pgdata:/var/lib/postgresql
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U aperiuser -d aperisolve"]
       interval: 5s

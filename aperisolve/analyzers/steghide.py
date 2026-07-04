@@ -57,8 +57,3 @@ class SteghideAnalyzer(SubprocessAnalyzer):
         if "the file format of the file" in stderr and "not supported" in stderr:
             return "The file format of the file is not supported (JPEG or BMP only)."
         return stderr
-
-
-def analyze_steghide(input_img: Path, output_dir: Path, password: str | None = None) -> None:
-    """Analyze an image submission using steghide (deprecated: use ``execute``)."""
-    SteghideAnalyzer.execute(input_img, output_dir, password)

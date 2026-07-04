@@ -20,12 +20,13 @@ Production deployment is **tag-driven**. Nothing deploys on a push to
    - SSHes to the production server (`PROD_SSH_*` secrets), regenerates
      `.env` from `.env.example` plus the repository's Actions
      variables/secrets (ports, limits, ads, Sentry, database, ...);
-   - runs `docker compose pull && docker compose down -v && docker compose
-     up -d`.
+   - runs `docker compose pull && docker compose down && docker compose
+     up -d` (never `down -v`: the volumes hold the database and results).
 
-The compose stack runs six services: `web` (gunicorn), `worker` (RQ),
+The compose stack runs seven services: `web` (gunicorn), `worker` (RQ),
 `cron` (RQ cron scheduler driving the retention cleanup), `initdb`
-(one-shot), `postgres`, `redis`, plus `rqdashboard` on port 9181.
+(one-shot), `postgres`, `redis`, plus `rqdashboard` bound to
+localhost:9181 (reach it via SSH tunnelling).
 
 ## Configuration
 
@@ -43,9 +44,9 @@ by the `GOOGLE_ADS_TXT`/`CUSTOM_EXTERNAL_SCRIPT`/`ADSENSE_*` environment
 variables, and its `:prod` image tags are no longer built. It can be
 deleted; nothing references it.
 
-Before pruning old `worker/*` feature branches, check them for unmerged
-analyzer work (`worker/jphide`, `worker/jsteg`, `worket/color_remap`,
-`worker/identify_graphicmagick`, `worker/file`).
+The old `worker/*` feature branches (`worker/jphide`, `worker/jsteg`,
+`worket/color_remap`, `worker/identify_graphicmagick`, `worker/file`) are
+fully merged into `main` (0 commits ahead) and can be deleted.
 
 ## Local development
 

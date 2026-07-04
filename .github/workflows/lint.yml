@@ -10,6 +10,11 @@ jobs:
   run-linters:
     name: Run linters
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        # 3.14 matches the runtime image (Dockerfile python:3.14-slim);
+        # 3.12 guards the oldest supported interpreter.
+        python-version: ["3.12", "3.14"]
 
     steps:
       - name: Check out Git repository
@@ -18,13 +23,13 @@ jobs:
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
-          python-version: 3.12
+          python-version: ${{ matrix.python-version }}
 
       - name: Set up uv
         uses: astral-sh/setup-uv@v6
 
       - name: Sync Python dependencies
-        run: uv sync --extra dev
+        run: uv sync --frozen --extra dev
 
       - name: Run Ruff
         run: |
@@ -35,4 +40,28 @@ jobs:
         run: uv run ty check aperisolve
 
       - name: Run pytest
-        run: uv run pytest -q
+        # Floor set just under the current ~60% so coverage can only ratchet up.
+        run: uv run pytest -q --cov=aperisolve --cov-fail-under=55
+
+      - name: Audit dependencies for known vulnerabilities
+        run: |
+          uv export --frozen --no-emit-project --no-hashes -o requirements-audit.txt
+          uvx pip-audit --no-deps -r requirements-audit.txt
+
+  docker-build:
+    name: Docker build check
+    runs-on: ubuntu-latest
+    if: github.event_name == 'pull_request'
+
+    steps:
+      - name: Check out Git repository
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build image (no push)
+        uses: docker/build-push-action@v6.9.0
+        with:
+          context: .
+          push: false

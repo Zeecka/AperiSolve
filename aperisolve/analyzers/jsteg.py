@@ -22,8 +22,3 @@ class JstegAnalyzer(SubprocessAnalyzer):
         if stdout.strip():
             return [line for line in stdout.split("\n") if line.strip()]
         return []
-
-
-def analyze_jsteg(input_img: Path, output_dir: Path) -> None:
-    """Analyze an image submission using jsteg (deprecated: use ``execute``)."""
-    JstegAnalyzer.execute(input_img, output_dir)

@@ -25,8 +25,3 @@ class ExiftoolAnalyzer(SubprocessAnalyzer):
                 key, value = line.split(":", 1)
                 metadata[key.strip()] = value.strip()
         return metadata
-
-
-def analyze_exiftool(input_img: Path, output_dir: Path) -> None:
-    """Analyze an image submission using exiftool (deprecated: use ``execute``)."""
-    ExiftoolAnalyzer.execute(input_img, output_dir)

@@ -1,7 +1,5 @@
 """JPSeek Analyzer for Image Submissions."""
 
-from pathlib import Path
-
 from .base_analyzer import SubprocessAnalyzer
 
 
@@ -61,8 +59,3 @@ class JpseekAnalyzer(SubprocessAnalyzer):
         if output == "":
             output = "File completely recovered."
         return output
-
-
-def analyze_jpseek(input_img: Path, output_dir: Path, password: str | None = None) -> None:
-    """Analyze an image submission using jpseek (deprecated: use ``execute``)."""
-    JpseekAnalyzer.execute(input_img, output_dir, password)

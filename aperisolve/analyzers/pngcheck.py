@@ -27,8 +27,3 @@ class PngcheckAnalyzer(SubprocessAnalyzer):
         if "this is neither a PNG or JNG image nor a MNG stream" in stdout:
             return "The file format of the file is not supported (PNG or JNG only)."
         return stdout
-
-
-def analyze_pngcheck(input_img: Path, output_dir: Path) -> None:
-    """Analyze an image submission using pngcheck (deprecated: use ``execute``)."""
-    PngcheckAnalyzer.execute(input_img, output_dir)

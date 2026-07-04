@@ -26,8 +26,3 @@ class ZstegAnalyzer(SubprocessAnalyzer):
         if "PNG::NotSupported" in stdout[:100]:
             return "The file format of the file is not supported (PNG only)."
         return stderr
-
-
-def analyze_zsteg(input_img: Path, output_dir: Path) -> None:
-    """Analyze an image submission using zsteg (deprecated: use ``execute``)."""
-    ZstegAnalyzer.execute(input_img, output_dir)

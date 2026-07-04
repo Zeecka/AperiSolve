@@ -44,6 +44,10 @@ class SubprocessAnalyzer(ABC):
     deep_only: ClassVar[bool] = False
     display_order: ClassVar[int] = 1000
     register: ClassVar[bool] = True
+    # Tools with several command variants (e.g. OpenStego's two crypt
+    # algorithms) set this >1; ``analyze`` re-runs ``get_results`` while the
+    # previous attempt errored, and ``build_cmd`` supplies the next variant.
+    max_attempts: ClassVar[int] = 1
 
     input_img: Path
     output_dir: Path
@@ -133,7 +137,7 @@ class SubprocessAnalyzer(ABC):
 
         return asyncio.run(_run())
 
-    def generate_archive(self, _output_dir: Path, extracted_dir: Path | None = None) -> str:
+    def generate_archive(self, extracted_dir: Path | None = None) -> str:
         """Zip the extracted files and remove the directory."""
         if extracted_dir is None:
             extracted_dir = self.get_extracted_dir()
@@ -213,7 +217,7 @@ class SubprocessAnalyzer(ABC):
 
         zip_exists = False
         if extracted_dir and extracted_dir.exists() and any(extracted_dir.iterdir()):
-            self.generate_archive(self.output_dir, extracted_dir)  # keep archive
+            self.generate_archive(extracted_dir)  # keep archive
             zip_exists = True
 
         if self.is_error(returncode, stdout, stderr, zip_exist=zip_exists):
@@ -244,6 +248,10 @@ class SubprocessAnalyzer(ABC):
         result: dict[str, Any]
         try:
             result = self.get_results(password)
+            for _ in range(1, self.max_attempts):
+                if result["status"] != "error":
+                    break
+                result = self.get_results(password)
             self.update_result(result)
         except (RuntimeError, ValueError, OSError, TimeoutError) as e:
             self.update_result({"status": "error", "error": str(e)})

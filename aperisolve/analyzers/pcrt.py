@@ -63,7 +63,7 @@ class PCRTAnalyzer(SubprocessAnalyzer):
             # Save extra data if found after IEND
             if extra_data:
                 self._write_extra_data(extra_data)
-                self.generate_archive(self.output_dir)
+                self.generate_archive()
                 result["note"] = result.get("note", "") + " | Extra data found after IEND"
                 result["download"] = f"/download/{self.output_dir.name}/{self.name}"
 
@@ -71,8 +71,3 @@ class PCRTAnalyzer(SubprocessAnalyzer):
             return {"status": "error", "error": f"Analysis failed: {e!s}"}
         else:
             return result
-
-
-def analyze_pcrt(input_img: Path, output_dir: Path) -> None:
-    """Analyze an image submission using PCRT (deprecated: use ``execute``)."""
-    PCRTAnalyzer.execute(input_img, output_dir)

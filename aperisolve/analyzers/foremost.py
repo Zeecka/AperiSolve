@@ -30,8 +30,3 @@ class ForemostAnalyzer(SubprocessAnalyzer):
         if "Processing" in stderr and "|*|" in stderr:
             return stderr.strip().replace("\n", "")
         return []
-
-
-def analyze_foremost(input_img: Path, output_dir: Path) -> None:
-    """Analyze an image submission using foremost (deprecated: use ``execute``)."""
-    ForemostAnalyzer.execute(input_img, output_dir)

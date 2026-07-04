@@ -98,9 +98,11 @@ The stack runs as Docker Compose services:
   fanning out to one thread per tool.
 - **cron** — an RQ cron scheduler that runs the retention cleanup off the
   request path.
+- **initdb** — a one-shot service that creates the tables and pre-fills the
+  IHDR CRC recovery database.
 - **postgres** — stores image metadata and submission status.
 - **redis** — RQ broker (DB 0) and rate-limiter storage (DB 1).
-- **rqdashboard** — queue monitoring on port 9181.
+- **rqdashboard** — queue monitoring, bound to localhost:9181.
 
 This separation keeps heavy tools (binwalk, foremost, zsteg, etc.) isolated
 and avoids blocking the web worker. Identical submissions are deduplicated by

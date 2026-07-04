@@ -20,8 +20,3 @@ class IdentifyAnalyzer(SubprocessAnalyzer):
         """Process the stdout into a list of lines."""
         _ = stderr
         return [line for line in stdout.split("\n") if line.strip()]
-
-
-def analyze_identify(input_img: Path, output_dir: Path) -> None:
-    """Analyze using GraphicMagick identify (deprecated: use ``execute``)."""
-    IdentifyAnalyzer.execute(input_img, output_dir)

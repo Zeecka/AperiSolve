@@ -4,9 +4,10 @@ from pathlib import Path
 from typing import Any
 
 import numpy as np
-from PIL import Image, UnidentifiedImageError
+from PIL import Image
 
 from .base_analyzer import SubprocessAnalyzer
+from .pil_utils import PALETTE_NOTE, load_image_array
 
 RGB_CHANNEL_COUNT = 3
 RGBA_CHANNEL_COUNT = 4
@@ -65,23 +66,11 @@ class ColorRemappingAnalyzer(SubprocessAnalyzer):
     def get_results(self, password: str | None = None) -> dict[str, Any]:
         """Analyze an image submission using color remapping."""
         _ = password
-        try:
-            img = Image.open(self.input_img)
-        except UnidentifiedImageError:
-            # Corrupt/polyglot uploads are expected input, not an exception
-            # worth a Sentry report (issue #192).
-            return {
-                "status": "error",
-                "error": "Pillow cannot decode this file as an image.",
-            }
-        converted = False
-
-        if img.mode == "P":
-            img = img.convert("RGB")
-            converted = True
-
-        img_np_tmp = np.array(img)
-        img_np, _channels = self._normalize_image(img_np_tmp)
+        loaded = load_image_array(self.input_img)
+        if loaded.error is not None or loaded.array is None:
+            return loaded.error or {"status": "error", "error": "Image could not be loaded."}
+        converted = loaded.converted
+        img_np, _channels = self._normalize_image(loaded.array)
 
         image_json = []
 
@@ -106,13 +95,6 @@ class ColorRemappingAnalyzer(SubprocessAnalyzer):
             },
         }
         if converted:
-            output["note"] = (
-                "Image contains a color palette and was converted to RGB for processing."
-            )
+            output["note"] = PALETTE_NOTE
 
         return output
-
-
-def analyze_color_remapping(input_img: Path, output_dir: Path) -> None:
-    """Analyze using color remapping (deprecated: use ``execute``)."""
-    ColorRemappingAnalyzer.execute(input_img, output_dir)

@@ -39,8 +39,3 @@ class BinwalkAnalyzer(SubprocessAnalyzer):
         """Check whether binwalk execution failed."""
         _ = returncode, stdout
         return len(stderr) > 0 and not zip_exist
-
-
-def analyze_binwalk(input_img: Path, output_dir: Path) -> None:
-    """Analyze an image submission using binwalk (deprecated: use ``execute``)."""
-    BinwalkAnalyzer.execute(input_img, output_dir)

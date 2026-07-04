@@ -14,7 +14,7 @@ services:
       initdb:
         condition: service_completed_successfully
       redis:
-        condition: service_started
+        condition: service_healthy
       worker:
         condition: service_started
     env_file:
@@ -34,6 +34,10 @@ services:
     container_name: aperisolve-worker
     restart: always
     command: rq worker default --url redis://redis:6379/0
+    # Analyzers (binwalk, foremost, ...) process untrusted input; cap the
+    # blast radius of a decompression bomb or runaway tool.
+    mem_limit: 2g
+    cpus: 2
     volumes:
       - apresults:/app/aperisolve/results
     depends_on:
@@ -42,7 +46,7 @@ services:
       initdb:
         condition: service_completed_successfully
       redis:
-        condition: service_started
+        condition: service_healthy
     env_file:
       - .env
 
@@ -60,7 +64,7 @@ services:
       initdb:
         condition: service_completed_successfully
       redis:
-        condition: service_started
+        condition: service_healthy
     env_file:
       - .env
 
@@ -96,6 +100,11 @@ services:
     image: redis:7
     container_name: redis
     restart: always
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
     env_file:
       - .env
 
@@ -104,7 +113,9 @@ services:
     container_name: rq-dashboard
     restart: always
     ports:
-      - "9181:9181"
+      # Loopback only: RQ Dashboard has no auth and lets anyone requeue or
+      # delete jobs. Reach it over SSH tunnelling.
+      - "127.0.0.1:9181:9181"
     depends_on:
       - redis
     env_file:

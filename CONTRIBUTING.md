@@ -67,12 +67,11 @@ The in-app wiki (`/wiki/`) is plain Markdown — the easiest way to contribute:
   Order: 150
   ```
 
-- `Order` controls the sidebar position (existing pages use 1–140).
+- `Order` controls the sidebar position (existing pages use 1–250).
 - Use fenced code blocks for commands; a copy button is added automatically.
 - Preview locally with `FLASK_DEBUG=1` (page cache is bypassed).
-- Every analyzer without a `tools/` page is a wanted contribution: describe
-  what the tool does, the exact command Aperi'Solve runs, how to read its
-  output, and common CTF patterns.
+- Every analyzer has a `tools/` page; improvements and corrections are
+  welcome, as are translations of the tool pages (currently English-only).
 
 ### 🌍 Translations
 
@@ -96,8 +95,8 @@ Portuguese. Machine-translated drafts are welcome; native review even more so.
   `aperisolve/wiki_content/en/cheatsheet.md`. Untranslated pages
   automatically fall back to English with a banner, canonicalize to the
   English URL and stay out of the sitemap — so partial translations are
-  fine. Translating `cheatsheet.md` and the `tools/` pages is the highest
-  impact contribution.
+  fine. `index`, `cheatsheet` and `getting-started` exist in all languages;
+  translating the `tools/` pages is the highest impact contribution.
 - Adding a new language: add its code to `PREFIX_LANGS` in
   `aperisolve/i18n.py`, run `pybabel init -i messages.pot -d
   aperisolve/translations -l <lang>`, and translate.
@@ -147,6 +146,7 @@ Run this script [lint.sh](lint.sh) at the project root folder.
 🧹 Running Ruff lint checks...
 🎨 Running Ruff format checks...
 🔍 Running ty type checks...
+🧪 Running pytest...
 
 ✅ All checks passed!
 ```

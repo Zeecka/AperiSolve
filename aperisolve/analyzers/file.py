@@ -20,8 +20,3 @@ class FileAnalyzer(SubprocessAnalyzer):
         """Process the stdout into a list of lines."""
         _ = stderr
         return stdout
-
-
-def analyze_file(input_img: Path, output_dir: Path) -> None:
-    """Analyze an image submission using `file` (deprecated: use ``execute``)."""
-    FileAnalyzer.execute(input_img, output_dir)

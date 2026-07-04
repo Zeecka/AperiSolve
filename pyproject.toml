@@ -12,13 +12,13 @@ authors = [
     {name = "Zeecka"}
 ]
 dependencies = [
-    "Flask",
-    "Flask-SQLAlchemy",
+    "Flask>=3.1",
+    "Flask-SQLAlchemy>=3.1",
     "numpy",
     "redis",
     "rq",
     "psycopg2-binary",
-    "Pillow",
+    "Pillow>=11",
     "gunicorn",
     "sentry-sdk[flask,sqlalchemy,rq]",
     "Markdown",
@@ -33,7 +33,10 @@ dev = [
     "ty",
     "pre-commit",
     "pytest",
+    "pytest-cov",
     "requests",
+    # ty consumes these stubs for the flask-sqlalchemy/sqlalchemy dynamic
+    # bases; removing them surfaces invalid-argument-type errors.
     "types-Flask-SQLAlchemy",
     "sqlalchemy-stubs"
 ]
@@ -60,3 +63,6 @@ select = ["ALL"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
+
+[tool.coverage.run]
+source = ["aperisolve"]

@@ -1,0 +1,16 @@
+.git
+.github
+.venv
+.env
+.ruff_cache
+.pytest_cache
+__pycache__
+**/__pycache__
+*.pyc
+aperisolve.egg-info
+aperisolve/results
+aperisolve/removed_images
+docs
+examples
+tests
+messages.pot

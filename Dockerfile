@@ -12,14 +12,16 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 RUN wget https://github.com/syvaidya/openstego/releases/download/openstego-0.8.6/openstego_0.8.6-1_all.deb \
     -O /tmp/openstego.deb
 
-# Clone and build jsteg from source
-RUN git clone https://github.com/lukechampine/jsteg.git /tmp/jsteg
+# Clone and build jsteg from source (pinned commit: reproducible builds)
+RUN git clone https://github.com/lukechampine/jsteg.git /tmp/jsteg \
+    && git -C /tmp/jsteg checkout cf206c26c711db215c11cb61bb479113ae8be275
 RUN cd /tmp/jsteg && \
     go build -o /usr/local/bin/jsteg ./cmd/jsteg && \
     rm -rf /tmp/jsteg
 
-# Builder stage - add after other tool compilations
-RUN git clone https://github.com/h3xx/jphs.git /tmp/jphs
+# Builder stage - add after other tool compilations (pinned commit)
+RUN git clone https://github.com/h3xx/jphs.git /tmp/jphs \
+    && git -C /tmp/jphs checkout 33a11e1bad146f5e9c0d3fe6475812a1cedb9b7e
 # Vendored autotools helper scripts (docker/) so configure recognizes aarch64
 # without a build-time download: git.savannah.gnu.org is flaky/rate-limited,
 # and a failed `wget -O` truncates the script, breaking configure entirely.

@@ -1,7 +1,6 @@
 """OpenStego Analyzer for Image Submissions."""
 
 from pathlib import Path
-from typing import Any
 
 from .base_analyzer import SubprocessAnalyzer
 
@@ -13,6 +12,7 @@ class OpenStegoAnalyzer(SubprocessAnalyzer):
     has_archive = True
     needs_password = True
     display_order = 140
+    max_attempts = 2  # build_cmd cycles AES128 then AES256
 
     def __init__(self, input_img: Path, output_dir: Path) -> None:
         """Initialize the OpenStego analyzer."""
@@ -36,18 +36,6 @@ class OpenStegoAnalyzer(SubprocessAnalyzer):
         _ = returncode, stdout
         return not zip_exist and "Extracted file: " not in stderr
 
-    def analyze(self, password: str | None = None) -> None:
-        """Run the subprocess command and handle results."""
-        result: dict[str, Any]
-        try:
-            result = self.get_results(password)
-            if result["status"] == "error":  # check second algorithm if failed
-                result = self.get_results(password)
-            self.update_result(result)
-        except (RuntimeError, ValueError, OSError, TimeoutError) as e:
-            self.update_result({"status": "error", "error": str(e)})
-            raise
-
     def process_output(self, stdout: str, stderr: str) -> str | list[str] | dict[str, str]:
         """Process the stdout/stderr."""
         _ = stdout
@@ -59,8 +47,3 @@ class OpenStegoAnalyzer(SubprocessAnalyzer):
         if "OpenStego is a steganography application" in stderr:
             return "OpenStego needs a password to work."
         return stderr
-
-
-def analyze_openstego(input_img: Path, output_dir: Path, password: str = "") -> None:
-    """Analyze an image submission using openstego (deprecated: use ``execute``)."""
-    OpenStegoAnalyzer.execute(input_img, output_dir, password)
