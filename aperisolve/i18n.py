@@ -90,4 +90,9 @@ def js_catalog() -> dict[str, str]:
         "Success": _("Success"),
         "No result": _("No result"),
         "Learn more": _("Learn more"),
+        "❌ HTTP error": _("❌ HTTP error"),
+        "❌ The analysis is taking too long. Please reload the page to check again.": _(
+            "❌ The analysis is taking too long. Please reload the page to check again.",
+        ),
+        "Analyzed image": _("Analyzed image"),
     }

@@ -23,7 +23,9 @@ from .analyzers.registry import archive_tools, tool_order
 from .config import (
     ADSENSE_CLIENT,
     ADSENSE_SLOT_INDEX,
-    ADSENSE_SLOT_WIKI,
+    ADSENSE_SLOT_RESULT,
+    ADSENSE_SLOT_WIKI_ARTICLE,
+    ADSENSE_SLOT_WIKI_SIDEBAR,
     CLEANUP_INTERVAL_SECONDS,
     CUSTOM_EXTERNAL_SCRIPT,
     DB_URI,
@@ -71,8 +73,10 @@ def _configure_app(app: Flask) -> None:
     app.config["REDIS_QUEUE"] = Queue(connection=Redis.from_url(REDIS_URL))
     app.config["TOOL_ORDER"] = tool_order()
     app.config["ADSENSE_CLIENT"] = ADSENSE_CLIENT
-    app.config["ADSENSE_SLOT_WIKI"] = ADSENSE_SLOT_WIKI
+    app.config["ADSENSE_SLOT_WIKI_SIDEBAR"] = ADSENSE_SLOT_WIKI_SIDEBAR
+    app.config["ADSENSE_SLOT_WIKI_ARTICLE"] = ADSENSE_SLOT_WIKI_ARTICLE
     app.config["ADSENSE_SLOT_INDEX"] = ADSENSE_SLOT_INDEX
+    app.config["ADSENSE_SLOT_RESULT"] = ADSENSE_SLOT_RESULT
     # Static asset URLs are cache-busted with ?v=<PROJECT_VERSION> in templates.
     app.config["SEND_FILE_MAX_AGE_DEFAULT"] = timedelta(days=7)
     Babel(app, locale_selector=select_locale)
@@ -162,7 +166,7 @@ def _register_error_handlers(app: Flask) -> None:
         }
 
     @app.errorhandler(413)
-    def too_large(_: object) -> tuple[Response, int]:
+    def too_large(_error: object) -> tuple[Response, int]:
         """Handle max upload size errors."""
         sentry_sdk.set_context(
             "upload",
@@ -172,7 +176,7 @@ def _register_error_handlers(app: Flask) -> None:
             },
         )
         sentry_sdk.capture_message("Upload failed: 413 Payload Too Large", level="warning")
-        return jsonify({"error": "Image size exceeded"}), 413
+        return jsonify({"error": _("Image size exceeded")}), 413
 
     @app.errorhandler(404)
     def not_found(_error: object) -> tuple[str, int]:
@@ -182,7 +186,7 @@ def _register_error_handlers(app: Flask) -> None:
     @app.errorhandler(429)
     def too_many_requests(_error: object) -> tuple[Response, int]:
         """Handle rate-limit errors with the JSON shape the frontend renders."""
-        return jsonify({"error": "Too many requests, please slow down."}), 429
+        return jsonify({"error": _("Too many requests, please slow down.")}), 429
 
 
 def _register_page_routes(app: Flask) -> None:
@@ -307,17 +311,17 @@ def _upload_image(app: Flask) -> tuple[Response, int]:
     run_cleanup_with_lock(app)
 
     if "image" not in request.files:
-        return jsonify({"error": "No image provided"}), 400
+        return jsonify({"error": _("No image provided")}), 400
 
     image = request.files["image"]
     password = request.form.get("password")
     deep_analysis = request.form.get("deep") == "true"
 
     if image.filename is None or image.filename == "":
-        return jsonify({"error": "No image provided"}), 400
+        return jsonify({"error": _("No image provided")}), 400
 
     if "." not in image.filename or Path(image.filename).suffix.lower() not in IMAGE_EXTENSIONS:
-        return jsonify({"error": "Unsupported file type"}), 400
+        return jsonify({"error": _("Unsupported file type")}), 400
 
     image_data = image.read()
     img_hash = hashlib.md5(image_data, usedforsecurity=False).hexdigest()
@@ -420,7 +424,7 @@ def _build_result_response(result_path: Path) -> Response | tuple[Response, int]
     unchanged polls into 304s.
     """
     if not result_path.exists():
-        response = jsonify({"error": "Results not ready yet..."})
+        response = jsonify({"error": _("Results not ready yet...")})
         response.headers["Cache-Control"] = "no-store"
         return response, 425
 
@@ -428,7 +432,7 @@ def _build_result_response(result_path: Path) -> Response | tuple[Response, int]
     try:
         results = json.loads(raw)
     except json.JSONDecodeError:
-        response = jsonify({"error": "Results not ready yet..."})
+        response = jsonify({"error": _("Results not ready yet...")})
         response.headers["Cache-Control"] = "no-store"
         return response, 425
 
@@ -534,8 +538,11 @@ def _register_management_routes(app: Flask) -> None:
             return (
                 jsonify(
                     {
-                        "error": "Image must be at least 5 minutes old. "
-                        f"Current age: {int(age_seconds)}s",
+                        "error": _(
+                            "Image must be at least %(min)d seconds old. Current age: %(age)ds",
+                            min=REMOVAL_MIN_AGE_SECONDS,
+                            age=int(age_seconds),
+                        ),
                     },
                 ),
                 403,
@@ -547,8 +554,9 @@ def _register_management_routes(app: Flask) -> None:
             return (
                 jsonify(
                     {
-                        "error": "Image uploaded from multiple IP addresses. Removal is not "
-                        "allowed.",
+                        "error": _(
+                            "Image uploaded from multiple IP addresses. Removal is not allowed.",
+                        ),
                         "ip_count": len(unique_ips),
                     },
                 ),
@@ -563,7 +571,7 @@ def _register_management_routes(app: Flask) -> None:
         except (OSError, SQLAlchemyError) as exc:
             db.session.rollback()
             sentry_sdk.capture_exception(exc)
-            return jsonify({"error": "Failed to remove image"}), 500
+            return jsonify({"error": _("Failed to remove image")}), 500
 
         return jsonify({"message": "Image successfully removed"}), 200
 
@@ -574,15 +582,19 @@ def _register_management_routes(app: Flask) -> None:
         submission = Submission.query.get_or_404(hash_val)
 
         if not submission.password:
-            return jsonify({"error": "No password to remove"}), 400
+            return jsonify({"error": _("No password to remove")}), 400
 
         age_seconds = time.time() - submission.date
         if age_seconds < REMOVAL_MIN_AGE_SECONDS:
             return (
                 jsonify(
                     {
-                        "error": "Submission must be at least 5 minutes old. "
-                        f"Current age: {int(age_seconds)}s",
+                        "error": _(
+                            "Submission must be at least %(min)d seconds old. "
+                            "Current age: %(age)ds",
+                            min=REMOVAL_MIN_AGE_SECONDS,
+                            age=int(age_seconds),
+                        ),
                     },
                 ),
                 403,
@@ -594,8 +606,10 @@ def _register_management_routes(app: Flask) -> None:
             return (
                 jsonify(
                     {
-                        "error": "Submission uploaded from multiple IP addresses. "
-                        "Password removal is not allowed.",
+                        "error": _(
+                            "Submission uploaded from multiple IP addresses. "
+                            "Password removal is not allowed.",
+                        ),
                         "ip_count": len(unique_ips),
                     },
                 ),
@@ -608,7 +622,7 @@ def _register_management_routes(app: Flask) -> None:
         except SQLAlchemyError as exc:
             db.session.rollback()
             sentry_sdk.capture_exception(exc)
-            return jsonify({"error": "Failed to remove password"}), 500
+            return jsonify({"error": _("Failed to remove password")}), 500
 
         return jsonify({"message": "Password successfully removed"}), 200
 

@@ -30,7 +30,9 @@
   <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css" rel="stylesheet">
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet">
   <link href="/static/css/aperisolve.css?v={{ config["PROJECT_VERSION"] }}" rel="stylesheet">
+  {% if config["CUSTOM_EXTERNAL_SCRIPT"] %}
   <script async src="{{ config["CUSTOM_EXTERNAL_SCRIPT"]}}" crossorigin="anonymous"></script>
+  {% endif %}
 </head>
 
 <body class="d-flex flex-column min-vh-100 text-light">
@@ -40,14 +42,14 @@
   <main class="flex-grow-1">
     <div class="container mt-5">
       <header class="site-header mb-4 d-flex justify-content-between align-items-center flex-wrap gap-2">
-        <a class="title-link d-inline-flex align-items-center text-decoration-none" href="/" aria-label="Aperi'Solve Home">
+        <a class="title-link d-inline-flex align-items-center text-decoration-none" href="/" aria-label="{{ _("Aperi'Solve Home") }}">
           <img src="/static/img/logo.svg" alt="Aperi'Solve logo" class="logo-img me-3" width="80" height="80">
           <div class="d-flex flex-column">
             <span class="title-text">Aperi'Solve</span>
             <span class="title-version">v.{{ config["PROJECT_VERSION"] }}</span>
           </div>
         </a>
-        <nav class="header-nav" aria-label="Main navigation">
+        <nav class="header-nav" aria-label="{{ _("Main navigation") }}">
           <a class="footer-link me-3" href="{{ lang_prefix }}/wiki/"><i class="fa-solid fa-book-open me-1"></i>{{ _("Wiki") }}</a>
           <a class="footer-link" href="{{ lang_prefix }}/wiki/cheatsheet"><i class="fa-regular fa-circle-question me-1"></i>{{ _("Cheatsheet") }}</a>
         </nav>
@@ -60,8 +62,8 @@
   {% include "footer.html" %}
 
   <!-- Modal Structure -->
-  <div id="image-modal-container">
-    <img id="modal-image" src="" />
+  <div id="image-modal-container" role="dialog" aria-modal="true" aria-label="{{ _("Image preview") }}">
+    <img id="modal-image" alt="" />
   </div>
 
   <!-- Scripts -->
@@ -76,12 +78,22 @@
   <script type="importmap">
 		{
 			"imports": {
-				"three": "./static/js/three.module.min.js",
-				"three/addons/": "./static/js/jsm/"
+				"three": "/static/js/three.module.min.js"
 			}
 		}
 	</script>
-  <script type="module" src="/static/js/background.js?v={{ config["PROJECT_VERSION"] }}"></script>
+  <script>
+    // Load the decorative 3D background only after the page has finished
+    // loading: ~700 KB of Three.js must never compete with content, and
+    // reduced-motion users skip the download entirely.
+    window.addEventListener("load", () => {
+      if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+      const s = document.createElement("script");
+      s.type = "module";
+      s.src = "/static/js/background.js?v={{ config["PROJECT_VERSION"] }}";
+      document.body.appendChild(s);
+    });
+  </script>
   {% endblock %}
   {% block footer_content %} {% endblock %}
 </body>

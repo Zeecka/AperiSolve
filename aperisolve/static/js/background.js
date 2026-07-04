@@ -1,8 +1,6 @@
 import * as THREE from "three";
 
-import Stats from "three/addons/stats.module.js";
-
-let container, stats;
+let container;
 let camera, scene, renderer, mesh;
 
 const instances = 5000;
@@ -29,7 +27,9 @@ function isSoftwareRenderer() {
   return /swiftshader|software/i.test(renderer);
 }
 
-if (isSoftwareRenderer()) {
+if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+  // Respect the user's motion preference: no animated background.
+} else if (isSoftwareRenderer()) {
   console.warn("Software rendering detected — disabling Three.js");
 } else {
   init();
@@ -97,7 +97,9 @@ function init() {
   // material
 
   const material = new THREE.MeshBasicMaterial();
-  material.map = new THREE.TextureLoader().load("static/img/octo2.png");
+  // Absolute path: a relative one resolves against the document URL and
+  // 404s on language-prefixed pages (/fr/, /es/, ...).
+  material.map = new THREE.TextureLoader().load("/static/img/octo2.png");
   material.map.colorSpace = THREE.SRGBColorSpace;
   material.map.flipY = false;
   material.transparent = true;
@@ -138,6 +140,10 @@ function init() {
     mesh.setMatrixAt(i, matrix);
   }
 
+  // The instance cloud surrounds the camera; skip culling instead of
+  // recomputing the bounding sphere every frame.
+  mesh.frustumCulled = false;
+
   scene.add(mesh);
 
   renderer = new THREE.WebGLRenderer();
@@ -145,9 +151,6 @@ function init() {
   renderer.setSize(window.innerWidth, window.innerHeight);
   renderer.setAnimationLoop(animate);
   container.appendChild(renderer.domElement);
-
-  stats = new Stats();
-  container.appendChild(stats.dom);
 
   window.addEventListener("resize", onWindowResize);
 }
@@ -177,11 +180,8 @@ function animate() {
   }
 
   mesh.instanceMatrix.needsUpdate = true;
-  mesh.computeBoundingSphere();
 
   lastTime = time;
 
   renderer.render(scene, camera);
-
-  //stats.update();
 }

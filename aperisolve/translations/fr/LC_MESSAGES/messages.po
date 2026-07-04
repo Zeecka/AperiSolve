@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2026-07-04 13:50+0000\n"
+"POT-Creation-Date: 2026-07-04 16:18+0000\n"
 "PO-Revision-Date: 2026-07-05 13:23+0000\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language: fr\n"
@@ -18,9 +18,61 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Generated-By: Babel 2.18.0\n"
 
-#: aperisolve/app.py:194
+#: aperisolve/app.py:179
+msgid "Image size exceeded"
+msgstr "Taille d'image dépassée"
+
+#: aperisolve/app.py:184
 msgid "Resource not found"
 msgstr "Ressource introuvable"
+
+#: aperisolve/app.py:189
+msgid "Too many requests, please slow down."
+msgstr "Trop de requêtes, veuillez ralentir."
+
+#: aperisolve/app.py:314 aperisolve/app.py:321
+msgid "No image provided"
+msgstr "Aucune image fournie"
+
+#: aperisolve/app.py:324
+msgid "Unsupported file type"
+msgstr "Type de fichier non pris en charge"
+
+#: aperisolve/app.py:427 aperisolve/app.py:435
+msgid "Results not ready yet..."
+msgstr "Résultats pas encore prêts..."
+
+#: aperisolve/app.py:542
+#, python-format
+msgid "Image must be at least %(min)d seconds old. Current age: %(age)ds"
+msgstr "L'image doit avoir au moins %(min)d secondes. Âge actuel : %(age)ds"
+
+#: aperisolve/app.py:559
+msgid "Image uploaded from multiple IP addresses. Removal is not allowed."
+msgstr "Image téléversée depuis plusieurs adresses IP. La suppression n'est pas autorisée."
+
+#: aperisolve/app.py:575
+msgid "Failed to remove image"
+msgstr "Échec de la suppression de l'image"
+
+#: aperisolve/app.py:586
+msgid "No password to remove"
+msgstr "Aucun mot de passe à supprimer"
+
+#: aperisolve/app.py:594
+#, python-format
+msgid "Submission must be at least %(min)d seconds old. Current age: %(age)ds"
+msgstr "La soumission doit avoir au moins %(min)d secondes. Âge actuel : %(age)ds"
+
+#: aperisolve/app.py:611
+msgid "Submission uploaded from multiple IP addresses. Password removal is not allowed."
+msgstr ""
+"Soumission téléversée depuis plusieurs adresses IP. La suppression du mot de passe n'est pas "
+"autorisée."
+
+#: aperisolve/app.py:626
+msgid "Failed to remove password"
+msgstr "Échec de la suppression du mot de passe"
 
 #: aperisolve/i18n.py:60
 msgid "First upload:"
@@ -124,7 +176,6 @@ msgid "❌ An error occurred during the transfer"
 msgstr "❌ Une erreur est survenue pendant le transfert"
 
 #: aperisolve/i18n.py:89
-#, fuzzy
 msgid "Analyzing your image…"
 msgstr "Analyse de votre image…"
 
@@ -140,14 +191,38 @@ msgstr "Aucun résultat"
 msgid "Learn more"
 msgstr "En savoir plus"
 
-#: aperisolve/templates/base.html:51 aperisolve/templates/footer.html:29
+#: aperisolve/i18n.py:93
+msgid "❌ HTTP error"
+msgstr "❌ Erreur HTTP"
+
+#: aperisolve/i18n.py:95
+msgid "❌ The analysis is taking too long. Please reload the page to check again."
+msgstr "❌ L'analyse prend trop de temps. Veuillez recharger la page pour vérifier à nouveau."
+
+#: aperisolve/i18n.py:97
+msgid "Analyzed image"
+msgstr "Image analysée"
+
+#: aperisolve/templates/base.html:45
+msgid "Aperi'Solve Home"
+msgstr "Accueil Aperi'Solve"
+
+#: aperisolve/templates/base.html:52
+msgid "Main navigation"
+msgstr "Navigation principale"
+
+#: aperisolve/templates/base.html:53 aperisolve/templates/footer.html:29
 #: aperisolve/templates/wiki.html:42 aperisolve/templates/wiki.html:71
 msgid "Wiki"
 msgstr "Wiki"
 
-#: aperisolve/templates/base.html:52 aperisolve/templates/footer.html:32
+#: aperisolve/templates/base.html:54 aperisolve/templates/footer.html:32
 msgid "Cheatsheet"
 msgstr "Cheatsheet"
+
+#: aperisolve/templates/base.html:65
+msgid "Image preview"
+msgstr "Aperçu de l'image"
 
 #: aperisolve/templates/footer.html:13
 msgid "Language"
@@ -221,18 +296,25 @@ msgstr "(plus lente, plus complète)"
 msgid "Analyze Image"
 msgstr "Analyser l'image"
 
-#: aperisolve/templates/show.html:8
+#: aperisolve/templates/show.html:2 aperisolve/templates/show.html:8
 msgid "Browse Submissions"
 msgstr "Parcourir les soumissions"
+
+#: aperisolve/templates/show.html:14
+msgid "Submission thumbnail"
+msgstr "Miniature de la soumission"
 
 #: aperisolve/templates/show.html:22
 msgid "No submissions to browse yet."
 msgstr "Aucune soumission à parcourir pour l'instant."
 
 #: aperisolve/templates/show.html:24
-#, fuzzy
 msgid "Analyze an image"
 msgstr "Analyser une image"
+
+#: aperisolve/templates/wiki.html:41
+msgid "Wiki navigation"
+msgstr "Navigation du wiki"
 
 #: aperisolve/templates/wiki.html:53
 msgid "Tools"

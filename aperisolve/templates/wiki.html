@@ -38,7 +38,7 @@
 {% block body_content %}
 <div class="row">
   <aside class="col-lg-3 mb-4">
-    <nav class="wiki-sidebar card p-3" aria-label="Wiki navigation">
+    <nav class="wiki-sidebar card p-3" aria-label="{{ _("Wiki navigation") }}">
       <h2 class="h6 text-uppercase text-muted">{{ _("Wiki") }}</h2>
       <ul class="nav flex-column mb-3">
         {% for nav_page in nav_main %}
@@ -61,7 +61,7 @@
         {% endfor %}
       </ul>
       {% endif %}
-      {{ ads.ad_unit(config["ADSENSE_SLOT_WIKI"]) }}
+      {{ ads.ad_unit(config["ADSENSE_SLOT_WIKI_SIDEBAR"]) }}
     </nav>
   </aside>
   <div class="col-lg-9">
@@ -79,7 +79,7 @@
     {% endif %}
     <article id="cheatsheet" class="wiki-article card p-4">
       {{ page.html | safe }}
-      {{ ads.ad_unit(config["ADSENSE_SLOT_WIKI"]) }}
+      {{ ads.ad_unit(config["ADSENSE_SLOT_WIKI_ARTICLE"]) }}
     </article>
   </div>
 </div>

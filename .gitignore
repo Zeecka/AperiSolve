@@ -7,3 +7,4 @@ results/
 removed_images/
 *.egg-info/
 .pytest_cache/
+messages.pot

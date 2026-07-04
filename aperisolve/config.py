@@ -42,6 +42,11 @@ CUSTOM_EXTERNAL_SCRIPT = getenv("CUSTOM_EXTERNAL_SCRIPT", "")
 ADSENSE_CLIENT = getenv("ADSENSE_CLIENT", "")
 ADSENSE_SLOT_WIKI = getenv("ADSENSE_SLOT_WIKI", "")
 ADSENSE_SLOT_INDEX = getenv("ADSENSE_SLOT_INDEX", "")
+ADSENSE_SLOT_RESULT = getenv("ADSENSE_SLOT_RESULT", "")
+# Distinct wiki slots keep sidebar vs in-article reporting separate in
+# AdSense; both fall back to the original single ADSENSE_SLOT_WIKI.
+ADSENSE_SLOT_WIKI_SIDEBAR = getenv("ADSENSE_SLOT_WIKI_SIDEBAR", "") or ADSENSE_SLOT_WIKI
+ADSENSE_SLOT_WIKI_ARTICLE = getenv("ADSENSE_SLOT_WIKI_ARTICLE", "") or ADSENSE_SLOT_WIKI
 
 # Public base URL (e.g. "https://www.aperisolve.com") used for canonical,
 # Open Graph and sitemap absolute links. Falls back to the request host.

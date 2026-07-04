@@ -1,5 +1,5 @@
 {% extends 'base.html' %}
-{% block title %}Browse Submissions - Aperi'Solve{% endblock %}
+{% block title %}{{ _("Browse Submissions") }} - Aperi'Solve{% endblock %}
 {% block meta %}
 <meta name="robots" content="noindex">
 {% endblock %}
@@ -11,7 +11,7 @@
     {% for img in images %}
     <div class="col-6 col-md-4 col-lg-3">
       <a href="{{ img.link }}" target="_blank" class="d-block browse-image-link">
-        <img src="{{ img.file }}" alt="Submission thumbnail" class="img-fluid rounded" loading="lazy">
+        <img src="{{ img.file }}" alt="{{ _("Submission thumbnail") }}" class="img-fluid rounded" loading="lazy">
       </a>
     </div>
     {% endfor %}

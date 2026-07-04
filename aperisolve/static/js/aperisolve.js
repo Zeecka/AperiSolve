@@ -151,6 +151,7 @@ function openImageModal(src) {
   currentIndex = currentImages.findIndex((img) => img.src === src);
   if (currentIndex !== -1) {
     modalImage.src = currentImages[currentIndex].src;
+    modalImage.alt = currentImages[currentIndex].alt || "";
     modal.classList.add("modal-visible");
     modal.classList.remove("modal-hidden");
   }
@@ -210,8 +211,16 @@ document.addEventListener("keydown", function (e) {
 });
 
 async function fetchImageInfo(submission_hash) {
-  const infoResp = await fetch(`/infos/${submission_hash}`);
-  const infoData = await infoResp.json();
+  let infoData;
+  try {
+    const infoResp = await fetch(`/infos/${submission_hash}`);
+    if (!infoResp.ok) throw new Error(`HTTP ${infoResp.status}`);
+    infoData = await infoResp.json();
+  } catch (error) {
+    // The info panel is auxiliary: a transient failure must not break the page.
+    console.error("Failed to load image info:", error);
+    return;
+  }
 
   const resultInfosDiv = document.getElementById("result-infos");
   resultInfosDiv.innerHTML = ""; // Clear previous info
@@ -225,7 +234,7 @@ async function fetchImageInfo(submission_hash) {
   resultInfosDiv.appendChild(mainImgRight);
   mainImgRight.appendChild(tableInfos);
 
-  mainImgLeft.innerHTML += `<div id="main_image"><img src="${infoData.image_path}"/></div>`;
+  mainImgLeft.innerHTML += `<div id="main_image"><img src="${infoData.image_path}" alt="${t("Analyzed image")}"/></div>`;
   tableInfos.innerHTML += `<tr><td><i class="fa fa-backward-step"></i> ${t("First upload:")}</td><td>${infoData.first_submission_date}</td></tr>`;
   tableInfos.innerHTML += `<tr><td><i class="fa fa-history"></i> ${t("Last upload:")}</td><td>${infoData.last_submission_date}</td></tr>`;
   if (Array.isArray(infoData.names)) {
@@ -519,7 +528,7 @@ function parseResult(result) {
 
     // Parse text output
     if (typeof result[tool]["output"] === "string") {
-      output = escapeHtml(result[tool]["output"]);
+      const output = escapeHtml(result[tool]["output"]);
       analyzer.innerHTML += `<div class="alert alert-success" role="alert">${output}</div>`;
     } else if (Array.isArray(result[tool]["output"])) {
       if (result[tool]["output"].length > 0) {
@@ -567,7 +576,7 @@ function parseResult(result) {
             for (const image of images) {
               analyzer.innerHTML += `<div class='results_img'><img src='${escapeHtml(
                 image
-              )}'/></div>`;
+              )}' alt='${escapeHtml(tool + " " + channel)}' loading='lazy'/></div>`;
             }
           }
         }
@@ -577,12 +586,12 @@ function parseResult(result) {
         // Parse image output
         analyzer.innerHTML += `<div class='results_img'><img src='${escapeHtml(
           result[tool]["image"]
-        )}'/></div>`;
+        )}' alt='${escapeHtml(tool)}' loading='lazy'/></div>`;
       }
 
       if ("png_images" in result[tool]) {
         for (const image of result[tool]["png_images"]) {
-          analyzer.innerHTML += `<div class='results_img'><img src='${escapeHtml(image)}'/></div>`;
+          analyzer.innerHTML += `<div class='results_img'><img src='${escapeHtml(image)}' alt='${escapeHtml(tool)}' loading='lazy'/></div>`;
         }
       }
 
@@ -610,17 +619,51 @@ function parseResult(result) {
   }
 }
 
-// Poll status of a submission
-async function pollStatus(submission_hash) {
+// Poll status of a submission. Polls are sequential (the next one is only
+// scheduled after the current one finishes, so they can never stack), back
+// off gently, and give up after a hard cap instead of hammering forever.
+const POLL_START_INTERVAL_MS = 1000;
+const POLL_MAX_INTERVAL_MS = 10000;
+const POLL_MAX_TOTAL_MS = 15 * 60 * 1000; // longer than any RQ job timeout
+
+function scheduleNextPoll(submission_hash, startedAt, interval) {
+  if (Date.now() - startedAt > POLL_MAX_TOTAL_MS) {
+    showDanger(t("❌ The analysis is taking too long. Please reload the page to check again."), true);
+    return;
+  }
+  const next = Math.min(interval * 1.2, POLL_MAX_INTERVAL_MS);
+  setTimeout(() => pollStatus(submission_hash, startedAt, next), interval);
+}
+
+async function pollStatus(submission_hash, startedAt, interval) {
   if (!window.location.pathname.endsWith(`/${submission_hash}`)) {
     window.history.pushState({}, "", `/${submission_hash}`);
   }
+  startedAt = startedAt || Date.now();
+  interval = interval || POLL_START_INTERVAL_MS;
   renderAnalyzing();
-  const statusResp = await fetch(`/status/${submission_hash}`);
-  const statusData = await statusResp.json();
+
+  let statusData;
+  try {
+    const statusResp = await fetch(`/status/${submission_hash}`);
+    statusData = await statusResp.json();
+  } catch (error) {
+    // Network blip: keep the spinner and retry instead of dying silently.
+    console.dir(error);
+    scheduleNextPoll(submission_hash, startedAt, interval);
+    return;
+  }
+
   if (statusData.status === "completed") {
-    const resultResp = await fetch(`/result/${submission_hash}`);
-    const resultData = await resultResp.json();
+    let resultData;
+    try {
+      const resultResp = await fetch(`/result/${submission_hash}`);
+      resultData = await resultResp.json();
+    } catch (error) {
+      console.dir(error);
+      scheduleNextPoll(submission_hash, startedAt, interval);
+      return;
+    }
     fetchImageInfo(submission_hash);
     if ("error" in resultData) {
       showWarning(`❌ ${resultData.error}`, true);
@@ -628,10 +671,9 @@ async function pollStatus(submission_hash) {
       parseResult(resultData.results);
     }
   } else if (statusData.status === "error") {
-    //resultDiv.innerHTML = "";
     showDanger(t("❌ Error during the analysis."), true);
   } else {
-    setTimeout(() => pollStatus(submission_hash), 1000);
+    // Render partial results while the analysis is still running.
     try {
       const resultResp = await fetch(`/result/${submission_hash}`);
       const resultData = await resultResp.json();
@@ -645,6 +687,7 @@ async function pollStatus(submission_hash) {
       renderAnalyzing();
       console.dir(error);
     }
+    scheduleNextPoll(submission_hash, startedAt, interval);
   }
 }
 
@@ -723,6 +766,7 @@ if (browseBtn) {
 
       if (!fileInput.files.length) {
         showDanger(t("Please select an image."), true);
+        return;
       }
 
       const formData = new FormData();
@@ -765,7 +809,7 @@ if (browseBtn) {
         } else if (xhr.status == 413) {
           showDanger(t("❌ File too large. Please upload a smaller file."), true);
         } else {
-          showDanger(`❌ HTTP error ${xhr.status}`, true);
+          showDanger(`${t("❌ HTTP error")} ${xhr.status}`, true);
         }
         progressBar.style.width = "100%";
         progressBar.textContent = t("Upload complete");

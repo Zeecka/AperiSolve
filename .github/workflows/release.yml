@@ -83,6 +83,13 @@ jobs:
             REMOVAL_MIN_AGE_SECONDS=${{ vars.REMOVAL_MIN_AGE_SECONDS }}
             GOOGLE_ADS_TXT=${{ vars.GOOGLE_ADS_TXT }}
             CUSTOM_EXTERNAL_SCRIPT=${{ vars.CUSTOM_EXTERNAL_SCRIPT }}
+            SITE_BASE_URL=${{ vars.SITE_BASE_URL }}
+            ADSENSE_CLIENT=${{ vars.ADSENSE_CLIENT }}
+            ADSENSE_SLOT_INDEX=${{ vars.ADSENSE_SLOT_INDEX }}
+            ADSENSE_SLOT_RESULT=${{ vars.ADSENSE_SLOT_RESULT }}
+            ADSENSE_SLOT_WIKI=${{ vars.ADSENSE_SLOT_WIKI }}
+            ADSENSE_SLOT_WIKI_SIDEBAR=${{ vars.ADSENSE_SLOT_WIKI_SIDEBAR }}
+            ADSENSE_SLOT_WIKI_ARTICLE=${{ vars.ADSENSE_SLOT_WIKI_ARTICLE }}
             FLASK_DEBUG=${{ vars.FLASK_DEBUG }}
             RQ_DASHBOARD_REDIS_URL=${{ vars.RQ_DASHBOARD_REDIS_URL }}
             POSTGRES_DB=${{ secrets.POSTGRES_DB }}
