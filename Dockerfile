@@ -20,10 +20,11 @@ RUN cd /tmp/jsteg && \
 
 # Builder stage - add after other tool compilations
 RUN git clone https://github.com/h3xx/jphs.git /tmp/jphs
-# Ensure autotools helper scripts are up-to-date so configure recognizes aarch64
+# Vendored autotools helper scripts (docker/) so configure recognizes aarch64
+# without a build-time download: git.savannah.gnu.org is flaky/rate-limited,
+# and a failed `wget -O` truncates the script, breaking configure entirely.
+COPY docker/config.guess docker/config.sub /tmp/jphs/jpeg-8a/
 RUN cd /tmp/jphs/jpeg-8a \
-    && wget -q -O config.guess 'https://git.savannah.gnu.org/gitweb/?p=config.git;a=blob_plain;f=config.guess' \
-    && wget -q -O config.sub 'https://git.savannah.gnu.org/gitweb/?p=config.git;a=blob_plain;f=config.sub' \
     && chmod +x config.guess config.sub \
     && ./configure && make
 RUN cd /tmp/jphs && sed -i 's/open(seekfilename,O_WRONLY|O_TRUNC|O_CREAT)/open(seekfilename,O_WRONLY|O_TRUNC|O_CREAT, 0644)/' jpseek.c
