@@ -14,9 +14,16 @@
   {% endif %}
   <meta property="og:site_name" content="Aperi'Solve">
   <meta property="og:type" content="website">
+  <meta property="og:url" content="{{ base_url }}{{ request.path }}">
   <meta property="og:title" content="{{ self.title() }}">
   <meta property="og:description" content="{{ self.meta_description() }}">
   <meta property="og:image" content="{{ base_url }}/static/img/og-image.png">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta property="og:locale" content="{{ og_locale }}">
+  {% for alt in og_locale_alternates %}
+  <meta property="og:locale:alternate" content="{{ alt }}">
+  {% endfor %}
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:title" content="{{ self.title() }}">
   <meta name="twitter:description" content="{{ self.meta_description() }}">

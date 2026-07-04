@@ -6,6 +6,7 @@ is cached in-process; contributors add a page by dropping a markdown file.
 """
 
 from dataclasses import dataclass
+from datetime import UTC, datetime
 from pathlib import Path
 
 import markdown
@@ -109,6 +110,14 @@ def wiki_pages(lang: str = DEFAULT_LANG) -> list[WikiPage]:
 def translated_langs(slug: str) -> list[str]:
     """Prefix languages that have a real translation of a page."""
     return [lang for lang in PREFIX_LANGS if _resolve_page_file(lang, slug) is not None]
+
+
+def page_lastmod(lang: str, slug: str) -> str | None:
+    """ISO date of a page's source-file modification time, for the sitemap."""
+    path = _resolve_page_file(lang, slug)
+    if path is None:
+        return None
+    return datetime.fromtimestamp(path.stat().st_mtime, tz=UTC).date().isoformat()
 
 
 def _wiki_nav(lang: str) -> list[WikiPage]:

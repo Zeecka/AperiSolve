@@ -44,8 +44,10 @@ from .config import (
 from .i18n import (
     DEFAULT_LANG,
     LANG_PREFIX_RULE,
+    OG_LOCALES,
     PREFIX_LANGS,
     SUPPORTED_LANGS,
+    alternates_for,
     js_catalog,
     lang_prefix,
     select_locale,
@@ -55,7 +57,7 @@ from .models import Image, Submission, UploadLog, cleanup_old_entries, db
 from .pages import pages_bp
 from .utils.sentry import initialize_sentry
 from .utils.utils import get_client_ip
-from .wiki import translated_langs, wiki_bp, wiki_pages, wiki_tool_names
+from .wiki import page_lastmod, translated_langs, wiki_bp, wiki_pages, wiki_tool_names
 
 CLEANUP_LOCK_KEY = "aperisolve:cleanup-lock"
 
@@ -157,12 +159,15 @@ def _register_error_handlers(app: Flask) -> None:
                 (lang, bare if lang == DEFAULT_LANG else f"/{lang}{bare}")
                 for lang in SUPPORTED_LANGS
             ]
+        current = str(get_locale())
         return {
             "lang_prefix": lang_prefix(),
-            "current_lang": str(get_locale()),
+            "current_lang": current,
             "js_i18n": js_catalog(),
             "lang_switch": switch,
             "wiki_tools": sorted(wiki_tool_names()),
+            "og_locale": OG_LOCALES.get(current, "en_US"),
+            "og_locale_alternates": [v for k, v in OG_LOCALES.items() if k != current],
         }
 
     @app.errorhandler(413)
@@ -235,28 +240,42 @@ def _register_page_routes(app: Flask) -> None:
 
     @app.route("/sitemap.xml")
     def sitemap_xml() -> Response:
-        """Serve the sitemap of indexable pages."""
+        """Serve the sitemap with lastmod dates and hreflang alternates."""
         base = _base_url()
-        entries = "".join(f"<url><loc>{base}{path}</loc></url>" for path in _indexable_pages())
+        parts = []
+        for path, lastmod, alts in _sitemap_entries():
+            links = "".join(
+                f'<xhtml:link rel="alternate" hreflang="{code}" href="{base}{href}"/>'
+                for code, href in alts
+            )
+            lastmod_tag = f"<lastmod>{lastmod}</lastmod>" if lastmod else ""
+            parts.append(f"<url><loc>{base}{path}</loc>{lastmod_tag}{links}</url>")
         xml = (
             '<?xml version="1.0" encoding="UTF-8"?>'
-            '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">'
-            f"{entries}</urlset>"
+            '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" '
+            'xmlns:xhtml="http://www.w3.org/1999/xhtml">'
+            f"{''.join(parts)}</urlset>"
         )
         return Response(xml, mimetype="application/xml")
 
 
-def _indexable_pages() -> list[str]:
-    """Paths that belong in the sitemap: every language version of each page.
+def _sitemap_entries() -> list[tuple[str, str | None, list[tuple[str, str]]]]:
+    """(path, lastmod, hreflang alternates) for every indexable URL.
 
     Wiki pages only list languages with a real translation; untranslated
     fallbacks canonicalize to English and stay out of the sitemap.
     """
-    paths = ["/", *[f"/{lang}/" for lang in PREFIX_LANGS]]
+    home_alts = alternates_for("/")
+    entries: list[tuple[str, str | None, list[tuple[str, str]]]] = [("/", None, home_alts)]
+    entries += [(f"/{lang}/", None, home_alts) for lang in PREFIX_LANGS]
     for page in wiki_pages():
-        paths.append(page.path)
-        paths.extend(f"/{lang}{page.path}" for lang in translated_langs(page.slug))
-    return paths
+        langs = translated_langs(page.slug)
+        alts = alternates_for(page.path, [DEFAULT_LANG, *langs])
+        entries.append((page.path, page_lastmod(DEFAULT_LANG, page.slug), alts))
+        entries.extend(
+            (f"/{lang}{page.path}", page_lastmod(lang, page.slug), alts) for lang in langs
+        )
+    return entries
 
 
 def run_cleanup_with_lock(app: Flask) -> None:

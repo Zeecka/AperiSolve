@@ -36,10 +36,10 @@ def test_hreflang_alternates_on_index(client: FlaskClient) -> None:
 
 def test_wiki_fallback_canonicalizes_to_english(client: FlaskClient) -> None:
     """Untranslated wiki pages show English, noindex, and EN canonical."""
-    response = client.get("/de/wiki/cheatsheet")
+    response = client.get("/de/wiki/tools/zsteg")
     assert response.status_code == 200
     html = response.get_data(as_text=True)
-    assert 'rel="canonical" href="http://localhost/wiki/cheatsheet"' in html
+    assert 'rel="canonical" href="http://localhost/wiki/tools/zsteg"' in html
     assert '<meta name="robots" content="noindex">' in html
 
 
@@ -55,8 +55,10 @@ def test_sitemap_lists_only_real_translations(client: FlaskClient) -> None:
     xml = client.get("/sitemap.xml").get_data(as_text=True)
     assert "/fr/</loc>" in xml
     assert "/fr/wiki/</loc>" in xml  # translated
-    assert "/fr/wiki/cheatsheet" not in xml  # fallback only
-    assert "/de/wiki/cheatsheet" not in xml
+    assert "/fr/wiki/cheatsheet</loc>" in xml  # translated
+    # Tool pages have no translations yet: fallback-only URLs stay out.
+    assert "/fr/wiki/tools/zsteg" not in xml
+    assert "/de/wiki/tools/zsteg" not in xml
 
 
 def test_locale_cookie_beats_accept_language(client: FlaskClient) -> None:

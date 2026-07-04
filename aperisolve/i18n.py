@@ -9,6 +9,17 @@ PREFIX_LANGS = ["fr", "es", "de", "ru", "zh", "pt"]
 SUPPORTED_LANGS = [DEFAULT_LANG, *PREFIX_LANGS]
 LANG_PREFIX_RULE = f"/<any({','.join(PREFIX_LANGS)}):lang_code>"
 
+# Open Graph locale identifiers (og:locale / og:locale:alternate).
+OG_LOCALES = {
+    "en": "en_US",
+    "fr": "fr_FR",
+    "es": "es_ES",
+    "de": "de_DE",
+    "ru": "ru_RU",
+    "zh": "zh_CN",
+    "pt": "pt_BR",
+}
+
 
 def select_locale() -> str:
     """Locale precedence: URL prefix, then cookie, then Accept-Language."""

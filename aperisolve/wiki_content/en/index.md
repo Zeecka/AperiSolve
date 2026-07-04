@@ -26,14 +26,28 @@ install it locally.
 
 - [Bit-plane decomposer](/wiki/tools/decomposer) — visualize each bit of
   each color channel.
+- [Color remapping](/wiki/tools/color_remapping) — reveal hidden data with
+  palette transforms.
 - [zsteg](/wiki/tools/zsteg) — LSB steganography detection for PNG and BMP.
 - [steghide](/wiki/tools/steghide) — extract data hidden in JPEG/BMP with a
   passphrase.
 - [binwalk](/wiki/tools/binwalk) — find and extract files embedded inside
   the image.
+- [foremost](/wiki/tools/foremost) — carve embedded files out of the image.
 - [exiftool](/wiki/tools/exiftool) — read metadata (EXIF, XMP, IPTC...).
+- [pngcheck](/wiki/tools/pngcheck) — verify PNG structure and find corrupt
+  chunks.
+- [PCRT](/wiki/tools/pcrt) — detect and repair corrupted PNG files.
+- [OutGuess](/wiki/tools/outguess) — extract hidden data from JPEG images.
+- [jsteg](/wiki/tools/jsteg) — extract LSB data from JPEG DCT coefficients.
+- [JPHide/JPSeek](/wiki/tools/jpseek) — extract JPHide payloads from JPEG.
+- [OpenStego](/wiki/tools/openstego) — extract randomized LSB steganography.
+- [identify](/wiki/tools/identify) — inspect image properties with
+  ImageMagick.
+- [file](/wiki/tools/file) — identify the real file type of an upload.
+- [strings](/wiki/tools/strings) — find readable text inside image files.
 
-More tool pages are added regularly — contributions are welcome on
+Contributions are welcome on
 [GitHub](https://github.com/Zeecka/AperiSolve).
 
 ## What is steganography analysis?

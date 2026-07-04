@@ -29,17 +29,39 @@ la sortie et comment l'installer en local.
 
 - [Décomposeur de plans de bits](/fr/wiki/tools/decomposer) — visualiser
   chaque bit de chaque canal de couleur.
+- [Remappage de couleurs](/fr/wiki/tools/color_remapping) — révéler des
+  données cachées grâce à des transformations de palette.
 - [zsteg](/fr/wiki/tools/zsteg) — détection de stéganographie LSB pour PNG
   et BMP.
 - [steghide](/fr/wiki/tools/steghide) — extraire des données cachées dans
   des JPEG/BMP avec une phrase de passe.
 - [binwalk](/fr/wiki/tools/binwalk) — trouver et extraire des fichiers
   embarqués dans l'image.
+- [foremost](/fr/wiki/tools/foremost) — extraire par carving les fichiers
+  embarqués dans l'image.
 - [exiftool](/fr/wiki/tools/exiftool) — lire les métadonnées (EXIF, XMP,
   IPTC...).
+- [pngcheck](/fr/wiki/tools/pngcheck) — vérifier la structure d'un PNG et
+  trouver les chunks corrompus.
+- [PCRT](/fr/wiki/tools/pcrt) — détecter et réparer les fichiers PNG
+  corrompus.
+- [OutGuess](/fr/wiki/tools/outguess) — extraire des données cachées des
+  images JPEG.
+- [jsteg](/fr/wiki/tools/jsteg) — extraire les données LSB des coefficients
+  DCT des JPEG.
+- [JPHide/JPSeek](/fr/wiki/tools/jpseek) — extraire les charges utiles
+  JPHide des JPEG.
+- [OpenStego](/fr/wiki/tools/openstego) — extraire la stéganographie LSB
+  randomisée.
+- [identify](/fr/wiki/tools/identify) — inspecter les propriétés d'une
+  image avec ImageMagick.
+- [file](/fr/wiki/tools/file) — identifier le vrai type de fichier d'un
+  envoi.
+- [strings](/fr/wiki/tools/strings) — trouver le texte lisible dans les
+  fichiers image.
 
-De nouvelles pages sont ajoutées régulièrement — les contributions sont les
-bienvenues sur [GitHub](https://github.com/Zeecka/AperiSolve).
+Les contributions sont les bienvenues sur
+[GitHub](https://github.com/Zeecka/AperiSolve).
 
 ## Qu'est-ce que la stéganalyse ?
 
