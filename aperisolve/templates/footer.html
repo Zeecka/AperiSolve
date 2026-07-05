@@ -9,15 +9,25 @@
       <!-- Links -->
       <div class="d-flex align-items-center gap-3 flex-wrap link-container">
         {% if lang_switch %}
+        {% set lang_names = {
+          'en': 'English', 'fr': 'Français', 'es': 'Español',
+          'de': 'Deutsch', 'ru': 'Русский', 'zh': '中文', 'pt': 'Português'
+        } %}
         <details class="lang-switcher">
-          <summary class="footer-link" title="{{ _('Language') }}">
-            <i class="fa fa-globe fa-lg"></i> {{ current_lang | upper }}
+          <summary class="footer-link lang-switcher-toggle" title="{{ _('Language') }}">
+            <i class="fa fa-globe"></i>
+            <span>{{ current_lang | upper }}</span>
+            <i class="fa fa-chevron-down lang-chevron"></i>
           </summary>
           <ul class="lang-switcher-menu">
             {% for code, href in lang_switch %}
             <li>
-              <a href="{{ href }}" class="footer-link {{ 'fw-bold' if code == current_lang }}"
-                onclick="document.cookie='lang={{ code }};path=/;max-age=31536000'">{{ code | upper }}</a>
+              <a href="{{ href }}" class="lang-option {{ 'is-active' if code == current_lang }}"
+                onclick="document.cookie='lang={{ code }};path=/;max-age=31536000'">
+                <span class="lang-code">{{ code | upper }}</span>
+                <span class="lang-name">{{ lang_names.get(code, code | upper) }}</span>
+                {% if code == current_lang %}<i class="fa fa-check lang-check"></i>{% endif %}
+              </a>
             </li>
             {% endfor %}
           </ul>

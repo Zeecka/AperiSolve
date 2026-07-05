@@ -7,6 +7,27 @@
     --theme-green-shadow: #9fef0055;
     --theme-green-shadow2: #9fef00aa;
 
+    /* Elevated surfaces — give cards depth against the animated background
+       instead of blending flat into the page. */
+    --surface-1: #101a2b;
+    --surface-2: #16233a;
+
+    /* Restraint: hairline borders sit low-opacity; full-strength green is
+       reserved for focus / hover / active so it reads as an accent, not noise. */
+    --green-line: rgba(159, 239, 0, 0.22);
+    --green-line-soft: rgba(159, 239, 0, 0.12);
+    --green-tint: rgba(159, 239, 0, 0.07);
+    --green-glow: rgba(159, 239, 0, 0.38);
+    --border-neutral: rgba(150, 172, 205, 0.14);
+
+    /* Text */
+    --text: #d4dbe6;
+    --text-dim: #8a97ab;
+
+    /* Elevation */
+    --shadow-card: 0 1px 2px rgba(0, 0, 0, 0.45), 0 12px 32px rgba(0, 0, 0, 0.32);
+    --shadow-pop: 0 8px 28px rgba(0, 0, 0, 0.55);
+
     /* Typography */
     --font-base: 'Fira Code', monospace;
     --font-size-base: 1rem;
@@ -19,13 +40,41 @@
     --spacing-xl: 2rem;
 
     /* Borders */
-    --border-radius: 0.5rem;
+    --border-radius: 0.625rem;
     --border-width: 0.0625rem;
 }
 
 ::selection {
-    background: #c9fbff;
-    color: black;
+    background: rgba(159, 239, 0, 0.28);
+    color: #fff;
+    text-shadow: none;
+}
+
+/* Thin, themed scrollbars — a small modern signal on every scroll surface. */
+* {
+    scrollbar-width: thin;
+    scrollbar-color: rgba(159, 239, 0, 0.35) transparent;
+}
+
+::-webkit-scrollbar {
+    width: 0.625rem;
+    height: 0.625rem;
+}
+
+::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+    background: rgba(159, 239, 0, 0.28);
+    border-radius: 1rem;
+    border: 0.1875rem solid transparent;
+    background-clip: padding-box;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: rgba(159, 239, 0, 0.5);
+    background-clip: padding-box;
 }
 
 html {
@@ -41,33 +90,66 @@ html {
 
 body {
     background-color: var(--dark-bg);
-    color: #e0e0e0;
+    color: var(--text);
     font-family: var(--font-base);
     font-size: var(--font-size-base);
+    line-height: 1.6;
     overflow-x: hidden;
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
 }
 
 /* ======== Typography & Header ======== */
 h1, h2, h3, h4, h5, h6,
 strong, .highlight {
     color: var(--theme-green);
-    text-shadow: 0 0 0.3125rem var(--theme-green);
+}
+
+/* Glow is a signature, not a default: only the big display headings carry a
+   crisp halo. Sub-headings and inline bold stay sharp so body copy reads clean. */
+h1, h2, .highlight {
+    font-weight: 600;
+    letter-spacing: -0.01em;
+    text-shadow: 0 0 0.5rem rgba(159, 239, 0, 0.28);
+}
+
+h3, h4, h5, h6 {
+    font-weight: 500;
+}
+
+strong {
+    font-weight: 600;
 }
 
 a, .text-accent {
     color: var(--theme-green);
     text-decoration: none;
-    transition: text-shadow 0.3s ease;
+    transition: color 0.2s ease, text-shadow 0.2s ease;
 }
 
 a:hover {
     color: var(--theme-green);
-    text-shadow: 0 0 0.3125rem var(--theme-green);
+    text-shadow: 0 0 0.375rem var(--green-glow);
 }
 
 /* Site Header */
 .site-header {
-    margin-bottom: var(--spacing-lg);
+    margin-bottom: var(--spacing-xl);
+    padding-bottom: var(--spacing-md);
+    border-bottom: 1px solid var(--green-line-soft);
+}
+
+.header-nav .footer-link {
+    padding: 0.4rem 0.7rem;
+    border-radius: 2rem;
+    border: 1px solid transparent;
+    transition: color 0.2s ease, background-color 0.2s ease, border-color 0.2s ease;
+}
+
+.header-nav .footer-link:hover {
+    background-color: var(--green-tint);
+    border-color: var(--green-line);
+    text-shadow: none;
 }
 
 .title-link {
@@ -82,19 +164,27 @@ a:hover {
 
 .title-text {
     color: var(--theme-green);
-    text-shadow: 0 0 8px var(--theme-green-shadow2);
+    /* The one deliberate neon moment on the page: a tight core + soft halo. */
+    text-shadow: 0 0 0.5rem rgba(159, 239, 0, 0.55), 0 0 1.5rem rgba(159, 239, 0, 0.25);
     font-size: 2.5rem;
-    font-weight: 400;
+    font-weight: 600;
+    letter-spacing: -0.02em;
     line-height: 1;
-    font-family: var(--font-base)
+    font-family: var(--font-base);
 }
 
 .title-version {
-    color: var(--theme-green);
-    text-shadow: 0 0 4px var(--theme-green-shadow2);
-    font-size: 1.25rem;
+    color: var(--text-dim);
+    text-shadow: none;
+    font-size: 0.9rem;
+    font-weight: 500;
+    letter-spacing: 0.02em;
     line-height: 1;
-    margin-top: 3px;
+    margin-top: 0.4rem;
+}
+
+.logo-img {
+    filter: drop-shadow(0 0 0.75rem rgba(159, 239, 0, 0.25));
 }
 
 /* ======== Background ======== */
@@ -119,64 +209,69 @@ form {
 
 /* ======== Components ======== */
 
-.card, .form-control, .table, .border, .card-hack {
-    background-color: var(--dark-bg);
-    border: var(--border-width) solid var(--theme-green) !important;
-    color: #e0e0e0;
-    box-shadow: 0 0 0.625rem var(--theme-green-shadow);
+.card, .card-hack, .border {
+    background-color: var(--surface-1);
+    /* Faint top-lit gradient reads as a raised panel rather than a flat fill. */
+    background-image: linear-gradient(180deg, rgba(159, 239, 0, 0.03), rgba(0, 0, 0, 0) 40%);
+    border: 1px solid var(--green-line) !important;
+    color: var(--text);
+    box-shadow: var(--shadow-card);
     border-radius: var(--border-radius);
 }
 
-.question{
-    color : var(--theme-green);
-    font-weight: 400;
+.question {
+    color: var(--theme-green);
+    font-weight: 600;
     font-family: var(--font-base);
 }
 
 /* Drop Zone */
 .drop-zone {
-    background-color: var(--dark-bg);
+    background-color: rgba(0, 0, 0, 0.18);
+    /* Dashed hairline keeps the "drop a file here" affordance. */
+    border-style: dashed !important;
+    border-width: 1px !important;
+    border-color: var(--green-line) !important;
     color: var(--theme-green);
-    transition: all 0.3s ease;
+    transition: border-color 0.25s ease, background-color 0.25s ease, box-shadow 0.25s ease;
     cursor: pointer;
 }
 
 .drop-zone:hover,
 .drop-zone.dragover {
-    background-color: var(--dark-bg-hover);
-    box-shadow: 0 0 0.625rem var(--theme-green);
+    background-color: var(--green-tint);
+    border-color: var(--theme-green) !important;
+    box-shadow: 0 0 0 0.25rem rgba(159, 239, 0, 0.08), inset 0 0 2rem rgba(159, 239, 0, 0.05);
 }
 
 /* Buttons */
-.btn, .btn-primary, .btn-hack {
+.btn, .btn-primary, .btn-hack, #browse-btn {
     background-color: var(--theme-green);
-    color: #000;
-    /* font-weight: bold; */
+    background-image: linear-gradient(180deg, #b6ff2e, #9fef00);
+    color: #08130a;
+    font-weight: 600;
     border: none;
+    border-radius: 0.55rem;
     text-shadow: none;
-    transition: box-shadow 0.3s ease;
+    box-shadow: 0 0.125rem 0.75rem rgba(159, 239, 0, 0.22);
+    transition: box-shadow 0.2s ease, transform 0.15s ease, filter 0.2s ease;
 }
 
-.btn:hover, .btn-primary:hover, .btn-hack:hover {
+.btn:hover, .btn-primary:hover, .btn-hack:hover, #browse-btn:hover {
     background-color: var(--theme-green);
-    box-shadow: 0 0 0.625rem var(--theme-green-shadow2);
-}
-
-/* Ensure the inline browse button inside the drop-zone shows the same hover behaviour */
-#browse-btn {
-    background-color: var(--theme-green);
-    color: #000;
-    border: none;
-    text-shadow: none;
-    transition: box-shadow 0.3s ease;
-    pointer-events: auto;
-}
-
-#browse-btn:hover {
-    background-color: var(--theme-green);
-    box-shadow: 0 0 0.625rem var(--theme-green-shadow2);
+    color: #08130a;
+    filter: brightness(1.06);
+    box-shadow: 0 0.25rem 1.125rem var(--green-glow);
     transform: translateY(-0.0625rem);
-    color: white;
+}
+
+.btn:active, .btn-primary:active, .btn-hack:active, #browse-btn:active {
+    transform: translateY(0);
+    filter: brightness(0.98);
+}
+
+#browse-btn {
+    pointer-events: auto;
 }
 
 /* Bootstrap color overrides */
@@ -380,15 +475,29 @@ button:focus-visible,
 
 /* ======== Forms & Inputs ======== */
 
-input, textarea, select, pre {
-    border: var(--border-width) solid var(--theme-green);
-    color: #ffffff;
+input, textarea, select, .form-control {
+    background-color: rgba(0, 0, 0, 0.22);
+    border: 1px solid var(--green-line);
+    border-radius: 0.5rem;
+    color: #fff;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease, background-color 0.2s ease;
 }
 
-input:focus, textarea:focus, select:focus {
+.form-control {
+    color: #fff;
+}
+
+input::placeholder, textarea::placeholder, .form-control::placeholder {
+    color: var(--text-dim);
+    opacity: 1;
+}
+
+input:focus, textarea:focus, select:focus, .form-control:focus {
     outline: none;
-    box-shadow: 0 0 0.625rem var(--theme-green);
-    background-color: var(--dark-bg-hover) !important;
+    border-color: var(--theme-green);
+    box-shadow: 0 0 0 0.2rem rgba(159, 239, 0, 0.14);
+    background-color: rgba(0, 0, 0, 0.35) !important;
+    color: #fff;
 }
 
 pre {
@@ -397,9 +506,9 @@ pre {
     overflow-y: auto;
     overflow-x: auto;
     border-radius: var(--border-radius);
-    background-color: var(--dark-bg);
-    border: var(--border-width) solid var(--theme-green);
-    color: #e0e0e0;
+    background-color: rgba(0, 0, 0, 0.28);
+    border: 1px solid var(--green-line);
+    color: var(--text);
 }
 
 .code-container {
@@ -438,31 +547,46 @@ pre {
 
 table {
     width: 100%;
-    background-color: var(--theme-dark-blue);
+    /* A calm, semi-opaque backing so metadata reads on a controlled surface
+       rather than directly on the moving hexagon background. */
+    background-color: rgba(9, 14, 24, 0.55);
     border-collapse: collapse;
-    color: white;
+    color: var(--text);
 }
 
 th, td {
-    border: var(--border-width) solid var(--theme-dark-blue);
+    border: none;
+    border-bottom: 1px solid var(--border-neutral);
     padding: 0.75rem;
 }
 
 th, td:first-child {
     color: var(--theme-green);
+    font-weight: 500;
 }
 
 tr:nth-child(even) {
-    background-color: rgba(0, 0, 0, 0.25);
+    background-color: rgba(0, 0, 0, 0.22);
 }
 
-tr:first-child td {
-    border-top: var(--border-width) solid #ddd;
+tr:last-child td {
+    border-bottom: none;
 }
 
 td {
     text-align: left;
-    border-bottom: var(--border-width) solid #ddd;
+}
+
+.table-container {
+    border: 1px solid var(--green-line-soft);
+    border-radius: var(--border-radius);
+    overflow: hidden;
+    backdrop-filter: blur(0.25rem);
+    -webkit-backdrop-filter: blur(0.25rem);
+}
+
+.a-exiftool .table-container {
+    overflow-y: auto;
 }
 
 /* ======== Images ======== */
@@ -552,8 +676,9 @@ td {
 }
 
 .command {
-    background-color: var(--theme-dark-blue);
-    border: 0.1875rem solid var(--theme-green);
+    background-color: rgba(0, 0, 0, 0.28);
+    border: 1px solid var(--green-line);
+    border-radius: var(--border-radius);
     padding: var(--spacing-sm) var(--spacing-md);
     margin-bottom: var(--spacing-lg);
     overflow-x: auto;
@@ -596,38 +721,79 @@ td {
 
 /* ======== Footer ======== */
 
+/* Give every page room to breathe before the footer — fixes content
+   (notably the wiki) sitting flush against the footer rule. */
+main.flex-grow-1 {
+    padding-bottom: var(--spacing-xl);
+}
+
 footer {
     position: relative;
     z-index: 1;
-    background-color: rgba(11, 18, 31, 0.8);
-    border-top: var(--border-width) solid var(--theme-green);
-    box-shadow: 0 -0.125rem 0.625rem var(--theme-green-shadow);
+    background-color: rgba(9, 14, 24, 0.72);
+    backdrop-filter: blur(0.5rem);
+    -webkit-backdrop-filter: blur(0.5rem);
+    border-top: 1px solid var(--green-line);
+    box-shadow: 0 -0.0625rem 1.5rem rgba(0, 0, 0, 0.35);
+}
+
+/* Hairline accent riding on top of the footer border for a crisp neon edge. */
+footer::before {
+    content: "";
+    position: absolute;
+    top: -1px;
+    left: 0;
+    right: 0;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, var(--green-glow) 20%, var(--green-glow) 80%, transparent);
+    opacity: 0.5;
+    pointer-events: none;
 }
 
 .footer-text {
-    color: var(--theme-green);
-    font-size: 0.9rem;
+    color: var(--text-dim);
+    font-size: 0.85rem;
     margin: 0 !important;
 }
 
 .footer-link {
-    color: #e0e0e0;
+    color: var(--text);
     text-decoration: none;
-    transition: color 0.3s, text-shadow 0.3s;
+    transition: color 0.2s, background-color 0.2s, text-shadow 0.2s;
     display: inline-flex;
     align-items: center;
+    justify-content: center;
+}
 
+/* Only the icon-only links (Wiki, Cheatsheet, GitHub, X) get a square hover
+   pill. The Buy-Me-A-Coffee link holds a wide banner image, so it must keep
+   its intrinsic width — matching on :has(i) excludes it. */
+.link-container > .footer-link:has(i) {
+    width: 2.25rem;
+    height: 2.25rem;
+    border-radius: 0.55rem;
 }
 
 .footer-link:hover {
     color: var(--theme-green);
-    text-shadow: 0 0 0.3125rem var(--theme-green-shadow);
+    text-shadow: 0 0 0.375rem var(--green-glow);
+}
+
+.link-container > .footer-link:has(i):hover {
+    background-color: var(--green-tint);
+    text-shadow: none;
 }
 
 .footer-icon-img {
-    height: 1.75rem;
+    height: 1.5rem;
     width: auto;
     display: block;
+    border-radius: 0.35rem;
+    transition: transform 0.2s ease;
+}
+
+.link-container > .footer-link:has(img):hover .footer-icon-img {
+    transform: translateY(-0.0625rem);
 }
 
 /* ======== Utility ======== */
@@ -1034,17 +1200,27 @@ footer {
 }
 
 .wiki-article .codehilite {
-    background-color: var(--theme-dark-blue);
-    border: 0.1875rem solid var(--theme-green);
-    padding: var(--spacing-sm) var(--spacing-md);
+    background-color: rgba(0, 0, 0, 0.28);
+    border: 1px solid var(--green-line);
+    border-radius: var(--border-radius);
+    padding: var(--spacing-md);
     margin-bottom: var(--spacing-lg);
     overflow-x: auto;
     -webkit-overflow-scrolling: touch;
 }
 
-.wiki-article .codehilite pre {
-    margin-bottom: 0;
+/* When a <pre> sits inside a framed block (code container, alert, command),
+   the outer block is the frame — the inner <pre> drops its own border, fill
+   and padding so we never render a box-in-a-box. */
+.wiki-article .codehilite pre,
+.command pre,
+.alert pre {
+    margin: 0;
+    padding: 0;
+    border: none;
     background: transparent;
+    max-height: none;
+    border-radius: 0;
 }
 
 .wiki-article code {
@@ -1067,31 +1243,136 @@ footer {
     margin: 0;
 }
 
-/* Language switcher (no-JS dropdown, opens upward from the footer) */
+/* Language switcher (no-JS <details> dropdown, opens upward from the footer) */
 .lang-switcher {
     position: relative;
 }
 
 .lang-switcher summary {
-    cursor: pointer;
     list-style: none;
 }
 
+.lang-switcher summary::-webkit-details-marker {
+    display: none;
+}
+
+/* Pill toggle: globe · current code · chevron */
+.lang-switcher-toggle {
+    cursor: pointer;
+    gap: 0.4rem;
+    padding: 0.4rem 0.7rem;
+    font-size: 0.85rem;
+    font-weight: 500;
+    line-height: 1;
+    color: var(--text);
+    border: 1px solid var(--green-line);
+    border-radius: 2rem;
+    background-color: rgba(0, 0, 0, 0.25);
+    transition: border-color 0.2s ease, background-color 0.2s ease, color 0.2s ease;
+}
+
+.lang-switcher-toggle:hover,
+.lang-switcher[open] .lang-switcher-toggle {
+    color: var(--theme-green);
+    border-color: var(--theme-green);
+    background-color: var(--green-tint);
+    text-shadow: none;
+}
+
+.lang-switcher-toggle .fa-globe {
+    font-size: 0.9rem;
+}
+
+.lang-chevron {
+    font-size: 0.65rem;
+    opacity: 0.7;
+    transition: transform 0.2s ease;
+}
+
+.lang-switcher[open] .lang-chevron {
+    transform: rotate(180deg);
+}
+
+/* Menu: rounded surface card floating above the footer */
 .lang-switcher-menu {
     position: absolute;
-    bottom: 100%;
-    left: 50%;
-    transform: translateX(-50%);
-    margin-bottom: var(--spacing-sm);
-    padding: var(--spacing-sm);
+    bottom: calc(100% + 0.6rem);
+    right: 0;
+    min-width: 12.5rem;
+    padding: 0.375rem;
+    margin: 0;
     list-style: none;
-    background-color: var(--dark-bg);
-    border: 1px solid var(--theme-green);
-    border-radius: 0.25rem;
-    text-align: center;
-    z-index: 10;
+    background-color: var(--surface-1);
+    border: 1px solid var(--green-line);
+    border-radius: 0.7rem;
+    box-shadow: var(--shadow-pop);
+    z-index: 20;
+    transform-origin: bottom right;
+    animation: lang-menu-in 0.16s ease-out;
+}
+
+@keyframes lang-menu-in {
+    from {
+        opacity: 0;
+        transform: translateY(0.4rem) scale(0.98);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
 }
 
 .lang-switcher-menu li {
-    padding: 0.125rem 0.5rem;
+    padding: 0;
+}
+
+/* Each option: CODE badge · full language name · check when active */
+.lang-option {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    padding: 0.5rem 0.6rem;
+    border-radius: 0.45rem;
+    color: var(--text);
+    font-weight: 400;
+    transition: background-color 0.15s ease, color 0.15s ease;
+}
+
+.lang-option:hover {
+    background-color: var(--green-tint);
+    color: var(--theme-green);
+    text-shadow: none;
+}
+
+.lang-option .lang-code {
+    flex: 0 0 auto;
+    min-width: 2rem;
+    padding: 0.1rem 0.35rem;
+    font-size: 0.72rem;
+    font-weight: 600;
+    text-align: center;
+    color: var(--theme-green);
+    background-color: var(--green-tint);
+    border: 1px solid var(--green-line-soft);
+    border-radius: 0.35rem;
+}
+
+.lang-option .lang-name {
+    flex: 1 1 auto;
+    font-size: 0.85rem;
+}
+
+.lang-option .lang-check {
+    flex: 0 0 auto;
+    font-size: 0.75rem;
+    color: var(--theme-green);
+}
+
+.lang-option.is-active {
+    background-color: var(--green-tint);
+}
+
+.lang-option.is-active .lang-name {
+    color: var(--theme-green);
+    font-weight: 500;
 }
