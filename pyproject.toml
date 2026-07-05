@@ -20,7 +20,9 @@ dependencies = [
     "psycopg2-binary",
     "Pillow",
     "gunicorn",
-    "sentry-sdk[flask,sqlalchemy,rq]"
+    "sentry-sdk[flask,sqlalchemy,rq]",
+    "Markdown",
+    "Pygments"
 ]
 
 [project.optional-dependencies]

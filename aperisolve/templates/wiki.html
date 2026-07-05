@@ -1,0 +1,91 @@
+{% extends 'base.html' %}
+{% import 'partials/ads.html' as ads %}
+{% block title %}{{ page.title }} - Aperi'Solve{% endblock %}
+{% block meta_description %}{{ page.description or page.title }}{% endblock %}
+{% block meta %}
+<link rel="canonical" href="{{ base_url }}{{ page.path }}">
+<link href="/static/css/pygments.css" rel="stylesheet">
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "TechArticle",
+  "headline": {{ page.title | tojson }},
+  "description": {{ (page.description or page.title) | tojson }},
+  "url": "{{ base_url }}{{ page.path }}",
+  "publisher": {
+    "@type": "Organization",
+    "name": "Aperi'Solve",
+    "url": "{{ base_url }}/"
+  }
+}
+</script>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  "itemListElement": [
+    {"@type": "ListItem", "position": 1, "name": "Aperi'Solve", "item": "{{ base_url }}/"},
+    {"@type": "ListItem", "position": 2, "name": "Wiki", "item": "{{ base_url }}/wiki/"},
+    {"@type": "ListItem", "position": 3, "name": {{ page.title | tojson }}, "item": "{{ base_url }}{{ page.path }}"}
+  ]
+}
+</script>
+{% endblock %}
+{# Content pages skip the Three.js animated background: better Core Web Vitals #}
+{% block background %}{% endblock %}
+{% block background_scripts %}{% endblock %}
+{% block body_content %}
+<div class="row">
+  <aside class="col-lg-3 mb-4">
+    <nav class="wiki-sidebar card p-3" aria-label="Wiki navigation">
+      <h2 class="h6 text-uppercase text-muted">Wiki</h2>
+      <ul class="nav flex-column mb-3">
+        {% for nav_page in nav_main %}
+        <li class="nav-item">
+          <a class="nav-link px-0 {{ 'active fw-bold' if nav_page.slug == page.slug }}" href="{{ nav_page.path }}">
+            {{ nav_page.title }}
+          </a>
+        </li>
+        {% endfor %}
+      </ul>
+      {% if nav_tools %}
+      <h2 class="h6 text-uppercase text-muted">Tools</h2>
+      <ul class="nav flex-column">
+        {% for nav_page in nav_tools %}
+        <li class="nav-item">
+          <a class="nav-link px-0 {{ 'active fw-bold' if nav_page.slug == page.slug }}" href="{{ nav_page.path }}">
+            {{ nav_page.title }}
+          </a>
+        </li>
+        {% endfor %}
+      </ul>
+      {% endif %}
+      {{ ads.ad_unit(config["ADSENSE_SLOT_WIKI"]) }}
+    </nav>
+  </aside>
+  <div class="col-lg-9">
+    <nav aria-label="breadcrumb">
+      <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a href="/">Home</a></li>
+        <li class="breadcrumb-item"><a href="/wiki/">Wiki</a></li>
+        <li class="breadcrumb-item active" aria-current="page">{{ page.title }}</li>
+      </ol>
+    </nav>
+    <article id="cheatsheet" class="wiki-article card p-4">
+      {{ page.html | safe }}
+      {{ ads.ad_unit(config["ADSENSE_SLOT_WIKI"]) }}
+    </article>
+  </div>
+</div>
+{% endblock %}
+{% block footer_content %}
+<script>
+  // Reuse the site-wide copy-to-clipboard handler on markdown code blocks.
+  document.querySelectorAll(".wiki-article .codehilite").forEach((block) => {
+    block.classList.add("code-container");
+    const icon = document.createElement("i");
+    icon.className = "fa fa-copy copy-icon";
+    block.appendChild(icon);
+  });
+</script>
+{% endblock %}

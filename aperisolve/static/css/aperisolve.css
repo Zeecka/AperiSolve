@@ -923,3 +923,50 @@ footer {
         color: #333;
     }
 }
+/* Wiki */
+.wiki-sidebar .nav-link {
+    color: var(--text-light);
+}
+
+.wiki-sidebar .nav-link:hover,
+.wiki-sidebar .nav-link.active {
+    color: var(--theme-green);
+}
+
+.wiki-article {
+    overflow-wrap: break-word;
+}
+
+.wiki-article .codehilite {
+    background-color: var(--theme-dark-blue);
+    border: 0.1875rem solid var(--theme-green);
+    padding: var(--spacing-sm) var(--spacing-md);
+    margin-bottom: var(--spacing-lg);
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+}
+
+.wiki-article .codehilite pre {
+    margin-bottom: 0;
+    background: transparent;
+}
+
+.wiki-article code {
+    color: var(--theme-green);
+}
+
+.breadcrumb .breadcrumb-item a {
+    color: var(--theme-green);
+    text-decoration: none;
+}
+
+/* Ads: height is reserved up front so late-loading units never shift content */
+.ad-container {
+    min-height: 280px;
+    margin: var(--spacing-lg) 0;
+}
+
+.ad-container:has(ins[data-ad-status="unfilled"]) {
+    min-height: 0;
+    margin: 0;
+}

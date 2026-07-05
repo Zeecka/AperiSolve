@@ -52,6 +52,28 @@ Help us improve:
 - Improve installation instructions
 - Translate documentation
 
+### 📖 Wiki Pages
+
+The in-app wiki (`/wiki/`) is plain Markdown — the easiest way to contribute:
+
+- Pages live in `aperisolve/wiki_content/en/` (`tools/<analyzer>.md` for tool
+  guides). Drop a `.md` file and it appears automatically with navigation,
+  SEO metadata and the sitemap entry.
+- Start each file with `meta` frontmatter (no `---` delimiters):
+
+  ```
+  Title: My Page Title
+  Description: One-sentence summary used for search engines.
+  Order: 150
+  ```
+
+- `Order` controls the sidebar position (existing pages use 1–140).
+- Use fenced code blocks for commands; a copy button is added automatically.
+- Preview locally with `FLASK_DEBUG=1` (page cache is bypassed).
+- Every analyzer without a `tools/` page is a wanted contribution: describe
+  what the tool does, the exact command Aperi'Solve runs, how to read its
+  output, and common CTF patterns.
+
 ### 🎨 UI/UX Improvements
 
 Contributions to the web interface are welcome:

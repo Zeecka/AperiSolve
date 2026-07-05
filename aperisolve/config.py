@@ -23,6 +23,11 @@ IMAGE_EXTENSIONS = [".png", ".jpg", ".jpeg", ".gif", ".bmp", ".webp", ".tiff"]
 GOOGLE_ADS_TXT = getenv("GOOGLE_ADS_TXT", "")
 CUSTOM_EXTERNAL_SCRIPT = getenv("CUSTOM_EXTERNAL_SCRIPT", "")
 
+# Manual AdSense units. All default empty: self-hosted instances render no ads.
+ADSENSE_CLIENT = getenv("ADSENSE_CLIENT", "")
+ADSENSE_SLOT_WIKI = getenv("ADSENSE_SLOT_WIKI", "")
+ADSENSE_SLOT_INDEX = getenv("ADSENSE_SLOT_INDEX", "")
+
 # Public base URL (e.g. "https://www.aperisolve.com") used for canonical,
 # Open Graph and sitemap absolute links. Falls back to the request host.
 SITE_BASE_URL = getenv("SITE_BASE_URL", "").rstrip("/")

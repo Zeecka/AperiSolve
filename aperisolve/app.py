@@ -10,14 +10,18 @@ from pathlib import Path
 from typing import Any, cast
 
 import sentry_sdk
-from flask import Flask, Response, abort, jsonify, render_template, request, send_file
+from flask import Flask, Response, abort, jsonify, redirect, render_template, request, send_file
 from redis import Redis
 from redis.exceptions import RedisError
 from rq import Queue
 from sqlalchemy.exc import SQLAlchemyError
+from werkzeug.wrappers.response import Response as WerkzeugResponse
 
 from .analyzers.registry import archive_tools, tool_order
 from .config import (
+    ADSENSE_CLIENT,
+    ADSENSE_SLOT_INDEX,
+    ADSENSE_SLOT_WIKI,
     CLEANUP_INTERVAL_SECONDS,
     CUSTOM_EXTERNAL_SCRIPT,
     DB_URI,
@@ -34,6 +38,7 @@ from .config import (
 )
 from .models import Image, Submission, UploadLog, cleanup_old_entries, db
 from .utils.sentry import initialize_sentry
+from .wiki import wiki_bp, wiki_pages
 
 CLEANUP_LOCK_KEY = "aperisolve:cleanup-lock"
 
@@ -48,6 +53,9 @@ def _configure_app(app: Flask) -> None:
     app.config["MAX_CONTENT_LENGTH"] = MAX_CONTENT_LENGTH
     app.config["REDIS_QUEUE"] = Queue(connection=Redis(host="redis", port=6379))
     app.config["TOOL_ORDER"] = tool_order()
+    app.config["ADSENSE_CLIENT"] = ADSENSE_CLIENT
+    app.config["ADSENSE_SLOT_WIKI"] = ADSENSE_SLOT_WIKI
+    app.config["ADSENSE_SLOT_INDEX"] = ADSENSE_SLOT_INDEX
     db.init_app(app)
 
 
@@ -138,9 +146,9 @@ def _register_page_routes(app: Flask) -> None:
         return render_template("index.html")
 
     @app.route("/faq")
-    def faq() -> str:
-        """Render the FAQ page."""
-        return render_template("faq.html")
+    def faq() -> WerkzeugResponse:
+        """Redirect the legacy FAQ URL to the wiki cheatsheet."""
+        return redirect("/wiki/cheatsheet", code=301)
 
     @app.route("/show")
     def show() -> str:
@@ -203,7 +211,7 @@ def _register_page_routes(app: Flask) -> None:
 
 def _indexable_pages() -> list[str]:
     """Paths that belong in the sitemap; extended by wiki/i18n pages."""
-    return ["/", "/faq"]
+    return ["/", *[page.path for page in wiki_pages()]]
 
 
 def _run_throttled_cleanup(app: Flask) -> None:
@@ -522,6 +530,7 @@ def create_app() -> Flask:
     _register_submission_routes(app)
     _register_data_routes(app)
     _register_management_routes(app)
+    app.register_blueprint(wiki_bp)
     return app
 
 

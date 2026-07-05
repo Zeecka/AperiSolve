@@ -1,0 +1,11 @@
+{% macro ad_unit(slot) %}
+{#- Renders a manual AdSense unit only when both client and slot are configured.
+    The container reserves height up front so ads never shift content (CLS). -#}
+{% if config["ADSENSE_CLIENT"] and slot %}
+<div class="ad-container">
+  <ins class="adsbygoogle" style="display:block" data-ad-client="{{ config["ADSENSE_CLIENT"] }}"
+    data-ad-slot="{{ slot }}" data-ad-format="auto" data-full-width-responsive="true"></ins>
+  <script>(adsbygoogle = window.adsbygoogle || []).push({});</script>
+</div>
+{% endif %}
+{% endmacro %}
