@@ -1,38 +1,59 @@
-Title: Aperi'Solve Wiki - Steganography Tools & Guides
-Description: Documentation for Aperi'Solve: how the analysis works, guides for each steganography tool (zsteg, steghide, binwalk, exiftool...) and a CTF cheatsheet.
+Title: Aperi'Solve Wiki - Steganography & CTF Forensics Handbook
+Description: An organized steganography wiki for CTF players and forensic analysts: a triage methodology, a decision-tree cheatsheet, technique pages per medium (image, audio, text, files) and a guide for every tool Aperi'Solve runs.
 Order: 1
 
 # Aperi'Solve Wiki
 
-Welcome to the Aperi'Solve wiki. Aperi'Solve is a free online platform that
-performs layer analysis and steganography detection on images: upload a
-picture on the [home page](/) and every analyzer runs automatically.
+Welcome to the Aperi'Solve wiki — a practical, organized handbook for
+**steganography and CTF forensics**. Upload an image on the
+[home page](/) and every analyzer runs automatically; these pages explain the
+techniques behind the results, how to reproduce them by hand, and how to work
+through a challenge methodically.
 
-This wiki documents how to read the results and how each underlying tool
-works, so you can reproduce and extend the analysis on your own machine.
+The wiki is built like a field manual: start with a method, jump to a
+decision tree when you are stuck, dive into a medium-specific technique page,
+and open a tool's guide when you need the exact command.
+
+## How this wiki is organized
+
+- **[Methodology](/wiki/methodology)** — the triage workflow: what to run
+  first, second and third on *any* file, and the rules that save the most
+  time.
+- **[Cheatsheet](/wiki/cheatsheet)** — a decision tree by file type, a
+  Tell → Tool lookup table, and a "when stuck" checklist. This is the page to
+  keep open during a CTF.
+- **Techniques** — one page per medium, covering how data is hidden and how to
+  recover it:
+  [Images](/wiki/techniques/images) ·
+  [Audio](/wiki/techniques/audio) ·
+  [Text & Unicode](/wiki/techniques/text) ·
+  [Files & Archives](/wiki/techniques/files-archives) ·
+  [Steganalysis](/wiki/techniques/steganalysis).
+- **Tools** — a reference page for every analyzer Aperi'Solve runs: what it
+  does, the exact command, how to read the output, and how to install it
+  locally.
 
 ## Start here
 
-- [Getting started](/wiki/getting-started) — how to use Aperi'Solve and read
-  its results.
-- [Steganography CTF Cheatsheet](/wiki/cheatsheet) — a practical checklist
-  for image, audio and file-format challenges.
+New to steganography challenges? Read the
+[methodology](/wiki/methodology) once, then drive every challenge from the
+[cheatsheet](/wiki/cheatsheet). New to Aperi'Solve itself? See
+[getting started](/wiki/getting-started).
 
-## Tool guides
+## Tool reference
 
-Each analyzer that runs on your upload has its own page: what the tool does,
-the exact command Aperi'Solve runs, how to interpret the output, and how to
-install it locally.
+Each analyzer that runs on your upload has its own page:
 
-- [Bit-plane decomposer](/wiki/tools/decomposer) — visualize each bit of
-  each color channel.
+- [Bit-plane decomposer](/wiki/tools/decomposer) — visualize each bit of each
+  color channel.
 - [Color remapping](/wiki/tools/color_remapping) — reveal hidden data with
   palette transforms.
 - [zsteg](/wiki/tools/zsteg) — LSB steganography detection for PNG and BMP.
 - [steghide](/wiki/tools/steghide) — extract data hidden in JPEG/BMP with a
   passphrase.
-- [binwalk](/wiki/tools/binwalk) — find and extract files embedded inside
-  the image.
+- [stegseek](/wiki/tools/stegseek) — crack a steghide passphrase in seconds.
+- [binwalk](/wiki/tools/binwalk) — find and extract files embedded inside the
+  image.
 - [foremost](/wiki/tools/foremost) — carve embedded files out of the image.
 - [exiftool](/wiki/tools/exiftool) — read metadata (EXIF, XMP, IPTC...).
 - [pngcheck](/wiki/tools/pngcheck) — verify PNG structure and find corrupt
@@ -42,10 +63,10 @@ install it locally.
 - [jsteg](/wiki/tools/jsteg) — extract LSB data from JPEG DCT coefficients.
 - [JPHide/JPSeek](/wiki/tools/jpseek) — extract JPHide payloads from JPEG.
 - [OpenStego](/wiki/tools/openstego) — extract randomized LSB steganography.
-- [identify](/wiki/tools/identify) — inspect image properties with
-  ImageMagick.
+- [stegsnow](/wiki/tools/stegsnow) — hide/extract data in whitespace.
+- [identify](/wiki/tools/identify) — inspect image properties with ImageMagick.
 - [file](/wiki/tools/file) — identify the real file type of an upload.
-- [strings](/wiki/tools/strings) — find readable text inside image files.
+- [strings](/wiki/tools/strings) — find readable text inside files.
 
 Contributions are welcome on
 [GitHub](https://github.com/Zeecka/AperiSolve).
@@ -54,7 +75,8 @@ Contributions are welcome on
 
 Steganography hides data inside an innocuous carrier file — for images this
 means manipulating pixel bits, palette entries, metadata fields or the file
-structure itself. Steganalysis is the practice of detecting such hidden data.
-No single tool covers every technique, which is why Aperi'Solve runs a whole
-battery of analyzers side by side and lets you compare their outputs at a
-glance.
+structure itself. **Steganalysis** is the practice of detecting and extracting
+that hidden data. No single tool covers every technique, which is why
+Aperi'Solve runs a whole battery of analyzers side by side and lets you compare
+their outputs at a glance — and why this wiki teaches the manual techniques the
+automated tools do not cover.

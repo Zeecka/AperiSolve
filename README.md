@@ -53,8 +53,10 @@ Aperi'Solve is an open-source steganalysis web platform that performs automated 
   - [steghide](https://steghide.sourceforge.net/) (extraction with password)
   - [strings](https://pubs.opengroup.org/onlinepubs/9799919799/utilities/strings.html)
   - [zsteg](https://github.com/zed-0xff/zsteg) (LSB text/data extraction)
-- **In-app wiki** ([`/wiki`](https://www.aperisolve.com/wiki/)): a steganography CTF
-  cheatsheet plus a guide per analyzer, authored as Markdown.
+- **In-app wiki** ([`/wiki`](https://www.aperisolve.com/wiki/)): a HackTricks-style
+  steganography handbook — a triage methodology, a decision-tree cheatsheet,
+  technique pages per medium (image, audio, text, files), and a guide per
+  analyzer, all authored as Markdown.
 - **Internationalization**: UI available in English, French, Spanish, German,
   Russian, Chinese and Portuguese under language-prefixed URLs (`/fr/`, `/es/`, …).
 - Worker queue architecture for offloading heavy/slow analyzers (Redis + background workers).

@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2026-07-04 16:18+0000\n"
+"POT-Creation-Date: 2026-07-07 08:29+0000\n"
 "PO-Revision-Date: 2026-07-05 13:23+0000\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language: de\n"
@@ -18,211 +18,231 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Generated-By: Babel 2.18.0\n"
 
-#: aperisolve/app.py:179
+#: aperisolve/app.py:184
 msgid "Image size exceeded"
 msgstr "Bildgröße überschritten"
 
-#: aperisolve/app.py:184
+#: aperisolve/app.py:189
 msgid "Resource not found"
 msgstr "Ressource nicht gefunden"
 
-#: aperisolve/app.py:189
+#: aperisolve/app.py:194
 msgid "Too many requests, please slow down."
 msgstr "Zu viele Anfragen, bitte langsamer."
 
-#: aperisolve/app.py:314 aperisolve/app.py:321
+#: aperisolve/app.py:333 aperisolve/app.py:340
 msgid "No image provided"
 msgstr "Kein Bild übermittelt"
 
-#: aperisolve/app.py:324
+#: aperisolve/app.py:343
 msgid "Unsupported file type"
 msgstr "Nicht unterstützter Dateityp"
 
-#: aperisolve/app.py:427 aperisolve/app.py:435
+#: aperisolve/app.py:446 aperisolve/app.py:454
 msgid "Results not ready yet..."
 msgstr "Ergebnisse noch nicht bereit..."
 
-#: aperisolve/app.py:542
+#: aperisolve/app.py:561
 #, python-format
 msgid "Image must be at least %(min)d seconds old. Current age: %(age)ds"
-msgstr "Das Bild muss mindestens %(min)d Sekunden alt sein. Aktuelles Alter: %(age)ds"
+msgstr ""
+"Das Bild muss mindestens %(min)d Sekunden alt sein. Aktuelles Alter: "
+"%(age)ds"
 
-#: aperisolve/app.py:559
+#: aperisolve/app.py:577
 msgid "Image uploaded from multiple IP addresses. Removal is not allowed."
-msgstr "Bild wurde von mehreren IP-Adressen hochgeladen. Entfernen ist nicht erlaubt."
+msgstr ""
+"Bild wurde von mehreren IP-Adressen hochgeladen. Entfernen ist nicht "
+"erlaubt."
 
-#: aperisolve/app.py:575
+#: aperisolve/app.py:593
 msgid "Failed to remove image"
 msgstr "Bild konnte nicht entfernt werden"
 
-#: aperisolve/app.py:586
+#: aperisolve/app.py:604
 msgid "No password to remove"
 msgstr "Kein Passwort zu entfernen"
 
-#: aperisolve/app.py:594
+#: aperisolve/app.py:612
 #, python-format
 msgid "Submission must be at least %(min)d seconds old. Current age: %(age)ds"
-msgstr "Die Einreichung muss mindestens %(min)d Sekunden alt sein. Aktuelles Alter: %(age)ds"
+msgstr ""
+"Die Einreichung muss mindestens %(min)d Sekunden alt sein. Aktuelles "
+"Alter: %(age)ds"
 
-#: aperisolve/app.py:611
-msgid "Submission uploaded from multiple IP addresses. Password removal is not allowed."
-msgstr "Einreichung wurde von mehreren IP-Adressen hochgeladen. Passwort-Entfernung ist nicht erlaubt."
+#: aperisolve/app.py:629
+msgid ""
+"Submission uploaded from multiple IP addresses. Password removal is not "
+"allowed."
+msgstr ""
+"Einreichung wurde von mehreren IP-Adressen hochgeladen. Passwort-"
+"Entfernung ist nicht erlaubt."
 
-#: aperisolve/app.py:626
+#: aperisolve/app.py:644
 msgid "Failed to remove password"
 msgstr "Passwort konnte nicht entfernt werden"
 
-#: aperisolve/i18n.py:60
+#: aperisolve/i18n.py:71
 msgid "First upload:"
 msgstr "Erster Upload:"
 
-#: aperisolve/i18n.py:61
+#: aperisolve/i18n.py:72
 msgid "Last upload:"
 msgstr "Letzter Upload:"
 
-#: aperisolve/i18n.py:62
+#: aperisolve/i18n.py:73
 msgid "Name(s):"
 msgstr "Name(n):"
 
-#: aperisolve/i18n.py:63
+#: aperisolve/i18n.py:74
 msgid "Size:"
 msgstr "Größe:"
 
-#: aperisolve/i18n.py:64
+#: aperisolve/i18n.py:75
 msgid "Upload count:"
 msgstr "Anzahl der Uploads:"
 
-#: aperisolve/i18n.py:65
+#: aperisolve/i18n.py:76
 msgid "Common password(s):"
 msgstr "Bekannte Passwörter:"
 
-#: aperisolve/i18n.py:66
+#: aperisolve/i18n.py:77
 msgid "Remove password"
 msgstr "Passwort entfernen"
 
-#: aperisolve/i18n.py:67
+#: aperisolve/i18n.py:78
 msgid "Remove Image"
 msgstr "Bild entfernen"
 
-#: aperisolve/i18n.py:68
+#: aperisolve/i18n.py:79
 #, python-brace-format
 msgid "Available in {s} seconds"
 msgstr "Verfügbar in {s} Sekunden"
 
-#: aperisolve/i18n.py:69
+#: aperisolve/i18n.py:80
 msgid "Image successfully removed"
 msgstr "Bild erfolgreich entfernt"
 
-#: aperisolve/i18n.py:70
+#: aperisolve/i18n.py:81
 msgid "Network error occurred"
 msgstr "Netzwerkfehler aufgetreten"
 
-#: aperisolve/i18n.py:71
+#: aperisolve/i18n.py:82
 msgid "Error:"
 msgstr "Fehler:"
 
-#: aperisolve/i18n.py:72
+#: aperisolve/i18n.py:83
 msgid "Download file"
 msgstr "Datei herunterladen"
 
-#: aperisolve/i18n.py:73
+#: aperisolve/i18n.py:84
 msgid "Superimposed"
 msgstr "Überlagert"
 
-#: aperisolve/i18n.py:74
+#: aperisolve/i18n.py:85
 msgid "Red"
 msgstr "Rot"
 
-#: aperisolve/i18n.py:75
+#: aperisolve/i18n.py:86
 msgid "Green"
 msgstr "Grün"
 
-#: aperisolve/i18n.py:76
+#: aperisolve/i18n.py:87
 msgid "Blue"
 msgstr "Blau"
 
-#: aperisolve/i18n.py:77
+#: aperisolve/i18n.py:88
 msgid "Alpha"
 msgstr "Alpha"
 
-#: aperisolve/i18n.py:78
+#: aperisolve/i18n.py:89
 msgid "❌ Error during the analysis."
 msgstr "❌ Fehler während der Analyse."
 
-#: aperisolve/i18n.py:79
+#: aperisolve/i18n.py:90
 msgid "Please select an image."
 msgstr "Bitte wähle ein Bild aus."
 
-#: aperisolve/i18n.py:81
+#: aperisolve/i18n.py:92
 msgid "❌ Invalid server response: missing submission_hash."
 msgstr "❌ Ungültige Serverantwort: submission_hash fehlt."
 
-#: aperisolve/i18n.py:83
+#: aperisolve/i18n.py:94
 msgid "❌ Invalid server response."
 msgstr "❌ Ungültige Serverantwort."
 
-#: aperisolve/i18n.py:85
+#: aperisolve/i18n.py:96
 msgid "❌ File too large. Please upload a smaller file."
 msgstr "❌ Datei zu groß. Bitte lade eine kleinere Datei hoch."
 
-#: aperisolve/i18n.py:87
+#: aperisolve/i18n.py:98
 msgid "Upload complete"
 msgstr "Upload abgeschlossen"
 
-#: aperisolve/i18n.py:88
+#: aperisolve/i18n.py:99
 msgid "❌ An error occurred during the transfer"
 msgstr "❌ Beim Übertragen ist ein Fehler aufgetreten"
 
-#: aperisolve/i18n.py:89
+#: aperisolve/i18n.py:100
 msgid "Analyzing your image…"
 msgstr "Ihr Bild wird analysiert…"
 
-#: aperisolve/i18n.py:90
+#: aperisolve/i18n.py:101
 msgid "Success"
 msgstr "Erfolg"
 
-#: aperisolve/i18n.py:91
+#: aperisolve/i18n.py:102
 msgid "No result"
 msgstr "Kein Ergebnis"
 
-#: aperisolve/i18n.py:92
+#: aperisolve/i18n.py:103
 msgid "Learn more"
 msgstr "Mehr erfahren"
 
-#: aperisolve/i18n.py:93
+#: aperisolve/i18n.py:104
 msgid "❌ HTTP error"
 msgstr "❌ HTTP-Fehler"
 
-#: aperisolve/i18n.py:95
+#: aperisolve/i18n.py:106
 msgid "❌ The analysis is taking too long. Please reload the page to check again."
-msgstr "❌ Die Analyse dauert zu lange. Bitte laden Sie die Seite neu, um erneut zu prüfen."
+msgstr ""
+"❌ Die Analyse dauert zu lange. Bitte laden Sie die Seite neu, um erneut "
+"zu prüfen."
 
-#: aperisolve/i18n.py:97
+#: aperisolve/i18n.py:108
 msgid "Analyzed image"
 msgstr "Analysiertes Bild"
 
-#: aperisolve/templates/base.html:45
-msgid "Aperi'Solve Home"
-msgstr "Aperi'Solve Startseite"
-
-#: aperisolve/templates/base.html:52
-msgid "Main navigation"
-msgstr "Hauptnavigation"
-
-#: aperisolve/templates/base.html:53 aperisolve/templates/footer.html:29
-#: aperisolve/templates/wiki.html:42 aperisolve/templates/wiki.html:71
+#: aperisolve/templates/base.html:60 aperisolve/templates/footer.html:39
+#: aperisolve/templates/wiki.html:61 aperisolve/wiki.py:157
 msgid "Wiki"
 msgstr "Wiki"
 
-#: aperisolve/templates/base.html:54 aperisolve/templates/footer.html:32
+#: aperisolve/wiki.py:158
+msgid "Techniques"
+msgstr "Techniken"
+
+#: aperisolve/wiki.py:159
+msgid "Tools"
+msgstr "Werkzeuge"
+
+#: aperisolve/templates/base.html:52
+msgid "Aperi'Solve Home"
+msgstr "Aperi'Solve Startseite"
+
+#: aperisolve/templates/base.html:59
+msgid "Main navigation"
+msgstr "Hauptnavigation"
+
+#: aperisolve/templates/base.html:61 aperisolve/templates/footer.html:42
 msgid "Cheatsheet"
 msgstr "Cheatsheet"
 
-#: aperisolve/templates/base.html:65
+#: aperisolve/templates/base.html:72
 msgid "Image preview"
 msgstr "Bildvorschau"
 
-#: aperisolve/templates/footer.html:13
+#: aperisolve/templates/footer.html:17
 msgid "Language"
 msgstr "Sprache"
 
@@ -232,63 +252,69 @@ msgstr "Aperi'Solve - Online-Steganographie-Analyse für Bilder"
 
 #: aperisolve/templates/index.html:3
 msgid ""
-"Free online steganography analysis: layer/bit-plane extraction plus zsteg, steghide, binwalk, "
-"exiftool, foremost, outguess and more on PNG, JPG, GIF, BMP, TIFF and WebP images."
+"Free online steganography analysis: layer/bit-plane extraction plus "
+"zsteg, steghide, binwalk, exiftool, foremost, outguess and more on PNG, "
+"JPG, GIF, BMP, TIFF and WebP images."
 msgstr ""
-"Kostenlose Online-Steganographie-Analyse: Ebenen- und Bitplane-Extraktion sowie zsteg, steghide, "
-"binwalk, exiftool, foremost, outguess und mehr für PNG-, JPG-, GIF-, BMP-, TIFF- und WebP-Bilder."
+"Kostenlose Online-Steganographie-Analyse: Ebenen- und Bitplane-Extraktion"
+" sowie zsteg, steghide, binwalk, exiftool, foremost, outguess und mehr "
+"für PNG-, JPG-, GIF-, BMP-, TIFF- und WebP-Bilder."
 
-#: aperisolve/templates/index.html:27
+#: aperisolve/templates/index.html:28
 msgid "What is this?"
 msgstr "Was ist das?"
 
-#: aperisolve/templates/index.html:29
+#: aperisolve/templates/index.html:30
 msgid ""
-"Aperi'Solve is an online platform which performs layer analysis on images.\n"
-"      The platform also uses zsteg, steghide, outguess, exiftool, binwalk, foremost and strings\n"
-"      for deeper steganography analysis. Supports: PNG, JPG, GIF, BMP, JPEG, JFIF, JPE, TIFF..."
+"Aperi'Solve is an online platform which performs layer analysis on "
+"images.\n"
+"      The platform also uses zsteg, steghide, outguess, exiftool, "
+"binwalk, foremost and strings\n"
+"      for deeper steganography analysis. Supports: PNG, JPG, GIF, BMP, "
+"JPEG, JFIF, JPE, TIFF..."
 msgstr ""
-"Aperi'Solve ist eine Online-Plattform, die Ebenenanalysen von Bildern durchführt. Die Plattform "
-"nutzt außerdem zsteg, steghide, outguess, exiftool, binwalk, foremost und strings für eine "
-"tiefere Steganographie-Analyse. Unterstützt: PNG, JPG, GIF, BMP, JPEG, JFIF, JPE, TIFF..."
+"Aperi'Solve ist eine Online-Plattform, die Ebenenanalysen von Bildern "
+"durchführt. Die Plattform nutzt außerdem zsteg, steghide, outguess, "
+"exiftool, binwalk, foremost und strings für eine tiefere Steganographie-"
+"Analyse. Unterstützt: PNG, JPG, GIF, BMP, JPEG, JFIF, JPE, TIFF..."
 
-#: aperisolve/templates/index.html:37
+#: aperisolve/templates/index.html:38
 msgid "Image file"
 msgstr "Bilddatei"
 
-#: aperisolve/templates/index.html:39
+#: aperisolve/templates/index.html:40
 msgid "📂 Drag and drop an image here or click to select"
 msgstr "📂 Bild hierher ziehen oder klicken zum Auswählen"
 
-#: aperisolve/templates/index.html:41
+#: aperisolve/templates/index.html:42
 msgid "Choose image file"
 msgstr "Bilddatei auswählen"
 
-#: aperisolve/templates/index.html:42
+#: aperisolve/templates/index.html:43
 msgid "Choose an image"
 msgstr "Bild auswählen"
 
-#: aperisolve/templates/index.html:49
+#: aperisolve/templates/index.html:50
 msgid "Password"
 msgstr "Passwort"
 
-#: aperisolve/templates/index.html:49
+#: aperisolve/templates/index.html:50
 msgid "(optional)"
 msgstr "(optional)"
 
-#: aperisolve/templates/index.html:50
+#: aperisolve/templates/index.html:51
 msgid "Enter password if required"
 msgstr "Passwort eingeben, falls erforderlich"
 
-#: aperisolve/templates/index.html:57
+#: aperisolve/templates/index.html:58
 msgid "Deep analysis"
 msgstr "Tiefenanalyse"
 
-#: aperisolve/templates/index.html:57
+#: aperisolve/templates/index.html:58
 msgid "(slower, more thorough)"
 msgstr "(langsamer, gründlicher)"
 
-#: aperisolve/templates/index.html:63
+#: aperisolve/templates/index.html:64
 msgid "Analyze Image"
 msgstr "Bild analysieren"
 
@@ -312,15 +338,13 @@ msgstr "Ein Bild analysieren"
 msgid "Wiki navigation"
 msgstr "Wiki-Navigation"
 
-#: aperisolve/templates/wiki.html:53
-msgid "Tools"
-msgstr "Werkzeuge"
-
-#: aperisolve/templates/wiki.html:70
+#: aperisolve/templates/wiki.html:60
 msgid "Home"
 msgstr "Startseite"
 
-#: aperisolve/templates/wiki.html:77
+#: aperisolve/templates/wiki.html:67
 msgid "This page has not been translated yet; showing the English version."
-msgstr "Diese Seite wurde noch nicht übersetzt; die englische Version wird angezeigt."
+msgstr ""
+"Diese Seite wurde noch nicht übersetzt; die englische Version wird "
+"angezeigt."
 

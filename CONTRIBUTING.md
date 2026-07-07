@@ -56,9 +56,13 @@ Help us improve:
 
 The in-app wiki (`/wiki/`) is plain Markdown — the easiest way to contribute:
 
-- Pages live in `aperisolve/wiki_content/en/` (`tools/<analyzer>.md` for tool
-  guides). Drop a `.md` file and it appears automatically with navigation,
-  SEO metadata and the sitemap entry.
+- Pages live in `aperisolve/wiki_content/en/`. Drop a `.md` file and it appears
+  automatically with navigation, SEO metadata and the sitemap entry. The
+  sidebar sections are **folder-driven**: top-level files (e.g. `cheatsheet.md`)
+  go under "Wiki", files under `techniques/` go under "Techniques", and
+  `tools/<analyzer>.md` go under "Tools". To add a new sidebar section, create a
+  new top-level folder and add its label to `SECTION_ORDER` / `_section_label`
+  in `aperisolve/wiki.py`.
 - Start each file with `meta` frontmatter (no `---` delimiters):
 
   ```
@@ -67,11 +71,16 @@ The in-app wiki (`/wiki/`) is plain Markdown — the easiest way to contribute:
   Order: 150
   ```
 
-- `Order` controls the sidebar position (existing pages use 1–250).
+- `Order` controls the position within a sidebar section (tools use 100–260).
 - Use fenced code blocks for commands; a copy button is added automatically.
+  Callout boxes are available via python-markdown admonitions
+  (`!!! tip "…"`, `!!! warning "…"`).
 - Preview locally with `FLASK_DEBUG=1` (page cache is bypassed).
-- Every analyzer has a `tools/` page; improvements and corrections are
-  welcome, as are translations of the tool pages (currently English-only).
+- The wiki is organized like HackTricks: a `methodology` triage page and a
+  `cheatsheet` decision tree feed into per-medium `techniques/` pages, which
+  cross-link to the per-analyzer `tools/` pages. Improvements and corrections
+  are welcome, as are translations (the non-English wiki is currently
+  English-only and falls back automatically).
 
 ### 🌍 Translations
 
@@ -95,8 +104,10 @@ Portuguese. Machine-translated drafts are welcome; native review even more so.
   `aperisolve/wiki_content/en/cheatsheet.md`. Untranslated pages
   automatically fall back to English with a banner, canonicalize to the
   English URL and stay out of the sitemap — so partial translations are
-  fine. `index`, `cheatsheet` and `getting-started` exist in all languages;
-  translating the `tools/` pages is the highest impact contribution.
+  fine. The wiki content is currently **English-only** (the previous
+  translations were retired when the wiki was restructured), so translating
+  any page under `wiki_content/en/` into another language is a high-impact
+  contribution. Mirror the English path exactly under the target language.
 - Adding a new language: add its code to `PREFIX_LANGS` in
   `aperisolve/i18n.py`, run `pybabel init -i messages.pot -d
   aperisolve/translations -l <lang>`, and translate.

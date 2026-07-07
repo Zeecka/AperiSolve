@@ -43,20 +43,22 @@ def test_wiki_fallback_canonicalizes_to_english(client: FlaskClient) -> None:
     assert '<meta name="robots" content="noindex">' in html
 
 
-def test_translated_wiki_page_is_self_canonical(client: FlaskClient) -> None:
-    """A real translation (fr wiki index) canonicalizes to its own URL."""
-    html = client.get("/fr/wiki/").get_data(as_text=True)
-    assert 'rel="canonical" href="http://localhost/fr/wiki/"' in html
-    assert "Bienvenue sur le wiki" in html
+def test_wiki_index_falls_back_for_prefixed_lang(client: FlaskClient) -> None:
+    """Wiki content is English-only; a language prefix falls back to English."""
+    response = client.get("/fr/wiki/")
+    assert response.status_code == 200
+    html = response.get_data(as_text=True)
+    assert 'rel="canonical" href="http://localhost/wiki/"' in html
+    assert '<meta name="robots" content="noindex">' in html
 
 
 def test_sitemap_lists_only_real_translations(client: FlaskClient) -> None:
     """Language URLs appear in the sitemap only when content exists."""
     xml = client.get("/sitemap.xml").get_data(as_text=True)
-    assert "/fr/</loc>" in xml
-    assert "/fr/wiki/</loc>" in xml  # translated
-    assert "/fr/wiki/cheatsheet</loc>" in xml  # translated
-    # Tool pages have no translations yet: fallback-only URLs stay out.
+    assert "/fr/</loc>" in xml  # app home is translated (gettext UI strings)
+    # The wiki is English-only: fallback-only language URLs stay out.
+    assert "/fr/wiki/</loc>" not in xml
+    assert "/fr/wiki/cheatsheet</loc>" not in xml
     assert "/fr/wiki/tools/zsteg" not in xml
     assert "/de/wiki/tools/zsteg" not in xml
 

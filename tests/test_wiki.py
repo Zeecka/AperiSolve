@@ -5,15 +5,16 @@ from flask.testing import FlaskClient
 from aperisolve.wiki import load_page, wiki_pages
 
 CHEATSHEET_ANCHORS = [
-    "filestruct",
-    "rawdata",
+    "triage",
     "image",
     "png",
     "jpg",
     "gif",
     "audio",
-    "polyglot",
     "text",
+    "polyglot",
+    "tell-tool",
+    "stuck",
     "more",
 ]
 
@@ -35,6 +36,22 @@ def test_wiki_page_has_seo_meta(client: FlaskClient) -> None:
     assert 'rel="canonical"' in html
     assert "TechArticle" in html
     assert "BreadcrumbList" in html
+
+
+def test_technique_page_renders(client: FlaskClient) -> None:
+    """A nested techniques/ page renders with SEO metadata."""
+    response = client.get("/wiki/techniques/images")
+    assert response.status_code == 200
+    html = response.get_data(as_text=True)
+    assert 'rel="canonical"' in html
+    assert "TechArticle" in html
+
+
+def test_sidebar_shows_section_groups(client: FlaskClient) -> None:
+    """The folder-driven sidebar renders the three top-level sections."""
+    html = client.get("/wiki/").get_data(as_text=True)
+    for heading in ("Wiki", "Techniques", "Tools"):
+        assert f">{heading}</h2>" in html, f"missing sidebar section {heading}"
 
 
 def test_wiki_page_disables_animated_background(client: FlaskClient) -> None:

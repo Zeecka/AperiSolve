@@ -1227,6 +1227,79 @@ footer::before {
     color: var(--theme-green);
 }
 
+/* Admonitions (python-markdown `!!! tip "…"` callouts). Scoped with the
+   #cheatsheet id so they outrank the generic `#cheatsheet > div` rule. */
+#cheatsheet .admonition {
+    background-color: rgba(0, 0, 0, 0.28);
+    border: 1px solid var(--green-line);
+    border-left: 3px solid var(--theme-green);
+    border-radius: var(--border-radius);
+    padding: var(--spacing-sm) var(--spacing-md);
+    margin: var(--spacing-md) 0;
+}
+
+#cheatsheet .admonition > :last-child {
+    margin-bottom: 0;
+}
+
+#cheatsheet .admonition-title {
+    font-weight: 700;
+    margin-bottom: var(--spacing-xs);
+    color: var(--theme-green);
+}
+
+#cheatsheet .admonition-title::before {
+    font-family: "Font Awesome 7 Free";
+    font-weight: 900;
+    margin-right: var(--spacing-sm);
+    content: "\f05a"; /* info-circle (default) */
+}
+
+#cheatsheet .admonition.tip .admonition-title::before,
+#cheatsheet .admonition.hint .admonition-title::before {
+    content: "\f0eb"; /* lightbulb */
+}
+
+#cheatsheet .admonition.warning,
+#cheatsheet .admonition.caution {
+    border-left-color: #f0ad4e;
+}
+
+#cheatsheet .admonition.warning .admonition-title,
+#cheatsheet .admonition.caution .admonition-title {
+    color: #f0ad4e;
+}
+
+#cheatsheet .admonition.warning .admonition-title::before,
+#cheatsheet .admonition.caution .admonition-title::before {
+    content: "\f071"; /* triangle-exclamation */
+}
+
+#cheatsheet .admonition.danger,
+#cheatsheet .admonition.error {
+    border-left-color: #e5534b;
+}
+
+#cheatsheet .admonition.danger .admonition-title,
+#cheatsheet .admonition.error .admonition-title {
+    color: #e5534b;
+}
+
+#cheatsheet .admonition.danger .admonition-title::before,
+#cheatsheet .admonition.error .admonition-title::before {
+    content: "\f06a"; /* circle-exclamation */
+}
+
+#cheatsheet .admonition.note .admonition-title,
+#cheatsheet .admonition.info .admonition-title {
+    color: #4aa3df;
+}
+
+#cheatsheet .admonition.note,
+#cheatsheet .admonition.info {
+    border-left-color: #4aa3df;
+}
+
 .breadcrumb .breadcrumb-item a {
     color: var(--theme-green);
     text-decoration: none;

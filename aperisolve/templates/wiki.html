@@ -39,9 +39,10 @@
 <div class="row">
   <aside class="col-lg-3 mb-4">
     <nav class="wiki-sidebar card p-3" aria-label="{{ _("Wiki navigation") }}">
-      <h2 class="h6 text-uppercase text-muted">{{ _("Wiki") }}</h2>
+      {% for group in nav_groups %}
+      <h2 class="h6 text-uppercase text-muted {{ 'mt-3' if not loop.first }}">{{ group.label }}</h2>
       <ul class="nav flex-column mb-3">
-        {% for nav_page in nav_main %}
+        {% for nav_page in group.pages %}
         <li class="nav-item">
           <a class="nav-link px-0 {{ 'active fw-bold' if nav_page.slug == page.slug }}" href="{{ lang_prefix }}{{ nav_page.path }}">
             {{ nav_page.title }}
@@ -49,18 +50,7 @@
         </li>
         {% endfor %}
       </ul>
-      {% if nav_tools %}
-      <h2 class="h6 text-uppercase text-muted">{{ _("Tools") }}</h2>
-      <ul class="nav flex-column">
-        {% for nav_page in nav_tools %}
-        <li class="nav-item">
-          <a class="nav-link px-0 {{ 'active fw-bold' if nav_page.slug == page.slug }}" href="{{ lang_prefix }}{{ nav_page.path }}">
-            {{ nav_page.title }}
-          </a>
-        </li>
-        {% endfor %}
-      </ul>
-      {% endif %}
+      {% endfor %}
       {{ ads.ad_unit(config["ADSENSE_SLOT_WIKI_SIDEBAR"]) }}
     </nav>
   </aside>

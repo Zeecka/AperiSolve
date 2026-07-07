@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2026-07-04 16:18+0000\n"
+"POT-Creation-Date: 2026-07-07 08:29+0000\n"
 "PO-Revision-Date: 2026-07-05 13:23+0000\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language: zh\n"
@@ -18,211 +18,221 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Generated-By: Babel 2.18.0\n"
 
-#: aperisolve/app.py:179
+#: aperisolve/app.py:184
 msgid "Image size exceeded"
 msgstr "图片大小超出限制"
 
-#: aperisolve/app.py:184
+#: aperisolve/app.py:189
 msgid "Resource not found"
 msgstr "未找到资源"
 
-#: aperisolve/app.py:189
+#: aperisolve/app.py:194
 msgid "Too many requests, please slow down."
 msgstr "请求过多，请放慢速度。"
 
-#: aperisolve/app.py:314 aperisolve/app.py:321
+#: aperisolve/app.py:333 aperisolve/app.py:340
 msgid "No image provided"
 msgstr "未提供图片"
 
-#: aperisolve/app.py:324
+#: aperisolve/app.py:343
 msgid "Unsupported file type"
 msgstr "不支持的文件类型"
 
-#: aperisolve/app.py:427 aperisolve/app.py:435
+#: aperisolve/app.py:446 aperisolve/app.py:454
 msgid "Results not ready yet..."
 msgstr "结果尚未就绪..."
 
-#: aperisolve/app.py:542
+#: aperisolve/app.py:561
 #, python-format
 msgid "Image must be at least %(min)d seconds old. Current age: %(age)ds"
 msgstr "图片上传时间必须至少满 %(min)d 秒。当前时长：%(age)d 秒"
 
-#: aperisolve/app.py:559
+#: aperisolve/app.py:577
 msgid "Image uploaded from multiple IP addresses. Removal is not allowed."
 msgstr "图片由多个 IP 地址上传，不允许删除。"
 
-#: aperisolve/app.py:575
+#: aperisolve/app.py:593
 msgid "Failed to remove image"
 msgstr "删除图片失败"
 
-#: aperisolve/app.py:586
+#: aperisolve/app.py:604
 msgid "No password to remove"
 msgstr "没有可删除的密码"
 
-#: aperisolve/app.py:594
+#: aperisolve/app.py:612
 #, python-format
 msgid "Submission must be at least %(min)d seconds old. Current age: %(age)ds"
 msgstr "提交时间必须至少满 %(min)d 秒。当前时长：%(age)d 秒"
 
-#: aperisolve/app.py:611
-msgid "Submission uploaded from multiple IP addresses. Password removal is not allowed."
+#: aperisolve/app.py:629
+msgid ""
+"Submission uploaded from multiple IP addresses. Password removal is not "
+"allowed."
 msgstr "提交由多个 IP 地址上传，不允许删除密码。"
 
-#: aperisolve/app.py:626
+#: aperisolve/app.py:644
 msgid "Failed to remove password"
 msgstr "删除密码失败"
 
-#: aperisolve/i18n.py:60
+#: aperisolve/i18n.py:71
 msgid "First upload:"
 msgstr "首次上传："
 
-#: aperisolve/i18n.py:61
+#: aperisolve/i18n.py:72
 msgid "Last upload:"
 msgstr "最近上传："
 
-#: aperisolve/i18n.py:62
+#: aperisolve/i18n.py:73
 msgid "Name(s):"
 msgstr "文件名："
 
-#: aperisolve/i18n.py:63
+#: aperisolve/i18n.py:74
 msgid "Size:"
 msgstr "大小："
 
-#: aperisolve/i18n.py:64
+#: aperisolve/i18n.py:75
 msgid "Upload count:"
 msgstr "上传次数："
 
-#: aperisolve/i18n.py:65
+#: aperisolve/i18n.py:76
 msgid "Common password(s):"
 msgstr "常用密码："
 
-#: aperisolve/i18n.py:66
+#: aperisolve/i18n.py:77
 msgid "Remove password"
 msgstr "删除密码"
 
-#: aperisolve/i18n.py:67
+#: aperisolve/i18n.py:78
 msgid "Remove Image"
 msgstr "删除图片"
 
-#: aperisolve/i18n.py:68
+#: aperisolve/i18n.py:79
 #, python-brace-format
 msgid "Available in {s} seconds"
 msgstr "{s} 秒后可用"
 
-#: aperisolve/i18n.py:69
+#: aperisolve/i18n.py:80
 msgid "Image successfully removed"
 msgstr "图片已成功删除"
 
-#: aperisolve/i18n.py:70
+#: aperisolve/i18n.py:81
 msgid "Network error occurred"
 msgstr "网络错误"
 
-#: aperisolve/i18n.py:71
+#: aperisolve/i18n.py:82
 msgid "Error:"
 msgstr "错误："
 
-#: aperisolve/i18n.py:72
+#: aperisolve/i18n.py:83
 msgid "Download file"
 msgstr "下载文件"
 
-#: aperisolve/i18n.py:73
+#: aperisolve/i18n.py:84
 msgid "Superimposed"
 msgstr "叠加"
 
-#: aperisolve/i18n.py:74
+#: aperisolve/i18n.py:85
 msgid "Red"
 msgstr "红色"
 
-#: aperisolve/i18n.py:75
+#: aperisolve/i18n.py:86
 msgid "Green"
 msgstr "绿色"
 
-#: aperisolve/i18n.py:76
+#: aperisolve/i18n.py:87
 msgid "Blue"
 msgstr "蓝色"
 
-#: aperisolve/i18n.py:77
+#: aperisolve/i18n.py:88
 msgid "Alpha"
 msgstr "透明通道"
 
-#: aperisolve/i18n.py:78
+#: aperisolve/i18n.py:89
 msgid "❌ Error during the analysis."
 msgstr "❌ 分析过程中出错。"
 
-#: aperisolve/i18n.py:79
+#: aperisolve/i18n.py:90
 msgid "Please select an image."
 msgstr "请选择一张图片。"
 
-#: aperisolve/i18n.py:81
+#: aperisolve/i18n.py:92
 msgid "❌ Invalid server response: missing submission_hash."
 msgstr "❌ 服务器响应无效：缺少 submission_hash。"
 
-#: aperisolve/i18n.py:83
+#: aperisolve/i18n.py:94
 msgid "❌ Invalid server response."
 msgstr "❌ 服务器响应无效。"
 
-#: aperisolve/i18n.py:85
+#: aperisolve/i18n.py:96
 msgid "❌ File too large. Please upload a smaller file."
 msgstr "❌ 文件过大，请上传较小的文件。"
 
-#: aperisolve/i18n.py:87
+#: aperisolve/i18n.py:98
 msgid "Upload complete"
 msgstr "上传完成"
 
-#: aperisolve/i18n.py:88
+#: aperisolve/i18n.py:99
 msgid "❌ An error occurred during the transfer"
 msgstr "❌ 传输过程中发生错误"
 
-#: aperisolve/i18n.py:89
+#: aperisolve/i18n.py:100
 msgid "Analyzing your image…"
 msgstr "正在分析您的图片…"
 
-#: aperisolve/i18n.py:90
+#: aperisolve/i18n.py:101
 msgid "Success"
 msgstr "成功"
 
-#: aperisolve/i18n.py:91
+#: aperisolve/i18n.py:102
 msgid "No result"
 msgstr "无结果"
 
-#: aperisolve/i18n.py:92
+#: aperisolve/i18n.py:103
 msgid "Learn more"
 msgstr "了解更多"
 
-#: aperisolve/i18n.py:93
+#: aperisolve/i18n.py:104
 msgid "❌ HTTP error"
 msgstr "❌ HTTP 错误"
 
-#: aperisolve/i18n.py:95
+#: aperisolve/i18n.py:106
 msgid "❌ The analysis is taking too long. Please reload the page to check again."
 msgstr "❌ 分析耗时过长。请重新加载页面再次查看。"
 
-#: aperisolve/i18n.py:97
+#: aperisolve/i18n.py:108
 msgid "Analyzed image"
 msgstr "被分析的图片"
 
-#: aperisolve/templates/base.html:45
-msgid "Aperi'Solve Home"
-msgstr "Aperi'Solve 首页"
-
-#: aperisolve/templates/base.html:52
-msgid "Main navigation"
-msgstr "主导航"
-
-#: aperisolve/templates/base.html:53 aperisolve/templates/footer.html:29
-#: aperisolve/templates/wiki.html:42 aperisolve/templates/wiki.html:71
+#: aperisolve/templates/base.html:60 aperisolve/templates/footer.html:39
+#: aperisolve/templates/wiki.html:61 aperisolve/wiki.py:157
 msgid "Wiki"
 msgstr "维基"
 
-#: aperisolve/templates/base.html:54 aperisolve/templates/footer.html:32
+#: aperisolve/wiki.py:158
+msgid "Techniques"
+msgstr "技术"
+
+#: aperisolve/wiki.py:159
+msgid "Tools"
+msgstr "工具"
+
+#: aperisolve/templates/base.html:52
+msgid "Aperi'Solve Home"
+msgstr "Aperi'Solve 首页"
+
+#: aperisolve/templates/base.html:59
+msgid "Main navigation"
+msgstr "主导航"
+
+#: aperisolve/templates/base.html:61 aperisolve/templates/footer.html:42
 msgid "Cheatsheet"
 msgstr "速查表"
 
-#: aperisolve/templates/base.html:65
+#: aperisolve/templates/base.html:72
 msgid "Image preview"
 msgstr "图片预览"
 
-#: aperisolve/templates/footer.html:13
+#: aperisolve/templates/footer.html:17
 msgid "Language"
 msgstr "语言"
 
@@ -232,62 +242,67 @@ msgstr "Aperi'Solve - 在线图片隐写分析工具"
 
 #: aperisolve/templates/index.html:3
 msgid ""
-"Free online steganography analysis: layer/bit-plane extraction plus zsteg, steghide, binwalk, "
-"exiftool, foremost, outguess and more on PNG, JPG, GIF, BMP, TIFF and WebP images."
+"Free online steganography analysis: layer/bit-plane extraction plus "
+"zsteg, steghide, binwalk, exiftool, foremost, outguess and more on PNG, "
+"JPG, GIF, BMP, TIFF and WebP images."
 msgstr ""
-"免费在线隐写分析：图层与位平面提取，以及 zsteg、steghide、binwalk、exiftool、foremost、outguess 等工具，支持 "
-"PNG、JPG、GIF、BMP、TIFF 和 WebP 图片。"
+"免费在线隐写分析：图层与位平面提取，以及 zsteg、steghide、binwalk、exiftool、foremost、outguess "
+"等工具，支持 PNG、JPG、GIF、BMP、TIFF 和 WebP 图片。"
 
-#: aperisolve/templates/index.html:27
+#: aperisolve/templates/index.html:28
 msgid "What is this?"
 msgstr "这是什么？"
 
-#: aperisolve/templates/index.html:29
+#: aperisolve/templates/index.html:30
 msgid ""
-"Aperi'Solve is an online platform which performs layer analysis on images.\n"
-"      The platform also uses zsteg, steghide, outguess, exiftool, binwalk, foremost and strings\n"
-"      for deeper steganography analysis. Supports: PNG, JPG, GIF, BMP, JPEG, JFIF, JPE, TIFF..."
+"Aperi'Solve is an online platform which performs layer analysis on "
+"images.\n"
+"      The platform also uses zsteg, steghide, outguess, exiftool, "
+"binwalk, foremost and strings\n"
+"      for deeper steganography analysis. Supports: PNG, JPG, GIF, BMP, "
+"JPEG, JFIF, JPE, TIFF..."
 msgstr ""
-"Aperi'Solve 是一个对图片进行图层分析的在线平台。平台还使用 zsteg、steghide、outguess、exiftool、binwalk、foremost 和 strings "
+"Aperi'Solve 是一个对图片进行图层分析的在线平台。平台还使用 "
+"zsteg、steghide、outguess、exiftool、binwalk、foremost 和 strings "
 "进行更深入的隐写分析。支持：PNG、JPG、GIF、BMP、JPEG、JFIF、JPE、TIFF..."
 
-#: aperisolve/templates/index.html:37
+#: aperisolve/templates/index.html:38
 msgid "Image file"
 msgstr "图片文件"
 
-#: aperisolve/templates/index.html:39
+#: aperisolve/templates/index.html:40
 msgid "📂 Drag and drop an image here or click to select"
 msgstr "📂 将图片拖放到此处，或点击选择"
 
-#: aperisolve/templates/index.html:41
+#: aperisolve/templates/index.html:42
 msgid "Choose image file"
 msgstr "选择图片文件"
 
-#: aperisolve/templates/index.html:42
+#: aperisolve/templates/index.html:43
 msgid "Choose an image"
 msgstr "选择图片"
 
-#: aperisolve/templates/index.html:49
+#: aperisolve/templates/index.html:50
 msgid "Password"
 msgstr "密码"
 
-#: aperisolve/templates/index.html:49
+#: aperisolve/templates/index.html:50
 msgid "(optional)"
 msgstr "（可选）"
 
-#: aperisolve/templates/index.html:50
+#: aperisolve/templates/index.html:51
 msgid "Enter password if required"
 msgstr "如有需要请输入密码"
 
-#: aperisolve/templates/index.html:57
+#: aperisolve/templates/index.html:58
 msgid "Deep analysis"
 msgstr "深度分析"
 
-#: aperisolve/templates/index.html:57
+#: aperisolve/templates/index.html:58
 msgid "(slower, more thorough)"
 msgstr "（较慢，更彻底）"
 
-#: aperisolve/templates/index.html:63
+#: aperisolve/templates/index.html:64
 msgid "Analyze Image"
 msgstr "分析图片"
 
@@ -311,15 +326,11 @@ msgstr "分析图片"
 msgid "Wiki navigation"
 msgstr "维基导航"
 
-#: aperisolve/templates/wiki.html:53
-msgid "Tools"
-msgstr "工具"
-
-#: aperisolve/templates/wiki.html:70
+#: aperisolve/templates/wiki.html:60
 msgid "Home"
 msgstr "首页"
 
-#: aperisolve/templates/wiki.html:77
+#: aperisolve/templates/wiki.html:67
 msgid "This page has not been translated yet; showing the English version."
 msgstr "该页面尚未翻译；当前显示英文版本。"
 

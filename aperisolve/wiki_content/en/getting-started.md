@@ -45,6 +45,16 @@ only uploaded from your own IP address.
 
 ## Going further
 
-Work through the [cheatsheet](/wiki/cheatsheet) for techniques that no
-automated tool covers, and read the per-tool pages to run the same analysis
-locally on files Aperi'Solve does not support.
+Aperi'Solve automates the first passes, but many techniques need manual work:
+
+- Follow the [methodology](/wiki/methodology) for a repeatable triage order on
+  any file.
+- Keep the [cheatsheet](/wiki/cheatsheet) open for the by-file-type decision
+  tree and the "when stuck" checklist.
+- Dive into a medium: [Images](/wiki/techniques/images),
+  [Audio](/wiki/techniques/audio),
+  [Text & Unicode](/wiki/techniques/text),
+  [Files & Archives](/wiki/techniques/files-archives), or
+  [Steganalysis](/wiki/techniques/steganalysis).
+- Read the per-tool pages to run the same analysis locally on files Aperi'Solve
+  does not support.

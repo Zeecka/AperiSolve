@@ -8,15 +8,30 @@ is cached in-process; contributors add a page by dropping a markdown file.
 from dataclasses import dataclass
 from datetime import UTC, datetime
 from pathlib import Path
+from typing import TypedDict
 
 import markdown
 from flask import Blueprint, abort, g, render_template
+from flask_babel import gettext as _
 
 from .config import FLASK_DEBUG
 from .i18n import DEFAULT_LANG, PREFIX_LANGS, alternates_for, register_lang_handling
 
 WIKI_CONTENT_DIR = Path(__file__).parent.resolve() / "wiki_content"
-MARKDOWN_EXTENSIONS = ["meta", "toc", "attr_list", "fenced_code", "codehilite", "tables"]
+MARKDOWN_EXTENSIONS = [
+    "meta",
+    "toc",
+    "attr_list",
+    "fenced_code",
+    "codehilite",
+    "tables",
+    "admonition",
+]
+
+# Sidebar sections, in display order, keyed by the top-level path segment of a
+# page slug ("" is the group of top-level pages: index, getting-started, ...).
+# A page under ``techniques/images`` lands in the ``techniques`` section.
+SECTION_ORDER = ["", "techniques", "tools"]
 
 wiki_bp = Blueprint("wiki", __name__)
 register_lang_handling(wiki_bp)
@@ -129,6 +144,45 @@ def _wiki_nav(lang: str) -> list[WikiPage]:
     return nav
 
 
+class NavGroup(TypedDict):
+    """A titled sidebar section and its pages."""
+
+    label: str
+    pages: list[WikiPage]
+
+
+def _section_label(segment: str) -> str:
+    """Localized sidebar heading for a top-level content section."""
+    labels = {
+        "": _("Wiki"),
+        "techniques": _("Techniques"),
+        "tools": _("Tools"),
+    }
+    return labels.get(segment) or segment.replace("-", " ").title()
+
+
+def _nav_groups(nav: list[WikiPage]) -> list[NavGroup]:
+    """Group sidebar pages by their top-level path segment, in section order.
+
+    Pages keep the English ordering they arrive in (from ``_wiki_nav``); only
+    the sections themselves are ordered, so dropping a markdown file into a new
+    top-level folder adds a sidebar section without touching this code.
+    """
+    groups: dict[str, list[WikiPage]] = {}
+    for page in nav:
+        segment = page.slug.split("/", 1)[0] if "/" in page.slug else ""
+        groups.setdefault(segment, []).append(page)
+
+    def order_key(segment: str) -> tuple[int, str]:
+        rank = SECTION_ORDER.index(segment) if segment in SECTION_ORDER else len(SECTION_ORDER)
+        return (rank, segment)
+
+    return [
+        {"label": _section_label(segment), "pages": groups[segment]}
+        for segment in sorted(groups, key=order_key)
+    ]
+
+
 def _render(slug: str) -> str:
     lang = g.get("lang_code") or DEFAULT_LANG
     page = load_page(lang, slug)
@@ -151,15 +205,13 @@ def _render(slug: str) -> str:
         canonical_path = f"/{lang}{page.path}"
         alternates = alternates_for(page.path, [DEFAULT_LANG, *translated_langs(slug)])
 
-    nav = _wiki_nav(lang)
     return render_template(
         "wiki.html",
         page=page,
         is_fallback=is_fallback,
         canonical_path=canonical_path,
         alternates=alternates,
-        nav_main=[p for p in nav if "/" not in p.slug],
-        nav_tools=[p for p in nav if p.slug.startswith("tools/")],
+        nav_groups=_nav_groups(_wiki_nav(lang)),
     )
 
 
