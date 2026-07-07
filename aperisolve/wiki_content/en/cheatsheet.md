@@ -14,24 +14,15 @@ challenge 😉. For the reasoning behind the order below, read the
 
 ## Decision tree {: #triage }
 
-Start at the top. Identify the real file type with [`file`](/wiki/tools/file),
-then follow the branch. Within each branch, the checklist is ordered
-**most-common first**.
+Identify the real file type with [`file`](/wiki/tools/file), pick your branch in
+the map below, then work top to bottom — each branch is ordered
+**most-common first**. The detailed checklists follow the map.
 
-```text
-                  ANY FILE
-                     |
-   run first:  file  /  exiftool  /  strings  /  binwalk
-                     |
-   +--------+--------+--------+---------+--------+---------+
-   |        |        |        |         |        |         |
- PNG/BMP   JPEG     GIF     AUDIO      TEXT    ARCHIVE   UNKNOWN
-   |        |        |        |         |        |         |
- zsteg -a steghide frames  spectro-  cat -A   unzip/7z  binvis.io
- pngcheck stegseek durations gram    stegsnow  binwalk  file/hexed
- bitplanes outguess palette  WAV LSB  zero-w   pdf/docx  Audacity
- IEND     jsteg    APNG     SSTV/DTMF homoglyph polyglot  raw import
-```
+[![Steganography decision tree: identify the file type, then work each branch top to bottom](/static/img/cheatsheet/decision-tree.svg)](/static/img/cheatsheet/decision-tree.svg){: .decision-map }
+
+*Click the map to open it full size. It is drawn in Excalidraw — grab the
+[editable source](/static/img/cheatsheet/decision-tree.excalidraw) to remix it
+at [excalidraw.com](https://excalidraw.com).*
 
 **Run these on every file first (all file types):**
 
@@ -52,7 +43,7 @@ coefficients — so the tools differ. Full detail:
 1. **LSB text or files** → `zsteg -a file.png`, then extract the promising line
    with `zsteg -E 'b1,rgb,lsb,xy' file.png > out.bin`.
    [zsteg](/wiki/tools/zsteg)
-2. **Corrupt or edited structure** → `pngcheck -vtp7f file.png`. A CRC error in
+2. **Corrupt or edited structure** → `pngcheck -vtp7 file.png`. A CRC error in
    `IHDR` means an edited header; a shrunken width/height hides pixels below the
    visible image. Repair with [PCRT](/wiki/tools/pcrt) or brute-force the
    dimensions against the stored CRC.
@@ -151,15 +142,20 @@ Jump straight to a technique from the symptom.
 | A `CTF{`-ish string in plain `strings`      | [`strings -n 8`](/wiki/tools/strings), `-e l`/`-e b` |
 | Odd EXIF Comment / weird metadata           | [`exiftool -a -u -g1`](/wiki/tools/exiftool) |
 | PNG/BMP, nothing in metadata                | [`zsteg -a`](/wiki/tools/zsteg)            |
-| Image won't open / looks cropped            | [`pngcheck -vtp7f`](/wiki/tools/pngcheck) · [PCRT](/wiki/tools/pcrt) |
+| Image won't open / looks cropped            | [`pngcheck -vtp7`](/wiki/tools/pngcheck) · [PCRT](/wiki/tools/pcrt) |
 | CRC error in IHDR                           | edit header / brute-force dimensions       |
 | JPEG + a password hint                      | [`steghide`](/wiki/tools/steghide) · [`stegseek rockyou`](/wiki/tools/stegseek) |
 | JPEG, steghide fails                        | [`outguess`](/wiki/tools/outguess) · [`jsteg`](/wiki/tools/jsteg) |
-| Static / blocks in an audio file            | spectrogram (Audacity / `sox`)             |
+| Static / blocks in an audio file            | spectrogram, high-res (Audacity / `sox -X -Y`) |
+| Stereo audio, silent when summed to mono    | isolate / subtract channels (`sox … remix`) |
 | Clean WAV, nothing in spectrogram           | `stegolsb wavsteg`                         |
 | Invisible / trailing spaces in a `.txt`     | [`stegsnow -C`](/wiki/tools/stegsnow) · `cat -A` |
 | Text copies "wrong" / mixed alphabets       | zero-width / homoglyph decoder             |
+| Text too short / an emoji "holds" data      | tag (U+E00xx) & variation-selector decoder |
 | `.docx` / `.jar` / `.apk`                   | `7z x` (it is a ZIP)                        |
+| ZipCrypto zip + a known inner file          | [bkcrack](https://github.com/kimci86/bkcrack) known-plaintext |
+| PDF with more than one `%%EOF`              | `pdfresurrect -w` (old revisions)          |
+| A QR / barcode in a file                    | `zbarimg --raw`                            |
 | Nothing works, unknown blob                 | [binvis.io](http://binvis.io/) · raw import (GIMP/Audacity) |
 
 ## When stuck, check these {: #stuck }
@@ -174,7 +170,7 @@ The recurring misses, from CTF writeups:
    **MSB**, **inverted**, and **column-major** order — not just RGB LSB.
 4. On JPEG, always try the **empty steghide password**, then `stegseek rockyou`,
    and also try the **filename / challenge name / metadata** as the passphrase.
-5. `pngcheck -vtp7f` — a **CRC error in IHDR** means an edited header; check for
+5. `pngcheck -vtp7` — a **CRC error in IHDR** means an edited header; check for
    a **shrunken width/height** hiding pixels and brute-force the dimensions
    against the stored CRC.
 6. Indexed PNG/GIF: **randomize the palette**; for GIF/APNG check

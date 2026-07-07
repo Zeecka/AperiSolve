@@ -3,7 +3,7 @@
 
 [project]
 name = "aperisolve"
-version = "3.2.3"
+version = "3.2.4"
 description = "Open-source steganalysis web platform for automated image analysis and steganography detection"
 readme = "README.md"
 requires-python = ">=3.12"
@@ -60,6 +60,9 @@ select = ["ALL"]
 [tool.ruff.lint.per-file-ignores]
 # Tests use asserts, magic values and env setup before imports by design.
 "tests/*" = ["S101", "INP001", "PLR2004", "E402"]
+# Dev-only generator scripts: print output, layout magic numbers, and lighter
+# annotation/docstring requirements are fine for standalone tooling.
+"scripts/*" = ["T201", "INP001", "PLR2004", "PLR0913", "ANN", "D", "COM812"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]

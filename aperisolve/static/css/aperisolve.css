@@ -1300,6 +1300,21 @@ footer::before {
     border-left-color: #4aa3df;
 }
 
+/* The cheatsheet decision-tree mindmap (SVG linked to its full-size self). */
+#cheatsheet a.decision-map {
+    display: block;
+    margin: var(--spacing-md) 0 var(--spacing-sm);
+}
+
+#cheatsheet a.decision-map img {
+    display: block;
+    width: 100%;
+    max-width: 1120px;
+    margin: 0 auto;
+    border: 1px solid var(--green-line);
+    border-radius: var(--border-radius);
+}
+
 .breadcrumb .breadcrumb-item a {
     color: var(--theme-green);
     text-decoration: none;
