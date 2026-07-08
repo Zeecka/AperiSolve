@@ -5,14 +5,16 @@ Pages live in ``aperisolve/wiki_content/<lang>/<slug>.md`` with python-markdown
 is cached in-process; contributors add a page by dropping a markdown file.
 """
 
-import html as _html
+import json
+import re
 from dataclasses import dataclass
 from datetime import UTC, datetime
+from html import unescape
 from pathlib import Path
-from typing import NamedTuple, TypedDict
+from typing import TypedDict
 
 import markdown
-from flask import Blueprint, abort, g, render_template
+from flask import Blueprint, Response, abort, g, render_template
 from flask_babel import gettext as _
 
 from .config import FLASK_DEBUG
@@ -28,6 +30,17 @@ MARKDOWN_EXTENSIONS = [
     "tables",
     "admonition",
 ]
+# ``permalink`` adds a clickable ¶ anchor to every heading (the h1 anchor is
+# hidden by CSS); ``toc_depth`` only limits the generated right-rail TOC list to
+# h2/h3. Do not set ``permalink_title`` here — it would need gettext at import
+# time, before an app/request context exists.
+MARKDOWN_EXTENSION_CONFIGS = {
+    "toc": {
+        "permalink": True,
+        "permalink_class": "headerlink",
+        "toc_depth": "2-3",
+    },
+}
 
 # Sidebar sections, in display order, keyed by the top-level path segment of a
 # page slug ("" is the group of top-level pages: index, getting-started, ...).
@@ -36,14 +49,6 @@ SECTION_ORDER = ["", "cheatsheet", "techniques", "tools"]
 
 wiki_bp = Blueprint("wiki", __name__)
 register_lang_handling(wiki_bp)
-
-
-class Heading(NamedTuple):
-    """One H2/H3 anchor in a page, for the sidebar "on this page" sub-nav."""
-
-    id: str
-    title: str
-    children: tuple["Heading", ...]
 
 
 @dataclass(frozen=True)
@@ -55,7 +60,8 @@ class WikiPage:
     description: str
     order: int
     html: str
-    toc: tuple[Heading, ...] = ()
+    toc_html: str = ""
+    headings: tuple[tuple[str, str], ...] = ()
     nav_title: str = ""
 
     @property
@@ -65,6 +71,25 @@ class WikiPage:
 
 
 _page_cache: dict[tuple[str, str], WikiPage] = {}
+
+# Search index cache, keyed by language, mirroring ``_page_cache`` (both are
+# bypassed when ``FLASK_DEBUG`` so edits show up live).
+_search_cache: dict[str, str] = {}
+_TAG_RE = re.compile(r"<[^>]+>")
+_SEARCH_BODY_CHARS = 4000
+
+
+def _flatten_toc(tokens: list[dict]) -> tuple[tuple[str, str], ...]:
+    """Flatten nested ``toc_tokens`` into ordered ``(anchor_id, title)`` pairs."""
+    out: list[tuple[str, str]] = []
+
+    def walk(items: list[dict]) -> None:
+        for item in items:
+            out.append((item["id"], item["name"]))
+            walk(item.get("children", []))
+
+    walk(tokens)
+    return tuple(out)
 
 
 def _resolve_page_file(lang: str, slug: str) -> Path | None:
@@ -78,33 +103,6 @@ def _resolve_page_file(lang: str, slug: str) -> Path | None:
     return candidate
 
 
-# Heading levels surfaced in the sidebar "on this page" sub-nav: H2 sections,
-# each with its H3 subsections; the page H1 and deeper levels are flattened out.
-_H2_LEVEL = 2
-_H3_LEVEL = 3
-
-
-def _extract_headings(tokens: list[dict]) -> tuple[Heading, ...]:
-    """Flatten python-markdown ``toc_tokens`` into H2/H3 anchors for the sidebar.
-
-    The page H1 (level 1) is dropped and its children hoisted up, so the
-    "on this page" list starts at the section headings. ``name`` values arrive
-    HTML-escaped (e.g. ``"Text &amp; Unicode"``); we unescape once here and let
-    Jinja auto-escape on render.
-    """
-    out: list[Heading] = []
-    for tok in tokens:
-        children = _extract_headings(tok["children"])
-        level = tok["level"]
-        if level == _H2_LEVEL:
-            out.append(Heading(tok["id"], _html.unescape(tok["name"]), children))
-        elif level == _H3_LEVEL:
-            out.append(Heading(tok["id"], _html.unescape(tok["name"]), ()))
-        else:  # level 1 (page title) or deeper — hoist any children up a level
-            out.extend(children)
-    return tuple(out)
-
-
 def load_page(lang: str, slug: str) -> WikiPage | None:
     """Load and render a wiki page, using the in-process cache."""
     cache_key = (lang, slug)
@@ -115,9 +113,13 @@ def load_page(lang: str, slug: str) -> WikiPage | None:
     if page_file is None:
         return None
 
-    md = markdown.Markdown(extensions=MARKDOWN_EXTENSIONS)
+    md = markdown.Markdown(
+        extensions=MARKDOWN_EXTENSIONS,
+        extension_configs=MARKDOWN_EXTENSION_CONFIGS,
+    )
     html = md.convert(page_file.read_text(encoding="utf-8"))
     meta: dict[str, list[str]] = getattr(md, "Meta", {})
+    toc_tokens = getattr(md, "toc_tokens", [])
 
     def meta_value(key: str, default: str = "") -> str:
         values = meta.get(key, [])
@@ -133,7 +135,11 @@ def load_page(lang: str, slug: str) -> WikiPage | None:
         description=meta_value("description"),
         order=int(meta_value("order", "1000")),
         html=html,
-        toc=_extract_headings(getattr(md, "toc_tokens", [])),
+        # ``md.toc`` (added by the toc extension) is an empty
+        # ``<div class="toc"><ul></ul></div>`` when the page has no h2/h3; gate
+        # on the tokens so such pages render no rail.
+        toc_html=getattr(md, "toc", "") if toc_tokens else "",
+        headings=_flatten_toc(toc_tokens),
         nav_title=nav_title,
     )
     _page_cache[cache_key] = page
@@ -166,6 +172,37 @@ def wiki_pages(lang: str = DEFAULT_LANG) -> list[WikiPage]:
     return sorted(pages, key=lambda page: (page.order, page.title))
 
 
+def _strip_html(html_text: str) -> str:
+    """Plain-text body of a rendered page, for the search index.
+
+    Codehilite/fenced output escapes literal ``<``/``>`` to entities, so the
+    tag regex only strips real markup; ``unescape`` then restores the text.
+    """
+    text = _TAG_RE.sub(" ", html_text)
+    return " ".join(unescape(text).split())
+
+
+def _search_index(lang: str) -> list[dict]:
+    """Search documents for a language, following the English fallback.
+
+    Paths are bare (``/wiki/...``); the client prepends the language prefix,
+    matching the ``WIKI_TOOLS`` / ``LANG_PREFIX`` convention.
+    """
+    docs = []
+    for en_page in wiki_pages(DEFAULT_LANG):
+        page = en_page if lang == DEFAULT_LANG else (load_page(lang, en_page.slug) or en_page)
+        docs.append(
+            {
+                "path": page.path,
+                "title": page.title,
+                "description": page.description,
+                "text": _strip_html(page.html)[:_SEARCH_BODY_CHARS],
+                "headings": [{"id": hid, "title": title} for hid, title in page.headings],
+            },
+        )
+    return docs
+
+
 def translated_langs(slug: str) -> list[str]:
     """Prefix languages that have a real translation of a page."""
     return [lang for lang in PREFIX_LANGS if _resolve_page_file(lang, slug) is not None]
@@ -191,7 +228,6 @@ def _wiki_nav(lang: str) -> list[WikiPage]:
 class NavGroup(TypedDict):
     """A titled sidebar section and its pages."""
 
-    key: str
     label: str
     pages: list[WikiPage]
 
@@ -224,7 +260,7 @@ def _nav_groups(nav: list[WikiPage]) -> list[NavGroup]:
         return (rank, segment)
 
     return [
-        {"key": segment, "label": _section_label(segment), "pages": groups[segment]}
+        {"label": _section_label(segment), "pages": groups[segment]}
         for segment in sorted(groups, key=order_key)
     ]
 
@@ -251,13 +287,20 @@ def _render(slug: str) -> str:
         canonical_path = f"/{lang}{page.path}"
         alternates = alternates_for(page.path, [DEFAULT_LANG, *translated_langs(slug)])
 
+    nav = _wiki_nav(lang)
+    idx = next((i for i, nav_page in enumerate(nav) if nav_page.slug == page.slug), None)
+    prev_page = nav[idx - 1] if idx not in (None, 0) else None
+    next_page = nav[idx + 1] if idx is not None and idx < len(nav) - 1 else None
+
     return render_template(
         "wiki.html",
         page=page,
         is_fallback=is_fallback,
         canonical_path=canonical_path,
         alternates=alternates,
-        nav_groups=_nav_groups(_wiki_nav(lang)),
+        nav_groups=_nav_groups(nav),
+        prev_page=prev_page,
+        next_page=next_page,
     )
 
 
@@ -265,6 +308,18 @@ def _render(slug: str) -> str:
 def wiki_index() -> str:
     """Render the wiki landing page."""
     return _render("index")
+
+
+@wiki_bp.route("/wiki/search.json")
+def wiki_search() -> Response:
+    """Search index for the active language (bare paths; client adds prefix).
+
+    Static rule, so Werkzeug ranks it above the ``<path:slug>`` converter.
+    """
+    lang = g.get("lang_code") or DEFAULT_LANG
+    if FLASK_DEBUG or lang not in _search_cache:
+        _search_cache[lang] = json.dumps({"pages": _search_index(lang)}, ensure_ascii=False)
+    return Response(_search_cache[lang], mimetype="application/json")
 
 
 @wiki_bp.route("/wiki/<path:slug>")

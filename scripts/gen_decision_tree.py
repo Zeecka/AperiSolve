@@ -71,6 +71,17 @@ BRANCHES: list[tuple[str, str, list[tuple[str, str]]]] = [
         ],
     ),
     (
+        "VIDEO",
+        "#f778ba",
+        [
+            ("ffprobe streams", "count tracks"),
+            ("extract frames", "ffmpeg -vsync 0"),
+            ("subtitle / attach", "-map 0:s / dump"),
+            ("audio track", "-> spectrogram"),
+            ("moov / trailing", "exiftool · binwalk"),
+        ],
+    ),
+    (
         "TEXT",
         "#56d4bc",
         [

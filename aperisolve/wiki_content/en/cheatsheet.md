@@ -5,6 +5,8 @@ Order: 30
 
 # Cheatsheet
 
+<button type="button" class="wiki-print-btn" onclick="window.print()"><i class="fa fa-print"></i> Print / save as PDF</button>
+
 ## Disclaimer
 
 This cheatsheet guides CTF players and forensic analysts through the common
@@ -108,6 +110,20 @@ Background: [Audio technique page](/wiki/techniques/audio).
 5. **Passworded container** → [steghide](/wiki/tools/steghide) (WAV/AU) or
    DeepSound.
 
+## Video {: #video }
+
+Full detail: [Video technique page](/wiki/techniques/video).
+
+1. **Count the streams** → `ffprobe file.mp4` / `mediainfo`. An extra subtitle,
+   attachment or data track is often the whole trick.
+2. **Extract frames** → `ffmpeg -i file.mp4 -vsync 0 out/f%05d.png`, then run the
+   PNG checklist (zsteg, bit planes) on the lossless frames.
+3. **Subtitle / attachment tracks** → `ffmpeg -i file.mkv -map 0:s:0 subs.srt`;
+   `ffmpeg -dump_attachment:t "" -i file.mkv` for attached files.
+4. **Audio track** → `ffmpeg -i file.mp4 -vn audio.wav`, then spectrogram first.
+5. **Metadata & trailing data** → `exiftool`, `binwalk`, bytes past the `moov`
+   atom.
+
 ## Text & Unicode {: #text }
 
 **Full command checklists:** [Text cheatsheet](/wiki/cheatsheet/text) ·
@@ -151,6 +167,7 @@ Jump straight to a technique from the symptom.
 | A `CTF{`-ish string in plain `strings`      | [`strings -n 8`](/wiki/tools/strings), `-e l`/`-e b` |
 | Odd EXIF Comment / weird metadata           | [`exiftool -a -u -g1`](/wiki/tools/exiftool) |
 | PNG/BMP, nothing in metadata                | [`zsteg -a`](/wiki/tools/zsteg)            |
+| LSB plane looks like random noise           | encrypted LSB — need the tool + password ([cloacked-pixel…](/wiki/techniques/images#lsb-bit-planes-and-channels)) |
 | Image won't open / looks cropped            | [`pngcheck -vtp7`](/wiki/tools/pngcheck) · [PCRT](/wiki/tools/pcrt) |
 | CRC error in IHDR                           | edit header / brute-force dimensions       |
 | JPEG + a password hint                      | [`steghide`](/wiki/tools/steghide) · [`stegseek rockyou`](/wiki/tools/stegseek) |
@@ -158,6 +175,9 @@ Jump straight to a technique from the symptom.
 | Static / blocks in an audio file            | spectrogram, high-res (Audacity / `sox -X -Y`) |
 | Stereo audio, silent when summed to mono    | isolate / subtract channels (`sox … remix`) |
 | Clean WAV, nothing in spectrogram           | `stegolsb wavsteg`                         |
+| WAV LSB output is all null bytes            | skip leading zeros; try `-n 1` and `-n 2` |
+| A video file (mp4/mkv/avi)                  | [`ffprobe`](/wiki/techniques/video) → extract frames · subtitle/attachment tracks |
+| An ELF / PE / Mach-O executable             | [steg86](/wiki/techniques/files-archives#executables-and-binaries) · section / appended data |
 | Invisible / trailing spaces in a `.txt`     | [`stegsnow -C`](/wiki/tools/stegsnow) · `cat -A` |
 | Text copies "wrong" / mixed alphabets       | zero-width / homoglyph decoder             |
 | Text too short / an emoji "holds" data      | tag (U+E00xx) & variation-selector decoder |
@@ -165,6 +185,7 @@ Jump straight to a technique from the symptom.
 | ZipCrypto zip + a known inner file          | [bkcrack](https://github.com/kimci86/bkcrack) known-plaintext |
 | PDF with more than one `%%EOF`              | `pdfresurrect -w` (old revisions)          |
 | A QR / barcode in a file                    | `zbarimg --raw`                            |
+| Recovered a blob, not yet the flag          | [CyberChef Magic](/wiki/techniques/encodings) · [dcode.fr](https://www.dcode.fr/) |
 | Nothing works, unknown blob                 | [binvis.io](http://binvis.io/) · raw import (GIMP/Audacity) |
 
 ## When stuck, check these {: #stuck }
@@ -192,6 +213,10 @@ The recurring misses, from CTF writeups:
    stego against it in Stegsolve to isolate the edits.
 10. Reduce a media **header size** (WAV DataSize, PNG height) to reveal a
     cropped-out region.
+11. **Match the tool to the carrier**: steghide handles JPEG/BMP/WAV but *not*
+    PNG/GIF, and zsteg handles PNG/BMP but *not* JPEG — using the wrong one is
+    the most common stall. Repair a broken PNG (`pngcheck -f`) before zsteg, and
+    remember audio LSB payloads often **don't start at sample 0**.
 
 ## References {: #more }
 
