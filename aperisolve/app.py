@@ -278,26 +278,55 @@ def _sitemap_entries() -> list[tuple[str, str | None, list[tuple[str, str]]]]:
     return entries
 
 
-def run_cleanup_with_lock(app: Flask) -> None:
-    """Run the DB/filesystem cleanup at most once per interval, cluster-wide.
+def _acquire_cleanup_lock(app: Flask) -> bool:
+    """Claim the per-interval cleanup lock. False on contention or Redis error.
 
-    A Redis ``SET NX EX`` lock ensures a single process (gunicorn worker or
-    the cron scheduler) performs the sweep per interval; everyone else skips
-    instantly.
+    A Redis ``SET NX EX`` ensures a single process (a gunicorn worker or the
+    cron scheduler) drives the sweep per interval; everyone else backs off.
     """
     redis_conn = app.config["REDIS_QUEUE"].connection
     try:
-        acquired = redis_conn.set(
-            CLEANUP_LOCK_KEY,
-            "1",
-            nx=True,
-            ex=CLEANUP_INTERVAL_SECONDS,
+        return bool(
+            redis_conn.set(
+                CLEANUP_LOCK_KEY,
+                "1",
+                nx=True,
+                ex=CLEANUP_INTERVAL_SECONDS,
+            ),
         )
     except RedisError as exc:
         sentry_sdk.capture_exception(exc)
-        return
-    if acquired:
+        return False
+
+
+def run_cleanup_with_lock(app: Flask) -> None:
+    """Run the retention sweep inline, at most once per interval, cluster-wide.
+
+    Used by the cron worker (``aperisolve/tasks.py``), which runs off the
+    request path where a long sweep cannot abort an HTTP worker.
+    """
+    if _acquire_cleanup_lock(app):
         cleanup_old_entries()
+
+
+def schedule_cleanup(app: Flask) -> None:
+    """Enqueue the retention sweep as a background job, once per interval.
+
+    The request path calls this as a safety net for when the cron service is
+    down. Running the sweep inline in a gunicorn worker risked exceeding the
+    (30 s default) worker timeout on a large backlog and aborting the request
+    with ``SystemExit`` (issue #191); enqueuing keeps it off the request path.
+    The interval lock is claimed here so at most one job is queued per
+    interval, and the job runs the sweep directly without re-claiming it.
+    """
+    if _acquire_cleanup_lock(app):
+        try:
+            app.config["REDIS_QUEUE"].enqueue(
+                "aperisolve.tasks.cleanup_sweep_job",
+                job_timeout=JOB_TIMEOUT,
+            )
+        except RedisError as exc:
+            sentry_sdk.capture_exception(exc)
 
 
 def _get_or_create_image(img_hash: str, new_img_path: Path, size: int) -> Image:
@@ -324,10 +353,10 @@ def _get_or_create_image(img_hash: str, new_img_path: Path, size: int) -> Image:
 
 def _upload_image(app: Flask) -> tuple[Response, int]:
     """Handle image upload and initiate analysis."""
-    # Transitional: the cron service is the primary cleanup driver; this
-    # lock-guarded call remains as a safety net and is a no-op whenever the
-    # cron job holds the interval lock.
-    run_cleanup_with_lock(app)
+    # The cron service is the primary cleanup driver; this enqueue is a safety
+    # net for when it is down. It runs off the request path (issue #191) and is
+    # a no-op whenever the cron job already holds the interval lock.
+    schedule_cleanup(app)
 
     if "image" not in request.files:
         return jsonify({"error": _("No image provided")}), 400

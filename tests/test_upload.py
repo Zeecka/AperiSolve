@@ -74,6 +74,47 @@ def test_upload_creates_rows_and_enqueues(
     assert kwargs.get("job_timeout") == JOB_TIMEOUT
 
 
+def test_upload_enqueues_cleanup_off_request_path(
+    client: FlaskClient,
+    enqueue_calls: list[EnqueueCall],
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """When the interval lock is free, cleanup is enqueued, never run inline.
+
+    Running the retention sweep synchronously in the request risked a gunicorn
+    worker-timeout abort (issue #191), so the request path must only enqueue.
+    """
+    monkeypatch.setattr(app_module, "_acquire_cleanup_lock", lambda _app: True)
+    ran_inline = False
+
+    def _fail_if_inline() -> None:
+        nonlocal ran_inline
+        ran_inline = True
+
+    monkeypatch.setattr(app_module, "cleanup_old_entries", _fail_if_inline)
+
+    response = _post_image(client, _png_bytes(), "tiny.png")
+    assert response.status_code == 200
+    assert not ran_inline, "cleanup must not run inline in the request"
+
+    cleanup_calls = [c for c in enqueue_calls if c[0] == ("aperisolve.tasks.cleanup_sweep_job",)]
+    assert len(cleanup_calls) == 1
+    assert cleanup_calls[0][1].get("job_timeout") == JOB_TIMEOUT
+
+
+def test_upload_skips_cleanup_enqueue_when_lock_held(
+    client: FlaskClient,
+    enqueue_calls: list[EnqueueCall],
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """A held interval lock (cron owns it) means no cleanup job is queued."""
+    monkeypatch.setattr(app_module, "_acquire_cleanup_lock", lambda _app: False)
+
+    response = _post_image(client, _png_bytes(), "tiny.png")
+    assert response.status_code == 200
+    assert all(c[0] != ("aperisolve.tasks.cleanup_sweep_job",) for c in enqueue_calls)
+
+
 def test_duplicate_upload_returns_same_hash_without_second_enqueue(
     app: Flask,
     client: FlaskClient,
