@@ -14,8 +14,6 @@ checks first.
 This page is the method. When you are mid-challenge and just need "what do I
 try next", jump to the [cheatsheet](/wiki/cheatsheet) decision tree.
 
-[TOC]
-
 ## The three rules that save the most time
 
 !!! tip "Do the basics before anything clever"
@@ -70,7 +68,7 @@ See [`exiftool`](/wiki/tools/exiftool) and [`strings`](/wiki/tools/strings).
 
 ```console
 $ binwalk target
-$ binwalk -e target             # auto-extract known signatures
+$ binwalk -Me target            # auto-extract, recursively through nested archives
 $ foremost -i target -o out/    # header/footer carving when binwalk misses
 ```
 
@@ -87,11 +85,13 @@ Branch on the real container:
 - **JPEG** → `steghide` / `stegseek`, then `outguess` / `jsteg`.
 - **GIF / APNG** → extract and diff frames; check frame durations.
 - **Audio** → generate a spectrogram first, then check WAV LSB.
+- **Video** → probe the streams, extract frames and subtitle/attachment tracks.
 - **PDF / Office** → treat as an archive and inspect the object/part tree.
 
 Each is covered in depth on its technique page:
 [Images](/wiki/techniques/images) ·
 [Audio](/wiki/techniques/audio) ·
+[Video](/wiki/techniques/video) ·
 [Files & Archives](/wiki/techniques/files-archives).
 
 ### 5. Polyglot and trailing-data checks
@@ -113,7 +113,10 @@ common encodings: a binary blob of perfect-square length is often a **QR code**
 image; dots-and-dashes are **Morse**; `.` and `,` patterns may be **Braille**;
 `0b`-style blocks are ASCII. [CyberChef](https://gchq.github.io/CyberChef/) with
 the *Magic* operation identifies most of these automatically, and
-[dcode.fr](https://www.dcode.fr/) has decoders for the rest.
+[dcode.fr](https://www.dcode.fr/) has decoders for the rest. See
+[Encodings & obfuscation](/wiki/techniques/encodings) for the full
+recognition-and-decoding reference (bases, XOR, classical ciphers, Morse,
+Braille, QR).
 
 ## Working with raw data
 

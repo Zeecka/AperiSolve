@@ -10,8 +10,6 @@ secret. In CTFs you rarely need formal detection — the challenge implies data 
 present — but when a file *looks* clean and every extractor fails, statistical
 detectors tell you whether to keep digging.
 
-[TOC]
-
 ## Targeted vs blind detection
 
 - **Targeted** steganalysis assumes a specific embedding method and tests for

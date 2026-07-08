@@ -10,8 +10,6 @@ after the logical end, a second format hiding inside the first, or an archive
 masquerading as an image. None of these need pixel analysis — they need you to
 read the bytes.
 
-[TOC]
-
 ## Magic bytes and appended data
 
 Every format starts with a **magic signature**
@@ -33,6 +31,14 @@ central directory at the **end** of the file, an appended ZIP often just opens:
 $ unzip target.png
 $ 7z l target.png
 ```
+
+!!! example "Worked example: a ZIP appended to a PNG"
+    `cat.png` is 4 MB but shows a small image — a size mismatch. `binwalk
+    cat.png` lists a `Zip archive data` signature at a nonzero offset. Because
+    the ZIP's central directory sits at the end of the file, `unzip cat.png`
+    opens it directly and extracts `flag.txt` — no carving needed. If the ZIP is
+    password-protected, `fcrackzip -u -D -p rockyou.txt cat.png` cracks weak
+    ZipCrypto; for AES, guess the password from the challenge instead.
 
 If `binwalk` misses it, carve by header/footer with
 [foremost](/wiki/tools/foremost), or manually with `dd` once you know the
@@ -96,6 +102,14 @@ $ bkcrack -C secret.zip -c inner.png -p known_prefix.bin      # recover 3 keys
 $ bkcrack -C secret.zip -k <k0> <k1> <k2> -D unlocked.zip     # decrypt everything
 ```
 
+!!! warning "Match the compression of your known plaintext"
+    bkcrack attacks the **compressed** byte stream, not the raw file. If the
+    target entry is Deflate-compressed, your known-plaintext bytes must be
+    Deflate-compressed *at the same level* before you feed them with `-p`, or no
+    keys are found (you need ≥12 known bytes, ≥8 contiguous). It recovers the
+    keystream, not the password — but you can read the original password back
+    from the keys with `bkcrack -k <k0> <k1> <k2> -r 10 ?p`.
+
 - **Repair** a broken archive with `zip -FF broken.zip --out fixed.zip`.
 - **Evasion tricks** (seen in modern challenges): concatenated central
   directories (7-Zip reads the first, WinRAR the last), overlapping entries,
@@ -119,6 +133,11 @@ tool other than the one its extension implies. For a macro-enabled document
 ```console
 $ olevba --decode target.docm       # VBA source + de-obfuscation + IOCs
 ```
+
+!!! tip "VBA stomping hides the real code as p-code"
+    In a *stomped* document, `olevba` shows benign or empty source because the
+    genuine logic exists only as compiled **p-code** that Office actually runs.
+    Dump and decompile it with `pcodedmp target.doc` / `pcode2code target.doc`.
 
 **PDF** — an object/stream container:
 
@@ -162,6 +181,23 @@ Three PDF-specific hiding spots the basics miss:
 - **QR / barcodes** in a recovered file → `zbarimg --raw file.png` (upscale tiny
   codes first: `convert file.png -resize 400% big.png`).
 
+## Executables and binaries
+
+An ELF / PE / Mach-O is also a carrier. Beyond the obvious (data appended after
+the last section, odd strings, a payload in `.comment` / `.rodata` —
+`readelf -p .comment file`, `objdump -s -j .rodata file`), data can hide in
+**semantic-dual instructions**: swapping an instruction for an equivalent of the
+same length encodes bits without changing behavior or file size. This is the
+Hydan idea, revived by [steg86](https://github.com/woodruffw/steg86):
+
+```console
+$ steg86 profile binary          # how many bits this binary can carry
+$ steg86 extract binary.steg     # recover the hidden message
+```
+
+The distribution shift it leaves is invisible to `strings`, `binwalk` and
+`file`, so recognizing that an *executable* is the carrier is the whole trick.
+
 ## Network captures (pcap)
 
 Forensics challenges frequently ship a `.pcap`; the hidden file or message is in
@@ -173,9 +209,15 @@ the traffic:
 - **USB HID keyboard** → `tshark -r usb.pcap -Y 'usb.capdata && usb.data_len==8'
   -T fields -e usb.capdata` piped into
   [ctf-usb-keyboard-parser](https://github.com/TeamRocketIst/ctf-usb-keyboard-parser).
+  If that field comes back empty, the capture may name it **`usbhid.data`**
+  instead — try both. Keyboard reports are always 8 bytes (modifier + reserved +
+  up to 6 keycodes), so filter on `usb.data_len==8` to drop noise.
 - **DNS / ICMP exfiltration** → pull the payload fields
   (`tshark -r cap.pcap -Y dns.qry.name -T fields -e dns.qry.name`) and decode the
-  subdomain labels (hex/base32) or ICMP `data.data`.
+  subdomain labels — usually **Base32** (DNS labels are case-insensitive, so
+  Base64 fails), sometimes hex. Dedupe first (request and response repeat each
+  name): `… | awk '!seen[$0]++'`. ICMP tunnels carry bytes in `data.data`.
+  Repair a truncated capture with `pcapfix cap.pcap` before anything else.
 
 ## File carving
 

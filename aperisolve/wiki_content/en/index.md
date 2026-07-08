@@ -26,9 +26,11 @@ and open a tool's guide when you need the exact command.
   recover it:
   [Images](/wiki/techniques/images) ·
   [Audio](/wiki/techniques/audio) ·
+  [Video](/wiki/techniques/video) ·
   [Text & Unicode](/wiki/techniques/text) ·
   [Files & Archives](/wiki/techniques/files-archives) ·
-  [Steganalysis](/wiki/techniques/steganalysis).
+  [Steganalysis](/wiki/techniques/steganalysis) ·
+  [Encodings & obfuscation](/wiki/techniques/encodings).
 - **Tools** — a reference page for every analyzer Aperi'Solve runs: what it
   does, the exact command, how to read the output, and how to install it
   locally.

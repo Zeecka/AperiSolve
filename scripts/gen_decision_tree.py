@@ -54,6 +54,13 @@ BRANCHES: list[tuple[str, str, list[tuple[str, str]]]] = [
         ("SSTV / DTMF / FSK", "QSSTV / minimodem"),
         ("steghide", "DeepSound"),
     ]),
+    ("VIDEO", "#f778ba", [
+        ("ffprobe streams", "count tracks"),
+        ("extract frames", "ffmpeg -vsync 0"),
+        ("subtitle / attach", "-map 0:s / dump"),
+        ("audio track", "-> spectrogram"),
+        ("moov / trailing", "exiftool · binwalk"),
+    ]),
     ("TEXT", "#56d4bc", [
         ("cat -A -> stegsnow", "whitespace"),
         ("zero-width", "U+200B / C / D"),
@@ -77,7 +84,7 @@ BRANCHES: list[tuple[str, str, list[tuple[str, str]]]] = [
 
 # --- Geometry ------------------------------------------------------------
 
-W = 1240
+W = 1400
 MARGIN_X = 20
 COL_W = (W - 2 * MARGIN_X) / len(BRANCHES)
 PILL_W = 154
