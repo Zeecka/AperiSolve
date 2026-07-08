@@ -10,8 +10,6 @@ zero-width code points, or letters that look identical but are not. The tell is
 almost always a **byte count larger than the visible text**, or text that
 "copies wrong".
 
-[TOC]
-
 ## Whitespace encoding (SNOW)
 
 Data is encoded in **trailing spaces and tabs** at the end of lines — invisible
@@ -87,7 +85,10 @@ recovers the message.
 
 ## Exotic encodings
 
-Recovered a blob that is not yet a flag? Recognize the encoding:
+Recovered a blob that is not yet a flag? The
+[Encodings & obfuscation](/wiki/techniques/encodings) page is the full
+recognition-and-decoding reference (bases, XOR, classical ciphers, Morse,
+Braille, QR); the essentials for text blobs:
 
 - ASCII in **8-bit binary** blocks starts each letter with `0`; strip it and you
   have 7-bit blocks. Text may also be a single big integer (sometimes in a
