@@ -825,3 +825,97 @@ if (browseBtn) {
     });
 }
 
+/**
+ * Wiki search
+ *
+ * Lazy-fetches /wiki/search.json on the first keystroke, then does dependency-free
+ * tokenized substring ranking (title > description > heading > body). No-op off
+ * the wiki (the input/results elements only exist there).
+ */
+function initWikiSearch() {
+  const input = document.getElementById("wiki-search");
+  const box = document.getElementById("wiki-search-results");
+  if (!input || !box) return;
+  let index = null;
+
+  async function ensureIndex() {
+    if (index) return index;
+    const resp = await fetch(`${LANG_PREFIX}/wiki/search.json`);
+    index = (await resp.json()).pages;
+    return index;
+  }
+
+  function score(haystack, terms) {
+    const hay = (haystack || "").toLowerCase();
+    return terms.reduce((s, term) => s + (hay.includes(term) ? 1 : 0), 0);
+  }
+
+  function render(hits) {
+    if (!hits.length) {
+      box.innerHTML = `<div class="wiki-search-empty">${t("No results")}</div>`;
+      return;
+    }
+    box.innerHTML = hits
+      .slice(0, 8)
+      .map((hit) => {
+        const anchor = hit.heading ? `#${hit.heading.id}` : "";
+        const label = hit.heading
+          ? `${escapeHtml(hit.page.title)} <span class="wiki-search-sep">&rsaquo;</span> ${escapeHtml(hit.heading.title)}`
+          : escapeHtml(hit.page.title);
+        return `<a class="wiki-search-hit" href="${LANG_PREFIX}${hit.page.path}${anchor}">${label}</a>`;
+      })
+      .join("");
+  }
+
+  async function run() {
+    const terms = input.value.toLowerCase().split(/\s+/).filter(Boolean);
+    if (!terms.length) {
+      box.innerHTML = "";
+      return;
+    }
+    const pages = await ensureIndex();
+    const hits = [];
+    for (const page of pages) {
+      const pageScore =
+        score(page.title, terms) * 5 +
+        score(page.description, terms) * 2 +
+        score(page.text, terms);
+      if (pageScore) hits.push({ page, score: pageScore + 3 });
+      for (const heading of page.headings) {
+        const headingScore = score(heading.title, terms) * 4;
+        if (headingScore) hits.push({ page, heading, score: headingScore });
+      }
+    }
+    hits.sort((a, b) => b.score - a.score);
+    render(hits);
+  }
+
+  let debounce;
+  input.addEventListener("input", () => {
+    clearTimeout(debounce);
+    debounce = setTimeout(run, 120);
+  });
+  document.addEventListener("click", (event) => {
+    if (!event.target.closest(".wiki-search")) box.innerHTML = "";
+  });
+}
+initWikiSearch();
+
+/* Cheatsheet "Tell → Tool" table: instant row filter (opt-in via #tell-tool-filter). */
+(function initTellToolFilter() {
+  const input = document.getElementById("tell-tool-filter");
+  if (!input) return;
+  const scope = input.closest(".wiki-article") || document;
+  const table = Array.from(scope.querySelectorAll("table")).find(
+    (t) => input.compareDocumentPosition(t) & Node.DOCUMENT_POSITION_FOLLOWING
+  );
+  if (!table) return;
+  const rows = Array.from(table.querySelectorAll("tbody tr"));
+  input.addEventListener("input", () => {
+    const q = input.value.trim().toLowerCase();
+    rows.forEach((row) => {
+      row.hidden = !!q && row.textContent.toLowerCase().indexOf(q) === -1;
+    });
+  });
+})();
+

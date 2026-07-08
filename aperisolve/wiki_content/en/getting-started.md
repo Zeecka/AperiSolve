@@ -1,5 +1,6 @@
 Title: Getting Started with Aperi'Solve
 Description: How to upload an image on Aperi'Solve, use passwords and deep analysis, and interpret each analyzer's results.
+NavTitle: Getting started
 Order: 10
 
 # Getting started
