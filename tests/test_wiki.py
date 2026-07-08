@@ -54,6 +54,33 @@ def test_sidebar_shows_section_groups(client: FlaskClient) -> None:
         assert f">{heading}</h2>" in html, f"missing sidebar section {heading}"
 
 
+def test_sidebar_shows_on_this_page(client: FlaskClient) -> None:
+    """The active page renders its H2/H3 anchors as an 'on this page' sub-nav."""
+    html = client.get("/wiki/cheatsheet").get_data(as_text=True)
+    assert 'class="wiki-toc' in html
+    assert 'href="#triage"' in html  # an H2 anchor of the active page
+    assert 'href="#png"' in html  # a nested H3 anchor
+    assert 'data-toc-id="triage"' in html
+    # The active sidebar link is marked and highlighted.
+    assert "nav-link px-0 active fw-bold" in html
+
+
+def test_sidebar_on_this_page_only_for_active(client: FlaskClient) -> None:
+    """Only the active page's headings are dumped into the sidebar."""
+    html = client.get("/wiki/tools/zsteg").get_data(as_text=True)
+    # #triage is a cheatsheet anchor; the cheatsheet is not the active page here.
+    assert 'data-toc-id="triage"' not in html
+
+
+def test_cheatsheet_section_and_deep_pages(client: FlaskClient) -> None:
+    """The per-medium cheatsheet split renders as its own sidebar section."""
+    html = client.get("/wiki/cheatsheet").get_data(as_text=True)
+    assert ">Cheatsheet</h2>" in html  # the folder-driven sidebar section
+    assert client.get("/wiki/cheatsheet/image").status_code == 200
+    assert client.get("/wiki/cheatsheet/network").status_code == 200
+    assert client.get("/wiki/cheatsheet/brute-force").status_code == 200
+
+
 def test_wiki_page_disables_animated_background(client: FlaskClient) -> None:
     """Content pages skip the Three.js background for Core Web Vitals."""
     html = client.get("/wiki/cheatsheet").get_data(as_text=True)

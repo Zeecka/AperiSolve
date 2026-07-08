@@ -1,5 +1,6 @@
 Title: Steganography CTF Cheatsheet - Decision Tree
 Description: A steganography decision tree for CTF players: a by-file-type triage flow, frequency-ordered checklists for PNG, JPEG, GIF, audio, text and archives, a Tell to Tool lookup table, and a when-stuck checklist.
+NavTitle: Cheatsheet
 Order: 30
 
 # Cheatsheet
@@ -35,7 +36,8 @@ at [excalidraw.com](https://excalidraw.com).*
 ## Image challenges {: #image }
 
 Lossless formats (PNG, BMP) hide data in pixel bits; lossy JPEG hides it in DCT
-coefficients — so the tools differ. Full detail:
+coefficients — so the tools differ. **Full command checklist:**
+[Image cheatsheet](/wiki/cheatsheet/image). Background:
 [Images technique page](/wiki/techniques/images).
 
 ### PNG / BMP {: #png }
@@ -92,7 +94,8 @@ JPEG recompression destroys pixel LSBs, so [zsteg](/wiki/tools/zsteg) does
 
 ## Audio {: #audio }
 
-Full detail: [Audio technique page](/wiki/techniques/audio).
+**Full command checklist:** [Audio cheatsheet](/wiki/cheatsheet/audio).
+Background: [Audio technique page](/wiki/techniques/audio).
 
 1. **Spectrogram** (always first) → view the frequency domain in
    [Audacity](https://www.audacityteam.org/), Sonic Visualiser, or
@@ -107,7 +110,9 @@ Full detail: [Audio technique page](/wiki/techniques/audio).
 
 ## Text & Unicode {: #text }
 
-Full detail: [Text & Unicode technique page](/wiki/techniques/text).
+**Full command checklists:** [Text cheatsheet](/wiki/cheatsheet/text) ·
+[Encodings & esolangs cheatsheet](/wiki/cheatsheet/encodings). Background:
+[Text & Unicode technique page](/wiki/techniques/text).
 
 1. **Whitespace encoding** → trailing spaces/tabs. Reveal with `cat -A file.txt`;
    extract with `stegsnow -C file.txt`. [stegsnow](/wiki/tools/stegsnow)
@@ -120,7 +125,9 @@ Full detail: [Text & Unicode technique page](/wiki/techniques/text).
 
 ## Files & Archives {: #polyglot }
 
-Full detail:
+**Full command checklists:** [Files & Archives cheatsheet](/wiki/cheatsheet/files) ·
+[Passwords & brute-force cheatsheet](/wiki/cheatsheet/brute-force) ·
+[Network / PCAP cheatsheet](/wiki/cheatsheet/network). Background:
 [Files & Archives technique page](/wiki/techniques/files-archives).
 
 1. **Appended archive** → `unzip file.png` / `7z l file.png` often just works;
@@ -135,6 +142,8 @@ Full detail:
 ## Tell → Tool lookup {: #tell-tool }
 
 Jump straight to a technique from the symptom.
+
+<input type="search" id="tell-tool-filter" class="form-control form-control-sm mb-3" placeholder="Filter symptoms and tools…" aria-label="Filter the tell-to-tool table" autocomplete="off">
 
 | Tell (symptom)                              | Try this                                   |
 |---------------------------------------------|--------------------------------------------|

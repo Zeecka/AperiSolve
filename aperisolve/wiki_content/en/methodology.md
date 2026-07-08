@@ -1,5 +1,6 @@
 Title: Steganography Methodology - How to Approach Any File
 Description: A repeatable triage workflow for steganography and CTF forensics: identify the real container, enumerate high-signal locations (metadata, appended data, embedded files), then apply content-level extraction, ordered by likelihood.
+NavTitle: Methodology
 Order: 20
 
 # Methodology

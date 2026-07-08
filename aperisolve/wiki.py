@@ -5,10 +5,11 @@ Pages live in ``aperisolve/wiki_content/<lang>/<slug>.md`` with python-markdown
 is cached in-process; contributors add a page by dropping a markdown file.
 """
 
+import html as _html
 from dataclasses import dataclass
 from datetime import UTC, datetime
 from pathlib import Path
-from typing import TypedDict
+from typing import NamedTuple, TypedDict
 
 import markdown
 from flask import Blueprint, abort, g, render_template
@@ -31,10 +32,18 @@ MARKDOWN_EXTENSIONS = [
 # Sidebar sections, in display order, keyed by the top-level path segment of a
 # page slug ("" is the group of top-level pages: index, getting-started, ...).
 # A page under ``techniques/images`` lands in the ``techniques`` section.
-SECTION_ORDER = ["", "techniques", "tools"]
+SECTION_ORDER = ["", "cheatsheet", "techniques", "tools"]
 
 wiki_bp = Blueprint("wiki", __name__)
 register_lang_handling(wiki_bp)
+
+
+class Heading(NamedTuple):
+    """One H2/H3 anchor in a page, for the sidebar "on this page" sub-nav."""
+
+    id: str
+    title: str
+    children: tuple["Heading", ...]
 
 
 @dataclass(frozen=True)
@@ -46,6 +55,8 @@ class WikiPage:
     description: str
     order: int
     html: str
+    toc: tuple[Heading, ...] = ()
+    nav_title: str = ""
 
     @property
     def path(self) -> str:
@@ -67,6 +78,33 @@ def _resolve_page_file(lang: str, slug: str) -> Path | None:
     return candidate
 
 
+# Heading levels surfaced in the sidebar "on this page" sub-nav: H2 sections,
+# each with its H3 subsections; the page H1 and deeper levels are flattened out.
+_H2_LEVEL = 2
+_H3_LEVEL = 3
+
+
+def _extract_headings(tokens: list[dict]) -> tuple[Heading, ...]:
+    """Flatten python-markdown ``toc_tokens`` into H2/H3 anchors for the sidebar.
+
+    The page H1 (level 1) is dropped and its children hoisted up, so the
+    "on this page" list starts at the section headings. ``name`` values arrive
+    HTML-escaped (e.g. ``"Text &amp; Unicode"``); we unescape once here and let
+    Jinja auto-escape on render.
+    """
+    out: list[Heading] = []
+    for tok in tokens:
+        children = _extract_headings(tok["children"])
+        level = tok["level"]
+        if level == _H2_LEVEL:
+            out.append(Heading(tok["id"], _html.unescape(tok["name"]), children))
+        elif level == _H3_LEVEL:
+            out.append(Heading(tok["id"], _html.unescape(tok["name"]), ()))
+        else:  # level 1 (page title) or deeper — hoist any children up a level
+            out.extend(children)
+    return tuple(out)
+
+
 def load_page(lang: str, slug: str) -> WikiPage | None:
     """Load and render a wiki page, using the in-process cache."""
     cache_key = (lang, slug)
@@ -85,12 +123,18 @@ def load_page(lang: str, slug: str) -> WikiPage | None:
         values = meta.get(key, [])
         return values[0] if values else default
 
+    title = meta_value("title", slug.rsplit("/", maxsplit=1)[-1].replace("-", " ").title())
+    # Sidebar label: an explicit ``NavTitle`` wins; otherwise drop the SEO tail
+    # after the first " - " so the menu stays scannable.
+    nav_title = meta_value("navtitle") or title.split(" - ", 1)[0].strip()
     page = WikiPage(
         slug=slug,
-        title=meta_value("title", slug.rsplit("/", maxsplit=1)[-1].replace("-", " ").title()),
+        title=title,
         description=meta_value("description"),
         order=int(meta_value("order", "1000")),
         html=html,
+        toc=_extract_headings(getattr(md, "toc_tokens", [])),
+        nav_title=nav_title,
     )
     _page_cache[cache_key] = page
     return page
@@ -147,6 +191,7 @@ def _wiki_nav(lang: str) -> list[WikiPage]:
 class NavGroup(TypedDict):
     """A titled sidebar section and its pages."""
 
+    key: str
     label: str
     pages: list[WikiPage]
 
@@ -155,6 +200,7 @@ def _section_label(segment: str) -> str:
     """Localized sidebar heading for a top-level content section."""
     labels = {
         "": _("Wiki"),
+        "cheatsheet": _("Cheatsheet"),
         "techniques": _("Techniques"),
         "tools": _("Tools"),
     }
@@ -178,7 +224,7 @@ def _nav_groups(nav: list[WikiPage]) -> list[NavGroup]:
         return (rank, segment)
 
     return [
-        {"label": _section_label(segment), "pages": groups[segment]}
+        {"key": segment, "label": _section_label(segment), "pages": groups[segment]}
         for segment in sorted(groups, key=order_key)
     ]
 

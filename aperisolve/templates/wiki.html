@@ -1,5 +1,15 @@
 {% extends 'base.html' %}
 {% import 'partials/ads.html' as ads %}
+{% macro toc_item(h) %}
+<li class="wiki-toc__item">
+  <a class="wiki-toc__link" href="#{{ h.id }}" data-toc-id="{{ h.id }}">{{ h.title }}</a>
+  {% if h.children %}
+  <ul class="wiki-toc wiki-toc--sub">
+    {% for c in h.children %}{{ toc_item(c) }}{% endfor %}
+  </ul>
+  {% endif %}
+</li>
+{% endmacro %}
 {% block title %}{{ page.title }} - Aperi'Solve{% endblock %}
 {% block meta_description %}{{ page.description or page.title }}{% endblock %}
 {% block meta %}
@@ -37,24 +47,46 @@
 {% block background_scripts %}{% endblock %}
 {% block body_content %}
 <div class="row">
-  <aside class="col-lg-3 mb-4">
-    <nav class="wiki-sidebar card p-3" aria-label="{{ _("Wiki navigation") }}">
+  <aside class="col-lg-3 mb-4 wiki-sidebar-col">
+    <div class="wiki-sidebar-backdrop" hidden></div>
+    <nav id="wiki-sidebar" class="wiki-sidebar card p-3" aria-label="{{ _("Wiki navigation") }}">
+      <div class="wiki-search">
+        <label class="visually-hidden" for="wiki-filter">{{ _("Filter pages") }}</label>
+        <input id="wiki-filter" type="search" class="form-control form-control-sm"
+               placeholder="{{ _("Filter pages…") }}" autocomplete="off" aria-controls="wiki-sidebar">
+      </div>
       {% for group in nav_groups %}
-      <h2 class="h6 text-uppercase text-muted {{ 'mt-3' if not loop.first }}">{{ group.label }}</h2>
-      <ul class="nav flex-column mb-3">
-        {% for nav_page in group.pages %}
-        <li class="nav-item">
-          <a class="nav-link px-0 {{ 'active fw-bold' if nav_page.slug == page.slug }}" href="{{ lang_prefix }}{{ nav_page.path }}">
-            {{ nav_page.title }}
-          </a>
-        </li>
-        {% endfor %}
-      </ul>
+      {% set group_active = group.pages | selectattr('slug', 'equalto', page.slug) | list | length > 0 %}
+      <details class="wiki-nav-group" data-section="{{ group.key }}" {{ 'open' if group_active }}>
+        <summary class="wiki-nav-group__summary">
+          <h2 class="wiki-nav-group__label h6 text-uppercase text-muted mb-0">{{ group.label }}</h2>
+          <i class="fa fa-chevron-down wiki-nav-group__chevron" aria-hidden="true"></i>
+        </summary>
+        <ul class="nav flex-column my-2">
+          {% for nav_page in group.pages %}
+          {% set is_active = nav_page.slug == page.slug %}
+          <li class="nav-item wiki-nav-item" data-title="{{ nav_page.title | lower }}">
+            <a class="nav-link px-0 {{ 'active fw-bold' if is_active }}" href="{{ lang_prefix }}{{ nav_page.path }}"
+               {% if is_active %}aria-current="page"{% endif %}>
+              {{ nav_page.nav_title }}
+            </a>
+            {% if is_active and page.toc %}
+            <ul class="wiki-toc nav flex-column" aria-label="{{ _("On this page") }}">
+              {% for h in page.toc %}{{ toc_item(h) }}{% endfor %}
+            </ul>
+            {% endif %}
+          </li>
+          {% endfor %}
+        </ul>
+      </details>
       {% endfor %}
       {{ ads.ad_unit(config["ADSENSE_SLOT_WIKI_SIDEBAR"]) }}
     </nav>
   </aside>
   <div class="col-lg-9">
+    <button type="button" class="btn btn-sm wiki-drawer-toggle d-lg-none mb-3" aria-controls="wiki-sidebar" aria-expanded="false">
+      <i class="fa fa-bars me-2" aria-hidden="true"></i>{{ _("Contents") }}
+    </button>
     <nav aria-label="breadcrumb">
       <ol class="breadcrumb">
         <li class="breadcrumb-item"><a href="{{ lang_prefix }}/">{{ _("Home") }}</a></li>

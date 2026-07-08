@@ -1,5 +1,6 @@
 Title: Aperi'Solve Wiki - Steganography & CTF Forensics Handbook
 Description: An organized steganography wiki for CTF players and forensic analysts: a triage methodology, a decision-tree cheatsheet, technique pages per medium (image, audio, text, files) and a guide for every tool Aperi'Solve runs.
+NavTitle: Overview
 Order: 1
 
 # Aperi'Solve Wiki
@@ -21,7 +22,12 @@ and open a tool's guide when you need the exact command.
   time.
 - **[Cheatsheet](/wiki/cheatsheet)** — a decision tree by file type, a
   Tell → Tool lookup table, and a "when stuck" checklist. This is the page to
-  keep open during a CTF.
+  keep open during a CTF. It splits into per-medium command checklists:
+  [image](/wiki/cheatsheet/image), [audio](/wiki/cheatsheet/audio),
+  [text](/wiki/cheatsheet/text), [files & archives](/wiki/cheatsheet/files),
+  [network / PCAP](/wiki/cheatsheet/network),
+  [encodings & esolangs](/wiki/cheatsheet/encodings) and
+  [passwords & brute-force](/wiki/cheatsheet/brute-force).
 - **Techniques** — one page per medium, covering how data is hidden and how to
   recover it:
   [Images](/wiki/techniques/images) ·

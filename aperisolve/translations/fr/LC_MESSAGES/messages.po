@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2026-07-07 08:29+0000\n"
+"POT-Creation-Date: 2026-07-07 14:19+0000\n"
 "PO-Revision-Date: 2026-07-05 13:23+0000\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language: fr\n"
@@ -210,15 +210,20 @@ msgid "Analyzed image"
 msgstr "Image analysée"
 
 #: aperisolve/templates/base.html:60 aperisolve/templates/footer.html:39
-#: aperisolve/templates/wiki.html:61 aperisolve/wiki.py:157
+#: aperisolve/templates/wiki.html:93 aperisolve/wiki.py:202
 msgid "Wiki"
 msgstr "Wiki"
 
-#: aperisolve/wiki.py:158
+#: aperisolve/templates/base.html:61 aperisolve/templates/footer.html:42
+#: aperisolve/wiki.py:203
+msgid "Cheatsheet"
+msgstr "Cheatsheet"
+
+#: aperisolve/wiki.py:204
 msgid "Techniques"
 msgstr "Techniques"
 
-#: aperisolve/wiki.py:159
+#: aperisolve/wiki.py:205
 msgid "Tools"
 msgstr "Outils"
 
@@ -229,10 +234,6 @@ msgstr "Accueil Aperi'Solve"
 #: aperisolve/templates/base.html:59
 msgid "Main navigation"
 msgstr "Navigation principale"
-
-#: aperisolve/templates/base.html:61 aperisolve/templates/footer.html:42
-msgid "Cheatsheet"
-msgstr "Cheatsheet"
 
 #: aperisolve/templates/base.html:72
 msgid "Image preview"
@@ -332,15 +333,31 @@ msgstr "Aucune soumission à parcourir pour l'instant."
 msgid "Analyze an image"
 msgstr "Analyser une image"
 
-#: aperisolve/templates/wiki.html:41
+#: aperisolve/templates/wiki.html:52
 msgid "Wiki navigation"
 msgstr "Navigation du wiki"
 
-#: aperisolve/templates/wiki.html:60
+#: aperisolve/templates/wiki.html:54
+msgid "Filter pages"
+msgstr ""
+
+#: aperisolve/templates/wiki.html:56
+msgid "Filter pages…"
+msgstr ""
+
+#: aperisolve/templates/wiki.html:74
+msgid "On this page"
+msgstr ""
+
+#: aperisolve/templates/wiki.html:88
+msgid "Contents"
+msgstr ""
+
+#: aperisolve/templates/wiki.html:92
 msgid "Home"
 msgstr "Accueil"
 
-#: aperisolve/templates/wiki.html:67
+#: aperisolve/templates/wiki.html:99
 msgid "This page has not been translated yet; showing the English version."
 msgstr "Cette page n'a pas encore été traduite ; la version anglaise est affichée."
 

@@ -825,3 +825,214 @@ if (browseBtn) {
     });
 }
 
+/* ==========================================================================
+ * Wiki sidebar (HackTricks-style): collapsible tree, filter, on-this-page
+ * scrollspy and a mobile drawer. Progressive enhancement — the whole nav is
+ * server-rendered and works with this script disabled.
+ * ========================================================================== */
+(function initWikiSidebar() {
+  const sidebar = document.querySelector(".wiki-sidebar");
+  if (!sidebar) return;
+
+  const groups = Array.from(sidebar.querySelectorAll(".wiki-nav-group"));
+  const GROUP_KEY = "aperisolve.wiki.groups";
+
+  /* ---- Collapsible group state, persisted across navigations ---- */
+  const readState = () => {
+    try {
+      return JSON.parse(localStorage.getItem(GROUP_KEY)) || {};
+    } catch (e) {
+      return {};
+    }
+  };
+  const writeState = (state) => {
+    try {
+      localStorage.setItem(GROUP_KEY, JSON.stringify(state));
+    } catch (e) {
+      /* private mode / quota — non-fatal */
+    }
+  };
+
+  const applyStoredState = () => {
+    const state = readState();
+    groups.forEach((group) => {
+      const key = group.dataset.section;
+      if (Object.prototype.hasOwnProperty.call(state, key)) group.open = state[key];
+    });
+    // The group holding the current page is always expanded.
+    const active = sidebar.querySelector(".nav-link.active");
+    const activeGroup = active && active.closest(".wiki-nav-group");
+    if (activeGroup) activeGroup.open = true;
+  };
+
+  applyStoredState(); // before wiring toggle listeners, so it doesn't persist
+
+  groups.forEach((group) => {
+    group.addEventListener("toggle", () => {
+      if (sidebar.classList.contains("is-filtering")) return; // filter drives these
+      const state = readState();
+      state[group.dataset.section] = group.open;
+      writeState(state);
+    });
+  });
+
+  /* ---- Instant client-side filter ---- */
+  const filter = sidebar.querySelector("#wiki-filter");
+  const items = Array.from(sidebar.querySelectorAll(".wiki-nav-item"));
+  const toc = sidebar.querySelector(".wiki-toc");
+
+  const applyFilter = () => {
+    const q = filter.value.trim().toLowerCase();
+    if (!q) {
+      sidebar.classList.remove("is-filtering");
+      items.forEach((li) => (li.hidden = false));
+      groups.forEach((g) => (g.hidden = false));
+      if (toc) toc.hidden = false;
+      applyStoredState();
+      return;
+    }
+    sidebar.classList.add("is-filtering");
+    if (toc) toc.hidden = true;
+    items.forEach((li) => {
+      li.hidden = (li.dataset.title || "").indexOf(q) === -1;
+    });
+    groups.forEach((g) => {
+      const visible = Array.from(g.querySelectorAll(".wiki-nav-item")).some((li) => !li.hidden);
+      g.hidden = !visible;
+      if (visible) g.open = true;
+    });
+  };
+
+  if (filter) {
+    filter.addEventListener("input", applyFilter);
+    filter.addEventListener("keydown", (e) => {
+      if (e.key === "Escape" && filter.value) {
+        e.stopPropagation(); // clear the filter before the drawer sees Escape
+        filter.value = "";
+        applyFilter();
+      }
+    });
+  }
+
+  /* ---- "On this page" scrollspy ---- */
+  const tocLinks = new Map();
+  sidebar.querySelectorAll(".wiki-toc__link").forEach((link) => {
+    tocLinks.set(link.dataset.tocId, link);
+  });
+
+  if (tocLinks.size && "IntersectionObserver" in window) {
+    const article = document.querySelector(".wiki-article");
+    const headings = article ? Array.from(article.querySelectorAll("h2[id], h3[id]")) : [];
+    const targets = headings.filter((h) => tocLinks.has(h.id));
+    const onScreen = new Set();
+
+    const setActive = (id) => {
+      tocLinks.forEach((link, key) => {
+        const on = key === id;
+        link.classList.toggle("is-active", on);
+        if (on) link.setAttribute("aria-current", "true");
+        else link.removeAttribute("aria-current");
+      });
+    };
+
+    if (targets.length) {
+      const observer = new IntersectionObserver(
+        (entries) => {
+          entries.forEach((entry) => {
+            if (entry.isIntersecting) onScreen.add(entry.target.id);
+            else onScreen.delete(entry.target.id);
+          });
+          const first = targets.find((h) => onScreen.has(h.id));
+          if (first) setActive(first.id);
+        },
+        { rootMargin: "0px 0px -70% 0px", threshold: 0 }
+      );
+      targets.forEach((h) => observer.observe(h));
+    }
+
+    tocLinks.forEach((link, id) => link.addEventListener("click", () => setActive(id)));
+  }
+
+  /* ---- Mobile drawer ---- */
+  const toggle = document.querySelector(".wiki-drawer-toggle");
+  const backdrop = sidebar.parentElement.querySelector(".wiki-sidebar-backdrop");
+  const isMobile = () => window.matchMedia("(max-width: 991.98px)").matches;
+  let lastFocus = null;
+
+  const openDrawer = () => {
+    lastFocus = document.activeElement;
+    sidebar.classList.add("is-open");
+    if (backdrop) backdrop.hidden = false;
+    document.body.classList.add("wiki-drawer-open");
+    if (toggle) toggle.setAttribute("aria-expanded", "true");
+    (filter || sidebar).focus({ preventScroll: true });
+  };
+
+  const closeDrawer = () => {
+    sidebar.classList.remove("is-open");
+    if (backdrop) backdrop.hidden = true;
+    document.body.classList.remove("wiki-drawer-open");
+    if (toggle) toggle.setAttribute("aria-expanded", "false");
+    if (lastFocus && typeof lastFocus.focus === "function") {
+      lastFocus.focus({ preventScroll: true });
+    }
+  };
+
+  if (toggle) toggle.addEventListener("click", openDrawer);
+  if (backdrop) backdrop.addEventListener("click", closeDrawer);
+
+  sidebar.addEventListener("keydown", (e) => {
+    if (!sidebar.classList.contains("is-open")) return;
+    if (e.key === "Escape") {
+      closeDrawer();
+      return;
+    }
+    if (e.key !== "Tab") return;
+    // Trap focus inside the open drawer.
+    const focusable = Array.from(
+      sidebar.querySelectorAll('a[href], button, input, summary, [tabindex]:not([tabindex="-1"])')
+    ).filter((el) => el.offsetParent !== null && !el.closest("[hidden]"));
+    if (!focusable.length) return;
+    const first = focusable[0];
+    const last = focusable[focusable.length - 1];
+    if (e.shiftKey && document.activeElement === first) {
+      e.preventDefault();
+      last.focus();
+    } else if (!e.shiftKey && document.activeElement === last) {
+      e.preventDefault();
+      first.focus();
+    }
+  });
+
+  // A tap on any page/anchor link closes the drawer so it doesn't hide the target.
+  sidebar.addEventListener("click", (e) => {
+    if (isMobile() && sidebar.classList.contains("is-open") &&
+        e.target.closest(".nav-link, .wiki-toc__link")) {
+      closeDrawer();
+    }
+  });
+
+  // Rotating back to desktop must never leave a stuck-open drawer.
+  window.addEventListener("resize", () => {
+    if (!isMobile() && sidebar.classList.contains("is-open")) closeDrawer();
+  });
+})();
+
+/* Cheatsheet "Tell → Tool" table: instant row filter (opt-in via #tell-tool-filter). */
+(function initTellToolFilter() {
+  const input = document.getElementById("tell-tool-filter");
+  if (!input) return;
+  const scope = input.closest(".wiki-article") || document;
+  const table = Array.from(scope.querySelectorAll("table")).find(
+    (t) => input.compareDocumentPosition(t) & Node.DOCUMENT_POSITION_FOLLOWING
+  );
+  if (!table) return;
+  const rows = Array.from(table.querySelectorAll("tbody tr"));
+  input.addEventListener("input", () => {
+    const q = input.value.trim().toLowerCase();
+    rows.forEach((row) => {
+      row.hidden = !!q && row.textContent.toLowerCase().indexOf(q) === -1;
+    });
+  });
+})();
+
