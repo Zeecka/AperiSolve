@@ -27,59 +27,110 @@ ROOT_SUB = "run first:  file · exiftool · strings · binwalk"
 
 # (label, accent color, [ (line1, line2), ... ] ordered steps)
 BRANCHES: list[tuple[str, str, list[tuple[str, str]]]] = [
-    ("PNG / BMP", "#9fef00", [
-        ("zsteg -a", "LSB text / files"),
-        ("pngcheck -vtp7f", "CRC / IHDR size"),
-        ("bit planes", "all channels + MSB"),
-        ("data after IEND", "carve the trailer"),
-        ("palette remap", "indexed PNG"),
-        ("OpenStego", "randomized LSB"),
-    ]),
-    ("JPEG", "#ffa657", [
-        ("steghide -p ''", "try empty pass"),
-        ("stegseek rockyou", "crack passphrase"),
-        ("outguess / jsteg", "jphide"),
-        ("stegdetect", "statistical"),
-    ]),
-    ("GIF / APNG", "#d2a8ff", [
-        ("extract frames", "ffmpeg -vsync 0"),
-        ("frame durations", "morse / binary"),
-        ("diff frames", "consecutive"),
-        ("palette tricks", ""),
-    ]),
-    ("AUDIO", "#79c0ff", [
-        ("spectrogram FIRST", "Audacity / sox"),
-        ("waveform", "-> Morse"),
-        ("WAV LSB", "stegolsb wavsteg"),
-        ("SSTV / DTMF / FSK", "QSSTV / minimodem"),
-        ("steghide", "DeepSound"),
-    ]),
-    ("TEXT", "#56d4bc", [
-        ("cat -A -> stegsnow", "whitespace"),
-        ("zero-width", "U+200B / C / D"),
-        ("homoglyphs", "mixed alphabets"),
-        ("encodings", "CyberChef Magic"),
-    ]),
-    ("ARCHIVE / DOC", "#ff7b72", [
-        ("unzip / 7z", "appended zip"),
-        ("binwalk -e", "carve embedded"),
-        ("polyglot?", "two magic bytes"),
-        ("pdf / docx / apk", "it's a zip"),
-        ("fcrackzip -u -D", "crack zip"),
-    ]),
-    ("UNKNOWN / RAW", "#8b949e", [
-        ("file / hexed.it", "identify"),
-        ("binvis.io", "visualize bytes"),
-        ("raw import", "GIMP / Audacity"),
-        ("QR / Braille", "decode blob"),
-    ]),
+    (
+        "PNG / BMP",
+        "#9fef00",
+        [
+            ("zsteg -a", "LSB text / files"),
+            ("pngcheck -vtp7f", "CRC / IHDR size"),
+            ("bit planes", "all channels + MSB"),
+            ("data after IEND", "carve the trailer"),
+            ("palette remap", "indexed PNG"),
+            ("OpenStego", "randomized LSB"),
+        ],
+    ),
+    (
+        "JPEG",
+        "#ffa657",
+        [
+            ("steghide -p ''", "try empty pass"),
+            ("stegseek rockyou", "crack passphrase"),
+            ("outguess / jsteg", "jphide"),
+            ("stegdetect", "statistical"),
+        ],
+    ),
+    (
+        "GIF / APNG",
+        "#d2a8ff",
+        [
+            ("extract frames", "ffmpeg -vsync 0"),
+            ("frame durations", "morse / binary"),
+            ("diff frames", "consecutive"),
+            ("palette tricks", ""),
+        ],
+    ),
+    (
+        "AUDIO",
+        "#79c0ff",
+        [
+            ("spectrogram FIRST", "Audacity / sox"),
+            ("waveform", "-> Morse"),
+            ("WAV LSB", "stegolsb wavsteg"),
+            ("SSTV / DTMF / FSK", "QSSTV / minimodem"),
+            ("steghide", "DeepSound"),
+        ],
+    ),
+    (
+        "VIDEO",
+        "#f778ba",
+        [
+            ("ffprobe streams", "count tracks"),
+            ("extract frames", "ffmpeg -vsync 0"),
+            ("subtitle / attach", "-map 0:s / dump"),
+            ("audio track", "-> spectrogram"),
+            ("moov / trailing", "exiftool · binwalk"),
+        ],
+    ),
+    (
+        "TEXT",
+        "#56d4bc",
+        [
+            ("cat -A -> stegsnow", "whitespace"),
+            ("zero-width", "U+200B / C / D"),
+            ("homoglyphs", "mixed alphabets"),
+            ("encodings", "CyberChef Magic"),
+        ],
+    ),
+    (
+        "ARCHIVE / DOC",
+        "#ff7b72",
+        [
+            ("unzip / 7z", "appended zip"),
+            ("binwalk -e", "carve embedded"),
+            ("polyglot?", "two magic bytes"),
+            ("pdf / docx / apk", "it's a zip"),
+            ("fcrackzip -u -D", "crack zip"),
+        ],
+    ),
+    (
+        "PCAP / NET",
+        "#e3b341",
+        [
+            ("tshark -qz io,phs", "what's inside"),
+            ("--export-objects", "carve HTTP/SMB"),
+            ("usb.capdata", "keystrokes"),
+            ("dns.qry.name", "exfil in subdomains"),
+        ],
+    ),
+    (
+        "UNKNOWN / RAW",
+        "#8b949e",
+        [
+            ("file / hexed.it", "identify"),
+            ("binvis.io", "visualize bytes"),
+            ("raw import", "GIMP / Audacity"),
+            ("QR / Braille", "decode blob"),
+        ],
+    ),
 ]
 
 # --- Geometry ------------------------------------------------------------
 
-W = 1240
+# Fixed column width so pills never overlap; the canvas grows with the number
+# of branches instead of squeezing them.
 MARGIN_X = 20
-COL_W = (W - 2 * MARGIN_X) / len(BRANCHES)
+COL_W = 172
+W = MARGIN_X * 2 + COL_W * len(BRANCHES)
 PILL_W = 154
 ROOT_W, ROOT_H = 480, 66
 ROOT_X, ROOT_Y = (W - ROOT_W) / 2, 20
@@ -190,9 +241,7 @@ def svg() -> str:
             )
             # Order badge.
             bx, byc = hx + 15, sy + STEP_H / 2
-            shapes.append(
-                f'<circle cx="{bx:.0f}" cy="{byc:.0f}" r="10" fill="{color}"/>'
-            )
+            shapes.append(f'<circle cx="{bx:.0f}" cy="{byc:.0f}" r="10" fill="{color}"/>')
             labels.append(
                 f'<text x="{bx:.0f}" y="{byc + 4:.0f}" text-anchor="middle" '
                 f'font-size="12" font-weight="700" fill="{DARK_TEXT}">{j + 1}</text>'
@@ -202,7 +251,7 @@ def svg() -> str:
                 labels.append(
                     f'<text x="{tx:.0f}" y="{sy + 21}" font-family="{MONO}" '
                     f'font-size="11.5" fill="{LIGHT_TEXT}" font-weight="600">'
-                    f'{html.escape(l1)}</text>'
+                    f"{html.escape(l1)}</text>"
                 )
                 labels.append(
                     f'<text x="{tx:.0f}" y="{sy + 37}" font-size="11" '
@@ -212,7 +261,7 @@ def svg() -> str:
                 labels.append(
                     f'<text x="{tx:.0f}" y="{sy + 30}" font-family="{MONO}" '
                     f'font-size="11.5" fill="{LIGHT_TEXT}" font-weight="600">'
-                    f'{html.escape(l1)}</text>'
+                    f"{html.escape(l1)}</text>"
                 )
 
     parts.append(f'<g filter="url(#rough)">{"".join(shapes)}</g>')
@@ -253,10 +302,22 @@ def _el(idx: int, **kw) -> dict:
         "link": None,
         "locked": False,
     }
-    for extra in ("points", "text", "fontSize", "fontFamily", "textAlign",
-                  "verticalAlign", "containerId", "originalText", "lineHeight",
-                  "autoResize", "startBinding", "endBinding", "startArrowhead",
-                  "endArrowhead"):
+    for extra in (
+        "points",
+        "text",
+        "fontSize",
+        "fontFamily",
+        "textAlign",
+        "verticalAlign",
+        "containerId",
+        "originalText",
+        "lineHeight",
+        "autoResize",
+        "startBinding",
+        "endBinding",
+        "startArrowhead",
+        "endArrowhead",
+    ):
         if extra in kw:
             base[extra] = kw[extra]
     return base
@@ -266,15 +327,37 @@ def _box(idx, eid, x, y, w, h, stroke, bg, text, fontsize=16, textcolor=None):
     """A rectangle plus its bound text label -> two elements."""
     tid = f"{eid}-t"
     rect = _el(
-        idx, id=eid, type="rectangle", x=x, y=y, width=w, height=h,
-        strokeColor=stroke, backgroundColor=bg, boundElements=[{"type": "text", "id": tid}],
+        idx,
+        id=eid,
+        type="rectangle",
+        x=x,
+        y=y,
+        width=w,
+        height=h,
+        strokeColor=stroke,
+        backgroundColor=bg,
+        boundElements=[{"type": "text", "id": tid}],
     )
     txt = _el(
-        idx + 1, id=tid, type="text", x=x + 6, y=y + h / 2 - fontsize / 2,
-        width=w - 12, height=fontsize + 4, strokeColor=textcolor or "#1e1e1e",
-        roundness=None, text=text, originalText=text, fontSize=fontsize,
-        fontFamily=1, textAlign="center", verticalAlign="middle",
-        containerId=eid, lineHeight=1.25, autoResize=True, boundElements=None,
+        idx + 1,
+        id=tid,
+        type="text",
+        x=x + 6,
+        y=y + h / 2 - fontsize / 2,
+        width=w - 12,
+        height=fontsize + 4,
+        strokeColor=textcolor or "#1e1e1e",
+        roundness=None,
+        text=text,
+        originalText=text,
+        fontSize=fontsize,
+        fontFamily=1,
+        textAlign="center",
+        verticalAlign="middle",
+        containerId=eid,
+        lineHeight=1.25,
+        autoResize=True,
+        boundElements=None,
     )
     return [rect, txt]
 
@@ -283,32 +366,75 @@ def excalidraw() -> dict:
     els: list[dict] = []
     idx = 0
     # Root.
-    els += _box(idx, "root", ROOT_X, ROOT_Y, ROOT_W, ROOT_H, "#2f9e00", "#f7ffe6",
-                f"{ROOT_TITLE}\n{ROOT_SUB}", fontsize=16)
+    els += _box(
+        idx,
+        "root",
+        ROOT_X,
+        ROOT_Y,
+        ROOT_W,
+        ROOT_H,
+        "#2f9e00",
+        "#f7ffe6",
+        f"{ROOT_TITLE}\n{ROOT_SUB}",
+        fontsize=16,
+    )
     idx += 2
     for i, (label, color, steps) in enumerate(BRANCHES):
         cx = col_center(i)
         hx = cx - PILL_W / 2
         hid = f"h{i}"
-        els += _box(idx, hid, hx, HEADER_Y, PILL_W, HEADER_H, color, color,
-                    label, fontsize=15, textcolor="#0b121f")
+        els += _box(
+            idx,
+            hid,
+            hx,
+            HEADER_Y,
+            PILL_W,
+            HEADER_H,
+            color,
+            color,
+            label,
+            fontsize=15,
+            textcolor="#0b121f",
+        )
         idx += 2
         # Root -> header arrow.
-        els.append(_el(
-            idx, id=f"e-root-{i}", type="arrow", x=W / 2, y=ROOT_Y + ROOT_H,
-            width=cx - W / 2, height=HEADER_Y - (ROOT_Y + ROOT_H),
-            strokeColor="#8a97ab", roundness={"type": 2},
-            points=[[0, 0], [cx - W / 2, HEADER_Y - (ROOT_Y + ROOT_H)]],
-            startBinding=None, endBinding=None,
-            startArrowhead=None, endArrowhead=None, boundElements=None,
-        ))
+        els.append(
+            _el(
+                idx,
+                id=f"e-root-{i}",
+                type="arrow",
+                x=W / 2,
+                y=ROOT_Y + ROOT_H,
+                width=cx - W / 2,
+                height=HEADER_Y - (ROOT_Y + ROOT_H),
+                strokeColor="#8a97ab",
+                roundness={"type": 2},
+                points=[[0, 0], [cx - W / 2, HEADER_Y - (ROOT_Y + ROOT_H)]],
+                startBinding=None,
+                endBinding=None,
+                startArrowhead=None,
+                endArrowhead=None,
+                boundElements=None,
+            )
+        )
         idx += 1
         for j, (l1, l2) in enumerate(steps):
             sy = STEP_Y0 + j * STEP_PITCH
             sid = f"s{i}-{j}"
             text = f"{j + 1}. {l1}" + (f"\n{l2}" if l2 else "")
-            els += _box(idx, sid, hx, sy, PILL_W, STEP_H, color, "#16233a",
-                        text, fontsize=12, textcolor="#d4dbe6")
+            els += _box(
+                idx,
+                sid,
+                hx,
+                sy,
+                PILL_W,
+                STEP_H,
+                color,
+                "#16233a",
+                text,
+                fontsize=12,
+                textcolor="#d4dbe6",
+            )
             idx += 2
     return {
         "type": "excalidraw",

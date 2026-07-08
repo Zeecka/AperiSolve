@@ -68,6 +68,7 @@ def alternates_for(bare_path: str, langs: list[str] | None = None) -> list[tuple
 def js_catalog() -> dict[str, str]:
     """Strings rendered client-side by aperisolve.js, keyed by English text."""
     return {
+        "No results": _("No results"),
         "First upload:": _("First upload:"),
         "Last upload:": _("Last upload:"),
         "Name(s):": _("Name(s):"),

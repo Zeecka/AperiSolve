@@ -10,8 +10,6 @@ bit, so data hides in the pixels themselves; **lossy** JPEG throws pixel bits
 away during compression, so data hides in the DCT coefficients instead. Always
 [identify the real format first](/wiki/methodology), then pick the technique.
 
-[TOC]
-
 ## LSB, bit planes and channels
 
 Each pixel channel (Red, Green, Blue, Alpha) is a byte — eight **bit planes**
@@ -45,6 +43,13 @@ $ zsteg -E 'b1,rgb,lsb,xy' image.png > out.bin   # raw bytes -> file / binwalk
 A leading `length:base64` (the Python *stegano* library format) is a common
 give-away — base64-decode the value after the colon.
 
+!!! example "Worked example: a ZIP hidden in the LSBs"
+    `zsteg -a challenge.png` prints
+    `b1,rgb,lsb,xy .. file: Zip archive data`. Pull the raw bytes of that exact
+    combination with `zsteg -E 'b1,rgb,lsb,xy' challenge.png > payload.zip`, then
+    `unzip payload.zip` to recover `flag.txt`. If `-E` yields a header you don't
+    recognize, run `file payload.bin` first and branch on the real type.
+
 **[stegoveritas](https://github.com/bannsec/stegoVeritas)** runs the whole
 battery at once (metadata, every color/plane transform, LSB brute force,
 trailing-data carve) when you would rather not step through it:
@@ -52,6 +57,23 @@ trailing-data carve) when you would rather not step through it:
 ```console
 $ stegoveritas image.png
 ```
+
+**Recognize the embedding library.** Matching the extractor to the tool is half
+the battle — and encrypted-LSB tools produce output that looks like noise, not a
+clean bit plane:
+
+| Fingerprint | Library | Extract |
+|-------------|---------|---------|
+| `length:base64` prefix | Python **Stegano** (`lsb`) | `stegano-lsb reveal -i f.png -o out.txt` |
+| High-entropy LSB, zsteg finds nothing | **cloacked-pixel** (AES-LSB) | `cloackedpixel extract f.png out.txt <pw>` |
+| Plain LSB, no zsteg hit | **stego-lsb / LSBSteg** | `stegolsb steglsb -r -i f.png -o out.txt -n 2` |
+| PNG/JPEG/WebP + password | **imgconceal** | `imgconceal --extract -i f.png -p <pw>` |
+
+!!! warning "Encrypted LSB looks like noise, not a plane"
+    A uniformly random-looking LSB plane (cloacked-pixel, some Stegano modes,
+    ML-based SteganoGAN) is itself the tell that the payload is **encrypted** — no
+    amount of extra bit-plane hunting helps; you need the specific tool and its
+    password.
 
 **[Bit-plane decomposer](/wiki/tools/decomposer)** (built into Aperi'Solve) and
 **Stegsolve** — browse all 32 planes visually (*Analyse → Data Extract* to pull
@@ -81,6 +103,10 @@ exactly which pixels were altered.
 
 ![Stegsolve XOR](/static/img/cheatsheet/stegsolve_xor.png)
 ![Stegsolve XOR result](/static/img/cheatsheet/stegsolve_xor2.png)
+
+When a challenge hands you **several near-identical images**, XOR or stack them
+against each other (Stegsolve *Image Combiner*, or Pillow `ImageChops`) — the
+shared cover cancels and only the hidden layer remains.
 
 ## PNG structure tricks
 
@@ -112,6 +138,15 @@ every chunk programmatically.
 **Data after `IEND`.** Anything past the `IEND` chunk is ignored by viewers but
 survives in the file — a top hiding spot. `pngcheck` flags trailing data; carve
 it with [binwalk](/wiki/tools/binwalk) or by offset.
+
+**Scanline filter bytes and an undersized `IDAT`.** Inside the *decompressed*
+`IDAT` stream, every scanline begins with a filter-type byte (0–4); an
+out-of-range or patterned run of these is a rarely-checked covert channel. A
+short `IDAT` that is not the last one (a full one is 8192 bytes by default) is
+itself a tampering signal — `zlib.decompress()` the stream and inspect the
+filter bytes. Note that `zsteg` needs a *structurally valid* PNG, so repair CRC
+or dimension errors (`pngcheck -f`, [PCRT](/wiki/tools/pcrt)) **before** LSB
+analysis or it returns nothing.
 
 **Corrupt CRC / edited header.** A `CRC error in IHDR` reported by
 [pngcheck](/wiki/tools/pngcheck) means the header was edited. The classic trick:
@@ -156,6 +191,14 @@ $ stegseek file.jpg /usr/share/wordlists/rockyou.txt
 $ stegseek --seed file.jpg          # detect/extract when encryption is disabled
 $ outguess -r file.jpg out.txt      # add -k 'key' if password-protected
 ```
+
+!!! example "Worked example: a passworded JPEG payload"
+    `steghide info secret.jpg` reports *"embedded data"*, so a payload exists.
+    Try the empty password first: `steghide extract -sf secret.jpg -p ''`. If it
+    refuses, crack it — `stegseek secret.jpg /usr/share/wordlists/rockyou.txt`
+    recovers the passphrase and writes the payload in seconds. Still nothing?
+    The passphrase is often the *filename*, the challenge name, or a string from
+    `exiftool` — try those before a bigger wordlist.
 
 **Embedded thumbnail mismatch.** A JPEG's EXIF thumbnail is a separate small
 image that editors often forget to update — it can still show the *original*,
@@ -219,6 +262,18 @@ from PIL import Image
 px = Image.open("file.png").convert("RGBA").getdata()
 print("".join(chr(255 - a) for (r, g, b, a) in px if a != 255))
 ```
+
+## Other raster formats (BMP, WebP, ICO)
+
+- **BMP** — uncompressed, so it is a prime LSB carrier; `zsteg -a file.bmp` works
+  here just like PNG (a common blind spot is thinking zsteg is PNG-only).
+- **WebP** — convert lossless WebP to PNG first (`dwebp file.webp -o file.png`),
+  then run the PNG toolkit. When upscaling to reveal a faint pattern, use
+  **nearest-neighbor** (`magick file.webp -filter point -resize 400% out.png`) —
+  bilinear/bicubic averaging destroys the LSB data.
+- **ICO** — a container of several images at different sizes; extract them all
+  (`icotool -x file.ico`) and check each. `binwalk` also catches appended data in
+  all three.
 
 ## Frequency-domain analysis
 

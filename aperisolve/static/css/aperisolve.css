@@ -1227,6 +1227,210 @@ footer::before {
     color: var(--theme-green);
 }
 
+/* Clickable ¶ permalinks on headings — revealed on heading hover. */
+.wiki-article .headerlink {
+    color: var(--text-light);
+    opacity: 0;
+    margin-left: var(--spacing-xs);
+    text-decoration: none;
+    transition: opacity 0.15s;
+}
+
+.wiki-article :is(h1, h2, h3, h4):hover .headerlink {
+    opacity: 0.5;
+}
+
+.wiki-article .headerlink:hover {
+    opacity: 1;
+    color: var(--theme-green);
+}
+
+/* Right-rail "On this page" table of contents (sticky, scrolls with the page). */
+.wiki-toc {
+    position: sticky;
+    top: var(--spacing-lg);
+    max-height: calc(100vh - 2 * var(--spacing-lg));
+    overflow-y: auto;
+}
+
+.wiki-toc .toc ul {
+    list-style: none;
+    padding-left: var(--spacing-md);
+    margin: 0;
+}
+
+.wiki-toc .toc > ul {
+    padding-left: 0;
+}
+
+.wiki-toc a {
+    color: var(--text-light);
+    text-decoration: none;
+    display: block;
+    padding: 2px 0;
+    font-size: 0.9rem;
+}
+
+.wiki-toc a:hover {
+    color: var(--theme-green);
+}
+
+/* Sidebar search box + dropdown of results. */
+.wiki-search-results {
+    position: absolute;
+    left: 0;
+    right: 0;
+    z-index: 5;
+    background-color: var(--surface-2);
+    border: 1px solid var(--green-line);
+    border-radius: var(--border-radius);
+    overflow: hidden;
+}
+
+.wiki-search-results:empty {
+    display: none;
+}
+
+.wiki-search-hit {
+    display: block;
+    padding: var(--spacing-xs) var(--spacing-sm);
+    color: var(--text-light);
+    text-decoration: none;
+    border-bottom: 1px solid var(--green-line);
+}
+
+.wiki-search-hit:last-child {
+    border-bottom: none;
+}
+
+.wiki-search-hit:hover,
+.wiki-search-hit:focus {
+    color: var(--theme-green);
+    background-color: rgba(159, 239, 0, 0.08);
+}
+
+.wiki-search-sep {
+    color: var(--text-dim);
+}
+
+.wiki-search-empty {
+    padding: var(--spacing-xs) var(--spacing-sm);
+    color: var(--text-dim);
+    font-size: 0.9rem;
+}
+
+/* Prev / next page navigation under an article. */
+.wiki-prevnext-link {
+    display: inline-flex;
+    align-items: center;
+    max-width: 48%;
+    padding: var(--spacing-sm) var(--spacing-md);
+    border: 1px solid var(--green-line);
+    border-radius: var(--border-radius);
+    color: var(--theme-green);
+    text-decoration: none;
+    transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.wiki-prevnext-next {
+    text-align: right;
+    margin-left: auto;
+}
+
+.wiki-prevnext-link:hover {
+    border-color: var(--theme-green);
+    box-shadow: 0 0 0.5rem var(--green-glow);
+}
+
+/* Print / PDF button on the cheatsheet. */
+.wiki-print-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--spacing-xs);
+    padding: var(--spacing-xs) var(--spacing-md);
+    background-color: transparent;
+    border: 1px solid var(--green-line);
+    border-radius: var(--border-radius);
+    color: var(--theme-green);
+    cursor: pointer;
+    transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.wiki-print-btn:hover {
+    border-color: var(--theme-green);
+    box-shadow: 0 0 0.5rem var(--green-glow);
+}
+
+/* Printable one-pager: strip all chrome, print the article in ink-friendly
+   colors. Applies to any wiki page but is aimed at /wiki/cheatsheet. */
+@media print {
+    header,
+    footer,
+    .wiki-sidebar,
+    .wiki-toc,
+    .wiki-prevnext,
+    .wiki-search,
+    .row > aside,
+    nav[aria-label="breadcrumb"],
+    .breadcrumb,
+    .ad-container,
+    .adsbygoogle,
+    .copy-icon,
+    .wiki-print-btn,
+    #three-bg,
+    canvas {
+        display: none !important;
+    }
+
+    .row > .col-lg-6 {
+        width: 100% !important;
+        max-width: 100% !important;
+        flex: 0 0 100% !important;
+    }
+
+    body {
+        background: #fff !important;
+        color: #000 !important;
+    }
+
+    .wiki-article,
+    #cheatsheet {
+        background: #fff !important;
+        color: #000 !important;
+        border: none !important;
+        box-shadow: none !important;
+        padding: 0 !important;
+    }
+
+    .wiki-article a {
+        color: #000 !important;
+        text-decoration: underline;
+    }
+
+    .wiki-article code {
+        color: #000 !important;
+    }
+
+    #cheatsheet li::before,
+    #cheatsheet .admonition-title {
+        color: #000 !important;
+    }
+
+    #cheatsheet .admonition,
+    .wiki-article .codehilite,
+    #cheatsheet table,
+    #cheatsheet img {
+        border: 1px solid #999 !important;
+        background: #f6f6f6 !important;
+        color: #000 !important;
+        break-inside: avoid;
+    }
+
+    main.flex-grow-1 {
+        padding: 0 !important;
+    }
+}
+
 /* Admonitions (python-markdown `!!! tip "…"` callouts). Scoped with the
    #cheatsheet id so they outrank the generic `#cheatsheet > div` rule. */
 #cheatsheet .admonition {
@@ -1298,6 +1502,18 @@ footer::before {
 #cheatsheet .admonition.note,
 #cheatsheet .admonition.info {
     border-left-color: #4aa3df;
+}
+
+#cheatsheet .admonition.example {
+    border-left-color: #56d4bc;
+}
+
+#cheatsheet .admonition.example .admonition-title {
+    color: #56d4bc;
+}
+
+#cheatsheet .admonition.example .admonition-title::before {
+    content: "\f120"; /* terminal */
 }
 
 /* The cheatsheet decision-tree mindmap (SVG linked to its full-size self). */
