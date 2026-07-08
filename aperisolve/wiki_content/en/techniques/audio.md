@@ -9,8 +9,6 @@ the frequency spectrum**, encoded in **sample LSBs**, or transmitted as a
 **signal** (DTMF, SSTV, Morse, FSK) that needs the right decoder. When you get
 an audio file, always look at the spectrogram first.
 
-[TOC]
-
 ## Spectrogram (always first)
 
 The most common audio trick by far: text or a QR code **painted into the
@@ -42,6 +40,13 @@ range.
     an unreadable band. Re-render with `sox … -X 200 -Y 2050` (`-X` px/second,
     `-Y` height, `-z` dB range) or a large `ffmpeg showspectrumpic=s=…` before
     concluding "nothing there". Also scan **above 20 kHz** and **below 20 Hz**.
+
+!!! example "Worked example: text painted in the spectrogram"
+    A `challenge.wav` sounds like static and its waveform is a featureless
+    block. Render the frequency domain — `sox challenge.wav -n spectrogram -o
+    spec.png` — and the flag is drawn as text between 2 and 8 kHz. If it looks
+    smeared, re-render sharper with `sox challenge.wav -n spectrogram -o spec.png
+    -X 200 -Y 2050 -z 120` and scan **above 20 kHz** before giving up.
 
 **Spectrogram difference.** Given both an original and a modified file, render
 both at identical `-X`/`-Y` and subtract them (PIL `ImageChops.difference`) to
@@ -86,6 +91,14 @@ $ stegolsb wavsteg -r -i file.wav -o out.txt -n 1 -b 1000
 Try `-n 2` for two-bit encodings, and inspect the result with
 `file out.txt` / `xxd`.
 
+!!! warning "The payload rarely starts at sample 0"
+    WAV-LSB challenges commonly pad the front with silence: in one well-known
+    challenge the LSBs were `0x00` until sample **1,146,416** before the message
+    began. If the output is a wall of null bytes, the data is *further in* — carve
+    past the leading zeros (`xxd out.txt | grep -m1 -v ' 0000 0000'` finds the
+    first non-zero offset). Always try both `-n 1` and `-n 2`, and don't set `-b`
+    so small that it truncates the flag.
+
 ## Signalling: DTMF, SSTV, Morse, FSK
 
 Audio is a communications channel, and CTFs reuse classic encodings:
@@ -107,10 +120,25 @@ Hz, `-S` space Hz).
 
 **SSTV** — the headless `sstv` tool auto-detects the mode; the challenge title
 often hints it ("Scottie", "Robot", "Martin"). A decoded SSTV image frequently
-carries a *second* layer (a base64 string or a password).
+carries a *second* layer (a base64 string or a password). Live-decoding in
+**QSSTV** reads from the *sound card*, so route the file through a loopback /
+monitor device (PulseAudio "Monitor of…") rather than feeding the file directly.
 
 Isolate one channel first (`sox in.wav ch.wav remix 1`) when only one side
 carries the signal.
+
+!!! warning "Convert the sample format before decoding tones"
+    `multimon-ng` reliably reads only **raw 16-bit, 22050 Hz, mono**, and
+    `minimodem` is picky about floating-point streams — feed either a
+    44.1 kHz / stereo / float WAV and it silently decodes *nothing*. Normalize
+    first, then pipe raw:
+
+    ```console
+    $ sox in.wav -t raw -r 22050 -e signed -b 16 -c 1 - | multimon-ng -t raw -a DTMF -
+    ```
+
+    A wrong baud or wrong rate yields pure garbage, not a partial decode, so
+    sweep the standard values.
 
 ## Password-protected containers
 
@@ -118,12 +146,19 @@ carries the signal.
   passphrase — try the empty password, then a wordlist.
 - **DeepSound** is a popular Windows CTF tool that hides (AES-encrypted) data in
   WAV/FLAC/MP3/APE. Guess the key from the media, filename or challenge name — or
-  crack it: DeepSound stores a **SHA-1** of the password in the header, so
-  extract that hash and run it through John/hashcat.
+  crack it: DeepSound validates the password against a **SHA-1 of the padded AES
+  key** stored in the header (*not* the ciphertext), so pull that hash with
+  `deepsound2john.py secret.wav > ds.hash` and run
+  `john --wordlist=rockyou.txt ds.hash`. Don't waste time on steghide/binwalk
+  first — the DeepSound header magic identifies these files.
 
 ![DeepSound](/static/img/cheatsheet/DeepSound.png)
 
-- **MP3Stego** hides data during WAV→MP3 compression (3DES-protected).
+- **MP3Stego** hides data *during* WAV→MP3 compression (in `part2_3_length`), so
+  it leaves nothing for strings/binwalk/spectrogram. Extract with the matching
+  decoder and the password: `decode -X -P <password> stego.mp3` (writes
+  `stego.mp3.txt`); the password usually comes from an earlier stage, and the
+  output is often further base64/base32-encoded.
 
 !!! warning "Phase and echo hiding leave no spectrogram trace"
     If LSB, spectrogram and channel tricks all come up empty, the data may be in
