@@ -53,6 +53,10 @@ include = ["aperisolve*"]
 [tool.ruff]
 line-length = 100
 target-version = "py312"
+# Vendored third-party files live in docker/ (Didier Stevens' pdfid.py, plus the
+# autotools config.guess/config.sub) and are copied verbatim into the image.
+# They are not our code to lint or reformat.
+extend-exclude = ["docker/"]
 
 [tool.ruff.lint]
 select = ["ALL"]
