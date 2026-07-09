@@ -7,13 +7,15 @@ from aperisolve.i18n import SUPPORTED_LANGS
 
 def test_language_prefixes_render_translated(client: FlaskClient) -> None:
     """Every prefixed language serves a translated index page."""
+    # "What is this?" is a stable index-page heading that stays translated
+    # regardless of copy churn on the upload controls (which now say "file").
     samples = {
-        "/fr/": "Analyser l'image",
-        "/es/": "Analizar imagen",
-        "/de/": "Bild analysieren",
-        "/ru/": "Анализировать изображение",
-        "/zh/": "分析图片",
-        "/pt/": "Analisar imagem",
+        "/fr/": "Qu'est-ce que c'est ?",
+        "/es/": "¿Qué es esto?",
+        "/de/": "Was ist das?",
+        "/ru/": "Что это?",
+        "/zh/": "这是什么",
+        "/pt/": "O que é isto?",
     }
     for path, needle in samples.items():
         html = client.get(path).get_data(as_text=True)
@@ -67,7 +69,7 @@ def test_locale_cookie_beats_accept_language(client: FlaskClient) -> None:
     """Cookie preference wins over the Accept-Language header."""
     client.set_cookie("lang", "ru")
     html = client.get("/", headers={"Accept-Language": "de"}).get_data(as_text=True)
-    assert "Анализировать изображение" in html
+    assert "Что это?" in html
 
 
 def test_js_catalog_injected(client: FlaskClient) -> None:

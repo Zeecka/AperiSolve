@@ -77,6 +77,8 @@ JSTEG = Upload(FIXTURES / "jsteg.jpg")
 OPENSTEGO = Upload(FIXTURES / "openstego.png", password=STEGO_PASSWORD)
 JPSEEK = Upload(FIXTURES / "jphide.jpg", password=STEGO_PASSWORD)
 OUTGUESS = Upload(FIXTURES / "outguess.jpg", password=STEGO_PASSWORD, deep=True)
+TONE_WAV = Upload(FIXTURES / "tone.wav")
+SAMPLE_PDF = Upload(FIXTURES / "sample.pdf")
 
 
 @dataclass(frozen=True)
@@ -106,6 +108,9 @@ CASES = [
     AnalyzerCase("openstego", OPENSTEGO, expect_download=True),
     AnalyzerCase("jpseek", JPSEEK, expect_download=True),
     AnalyzerCase("outguess", OUTGUESS, expect_download=True),
+    AnalyzerCase("spectrogram", TONE_WAV),
+    AnalyzerCase("pdfinfo", SAMPLE_PDF),
+    AnalyzerCase("pdfid", SAMPLE_PDF),
 ]
 
 
