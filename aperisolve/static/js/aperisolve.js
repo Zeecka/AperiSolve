@@ -2,8 +2,11 @@
 // list is only a fallback for pages served without the injection.
 const TOOL_ORDER = window.TOOL_ORDER || [
   "decomposer",
+  "spectrogram",
   "color_remapping",
   "file",
+  "pdfinfo",
+  "pdfid",
   "exiftool",
   "binwalk",
   "foremost",
@@ -210,6 +213,35 @@ document.addEventListener("keydown", function (e) {
   }
 });
 
+// Build the type-appropriate original-file preview shown in the info panel.
+// The upload can now be any file, so branch on the backend-detected kind:
+// image -> <img>, audio -> player, everything else -> a download file card.
+// The default is ALWAYS the file card, never a bare <img>, so an unknown or
+// non-image upload cannot render a broken image.
+function renderMainPreview(infoData) {
+  const src = escapeHtml(infoData.image_path);
+  const rawName =
+    (Array.isArray(infoData.names) && infoData.names[0]) ||
+    String(infoData.image_path || "").split("/").pop();
+  const fileName = escapeHtml(rawName);
+
+  if (infoData.kind === "image") {
+    return `<img src="${src}" alt="${t("Analyzed file")}"/>`;
+  }
+  if (infoData.kind === "audio") {
+    return `<audio controls preload="metadata" src="${src}"></audio>`;
+  }
+  const icon = infoData.kind === "pdf" ? "fa-file-pdf" : "fa-file";
+  return (
+    `<div class="file-card">` +
+    `<i class="fa ${icon} file-card-icon"></i>` +
+    `<span class="file-card-name"><code>${fileName}</code></span>` +
+    `<a href="${src}" class="btn btn-primary mt-2" download>` +
+    `<i class="fa fa-download"></i> ${t("Download file")}</a>` +
+    `</div>`
+  );
+}
+
 async function fetchImageInfo(submission_hash) {
   let infoData;
   try {
@@ -234,7 +266,7 @@ async function fetchImageInfo(submission_hash) {
   resultInfosDiv.appendChild(mainImgRight);
   mainImgRight.appendChild(tableInfos);
 
-  mainImgLeft.innerHTML += `<div id="main_image"><img src="${infoData.image_path}" alt="${t("Analyzed image")}"/></div>`;
+  mainImgLeft.innerHTML += `<div id="main_image">${renderMainPreview(infoData)}</div>`;
   tableInfos.innerHTML += `<tr><td><i class="fa fa-backward-step"></i> ${t("First upload:")}</td><td>${infoData.first_submission_date}</td></tr>`;
   tableInfos.innerHTML += `<tr><td><i class="fa fa-history"></i> ${t("Last upload:")}</td><td>${infoData.last_submission_date}</td></tr>`;
   if (Array.isArray(infoData.names)) {
@@ -503,7 +535,7 @@ function renderAnalyzing() {
   resultDiv.innerHTML =
     `<div class="analyzing" role="status" aria-live="polite">` +
     `<span class="spinner" aria-hidden="true"></span>` +
-    `<p class="mb-0">${t("Analyzing your image…")}</p></div>`;
+    `<p class="mb-0">${t("Analyzing your file…")}</p></div>`;
 }
 
 function parseResult(result) {
@@ -557,12 +589,19 @@ function parseResult(result) {
     // Parse images, downloads, ...
     if (result[tool]["status"] === "ok") {
       if ("images" in result[tool]) {
-        // Parse image output
-        var channels = ["Superimposed", "Red", "Green", "Blue", "Alpha"];
-        if (Object.keys(result[tool]["images"]).length == 1) {
-          channels = Object.keys(result[tool]["images"]);
-        } else if (Object.keys(result[tool]["images"]).length == 4) {
-          channels = ["Superimposed", "Red", "Green", "Blue"];
+        // Channel labels come from the analyzer's own dict keys. Only the
+        // decomposer/color_remapping RGB(A) sets get the canonical
+        // Superimposed,Red,Green,Blue,(Alpha) ordering; every other analyzer
+        // (e.g. the spectrogram's {Spectrogram, Waveform}) iterates its keys
+        // as-is — which also fixes a 2-key dict previously rendering nothing.
+        const imageKeys = Object.keys(result[tool]["images"]);
+        const RGBA = ["Superimposed", "Red", "Green", "Blue", "Alpha"];
+        const RGB = ["Superimposed", "Red", "Green", "Blue"];
+        let channels = imageKeys;
+        if (imageKeys.length === RGBA.length && RGBA.every((c) => imageKeys.includes(c))) {
+          channels = RGBA;
+        } else if (imageKeys.length === RGB.length && RGB.every((c) => imageKeys.includes(c))) {
+          channels = RGB;
         }
 
         let title_h3 = "";
@@ -701,7 +740,7 @@ const browseBtn = document.getElementById("browse-btn");
 const dragMsg = document.getElementById("drag-msg");
 
 function showFilename(filename) {
-  dragMsg.innerHTML = "🖼️ " + escapeHtml(filename);
+  dragMsg.innerHTML = "📄 " + escapeHtml(filename);
 }
 
 if (browseBtn) {
@@ -765,7 +804,7 @@ if (browseBtn) {
       const progressBar = document.getElementById("progress-bar");
 
       if (!fileInput.files.length) {
-        showDanger(t("Please select an image."), true);
+        showDanger(t("Please select a file."), true);
         return;
       }
 

@@ -87,8 +87,10 @@ def js_catalog() -> dict[str, str]:
         "Green": _("Green"),
         "Blue": _("Blue"),
         "Alpha": _("Alpha"),
+        "Spectrogram": _("Spectrogram"),
+        "Waveform": _("Waveform"),
         "❌ Error during the analysis.": _("❌ Error during the analysis."),
-        "Please select an image.": _("Please select an image."),
+        "Please select a file.": _("Please select a file."),
         "❌ Invalid server response: missing submission_hash.": _(
             "❌ Invalid server response: missing submission_hash.",
         ),
@@ -98,7 +100,7 @@ def js_catalog() -> dict[str, str]:
         ),
         "Upload complete": _("Upload complete"),
         "❌ An error occurred during the transfer": _("❌ An error occurred during the transfer"),
-        "Analyzing your image…": _("Analyzing your image…"),
+        "Analyzing your file…": _("Analyzing your file…"),
         "Success": _("Success"),
         "No result": _("No result"),
         "Learn more": _("Learn more"),
@@ -106,5 +108,5 @@ def js_catalog() -> dict[str, str]:
         "❌ The analysis is taking too long. Please reload the page to check again.": _(
             "❌ The analysis is taking too long. Please reload the page to check again.",
         ),
-        "Analyzed image": _("Analyzed image"),
+        "Analyzed file": _("Analyzed file"),
     }

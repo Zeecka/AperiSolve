@@ -468,6 +468,48 @@ button:focus-visible,
     color: var(--theme-green);
 }
 
+/* Type-aware original preview. The image kind still renders a plain <img>
+   (styled by `#result img`); audio and every other kind need their own rules. */
+#main_image audio {
+    width: 100%;
+}
+
+/* Download card for non-image / non-audio uploads (info panel and the browse
+   gallery). Centered icon + name, modeled on the drop zone's dashed surface. */
+.file-card {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: var(--spacing-sm);
+    padding: var(--spacing-xl) var(--spacing-md);
+    text-align: center;
+    background-color: rgba(0, 0, 0, 0.18);
+    border: 1px dashed var(--green-line);
+    border-radius: var(--border-radius);
+    color: var(--theme-green);
+    word-break: break-word;
+}
+
+.file-card-icon {
+    font-size: 3rem;
+    color: var(--theme-green);
+}
+
+.file-card-name {
+    font-size: 0.9rem;
+    color: var(--text);
+    max-width: 100%;
+    overflow-wrap: anywhere;
+}
+
+/* In the browse gallery the card fills the same square footprint as the image
+   thumbnails it sits beside. */
+.browse-file-card {
+    aspect-ratio: 1 / 1;
+    width: 100%;
+}
+
 .a-exiftool .table-container {
     max-height: 25rem;
     overflow-y: auto;

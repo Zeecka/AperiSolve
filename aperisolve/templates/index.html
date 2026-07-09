@@ -35,12 +35,12 @@
 
   <!-- Drop Zone -->
   <div class="mb-3">
-    <label for="image" class="form-label visually-hidden">{{ _("Image file") }}</label>
+    <label for="image" class="form-label visually-hidden">{{ _("File") }}</label>
     <div id="drop-zone" class="drop-zone border border-2 border-dashed rounded-3 p-4 text-center">
-      <p id="drag-msg" class="mb-3">{{ _("📂 Drag and drop an image here or click to select") }}</p>
-      <input type="file" id="image" name="image" accept="image/*" class="visually-hidden" required>
-      <button type="button" class="btn" id="browse-btn" aria-label="{{ _('Choose image file') }}">
-        <i class="fa fa-folder-open me-2"></i>{{ _("Choose an image") }}
+      <p id="drag-msg" class="mb-3">{{ _("📂 Drag and drop a file here or click to select") }}</p>
+      <input type="file" id="image" name="image" class="visually-hidden" required>
+      <button type="button" class="btn" id="browse-btn" aria-label="{{ _('Choose file') }}">
+        <i class="fa fa-folder-open me-2"></i>{{ _("Choose a file") }}
       </button>
     </div>
   </div>
@@ -61,7 +61,7 @@
 
   <!-- Submit Button -->
   <button type="submit" class="btn btn-primary btn-lg w-100">
-    <i class="fa fa-upload me-2"></i>{{ _("Analyze Image") }}
+    <i class="fa fa-upload me-2"></i>{{ _("Analyze File") }}
   </button>
 
   <!-- Progress Bar -->

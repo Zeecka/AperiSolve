@@ -41,6 +41,7 @@ from .config import (
     RESULT_FOLDER,
     SITE_BASE_URL,
 )
+from .filetype import detect_file_type
 from .i18n import (
     DEFAULT_LANG,
     LANG_PREFIX_RULE,
@@ -368,7 +369,9 @@ def _upload_image(app: Flask) -> tuple[Response, int]:
     if image.filename is None or image.filename == "":
         return jsonify({"error": _("No image provided")}), 400
 
-    if "." not in image.filename or Path(image.filename).suffix.lower() not in IMAGE_EXTENSIONS:
+    # Any file type is accepted; only require a usable extension because storage
+    # and get_image split the stored name on ".".
+    if "." not in image.filename or not Path(image.filename).suffix:
         return jsonify({"error": _("Unsupported file type")}), 400
 
     image_data = image.read()
@@ -501,9 +504,14 @@ def _register_data_routes(app: Flask) -> None:
         image = Image.query.get_or_404(submission.image_hash)
         names = [name for name in {sub.filename for sub in image.submissions} if name]
         passwords = [pwd for pwd in {sub.password for sub in image.submissions} if pwd]
+        # detect_file_type is best-effort and never raises; kind drives the
+        # frontend preview (image/audio/pdf/other) and mime is informational.
+        file_type = detect_file_type(Path(image.file))
         response = jsonify(
             {
                 "image_path": "image/" + str(Path(image.file).name),
+                "kind": file_type.kind,
+                "mime": file_type.mime,
                 "names": names,
                 "size": image.size,
                 "first_submission_date": image.first_submission_date,
@@ -551,6 +559,10 @@ def _register_data_routes(app: Flask) -> None:
         if img_name is None:
             return abort(404, description="Image not found or unsupported format")
 
+        # The original upload (/image/<name>) may be any stored file type; the
+        # derived sub-path (/image/<hash>/<name>) only ever serves images.
+        # Capture this before the else-branch reassigns hash_val below.
+        serving_original = hash_val is None
         if hash_val is not None:
             submission = Submission.query.filter_by(hash=hash_val).first_or_404()
             image = Image.query.get_or_404(submission.image_hash)
@@ -561,7 +573,9 @@ def _register_data_routes(app: Flask) -> None:
             image = Image.query.filter_by(hash=hash_val).first_or_404()
             output_file = Path(image.file)
 
-        if (not output_file.exists()) or (output_file.suffix.lower() not in IMAGE_EXTENSIONS):
+        if not output_file.exists():
+            return abort(404, description="Image not found or unsupported format")
+        if not serving_original and output_file.suffix.lower() not in IMAGE_EXTENSIONS:
             return abort(404, description="Image not found or unsupported format")
 
         # URLs are content-addressed (md5 hashes), so responses never change:
