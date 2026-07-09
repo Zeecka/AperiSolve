@@ -75,6 +75,10 @@ Each analyzer that runs on your upload has its own page:
 - [identify](/wiki/tools/identify) — inspect image properties with ImageMagick.
 - [file](/wiki/tools/file) — identify the real file type of an upload.
 - [strings](/wiki/tools/strings) — find readable text inside files.
+- [Spectrogram](/wiki/tools/spectrogram) — reveal hidden images and tones in
+  audio.
+- [pdfinfo](/wiki/tools/pdfinfo) — read PDF metadata and structure.
+- [pdfid](/wiki/tools/pdfid) — triage suspicious PDF objects.
 
 Contributions are welcome on
 [GitHub](https://github.com/Zeecka/AperiSolve).
