@@ -98,8 +98,7 @@ BRANCHES: list[Branch] = [
                 "OpenStego",
                 "randomized LSB",
                 "openstego extract -sf file.png",
-                "Randomized-LSB payloads that zsteg misses; needs OpenStego "
-                "(and maybe a key).",
+                "Randomized-LSB payloads that zsteg misses; needs OpenStego (and maybe a key).",
                 "/wiki/tools/openstego",
             ),
         ],
@@ -163,8 +162,7 @@ BRANCHES: list[Branch] = [
                 "diff frames",
                 "consecutive",
                 "compare frame N vs N+1",
-                "A payload can live in the difference between two "
-                "near-identical frames.",
+                "A payload can live in the difference between two near-identical frames.",
                 "/wiki/techniques/images",
             ),
             (
@@ -199,8 +197,7 @@ BRANCHES: list[Branch] = [
                 "WAV LSB",
                 "stegolsb wavsteg",
                 "stegolsb wavsteg -r -i file.wav -o out.txt -n 1 -b 1000",
-                "LSB payloads in WAV samples; they often don't start at "
-                "sample 0.",
+                "LSB payloads in WAV samples; they often don't start at sample 0.",
                 "/wiki/techniques/audio",
             ),
             (
@@ -228,16 +225,14 @@ BRANCHES: list[Branch] = [
                 "ffprobe streams",
                 "count tracks",
                 "ffprobe file.mp4",
-                "An extra subtitle, attachment or data track is often the "
-                "whole trick.",
+                "An extra subtitle, attachment or data track is often the whole trick.",
                 "/wiki/techniques/video",
             ),
             (
                 "extract frames",
                 "ffmpeg -vsync 0",
                 "ffmpeg -i file.mp4 -vsync 0 out/f%05d.png",
-                "Run the PNG checklist (zsteg, bit planes) on the lossless "
-                "frames.",
+                "Run the PNG checklist (zsteg, bit planes) on the lossless frames.",
                 "/wiki/techniques/video",
             ),
             (
@@ -251,8 +246,7 @@ BRANCHES: list[Branch] = [
                 "audio track",
                 "→ spectrogram",
                 "ffmpeg -i file.mp4 -vn audio.wav",
-                "Pull the audio track, then treat it as an audio challenge "
-                "(spectrogram first).",
+                "Pull the audio track, then treat it as an audio challenge (spectrogram first).",
                 "/wiki/techniques/audio",
             ),
             (
@@ -272,8 +266,7 @@ BRANCHES: list[Branch] = [
                 "cat -A → stegsnow",
                 "whitespace",
                 "stegsnow -C file.txt",
-                "Trailing spaces/tabs; reveal with cat -A, extract with "
-                "stegsnow.",
+                "Trailing spaces/tabs; reveal with cat -A, extract with stegsnow.",
                 "/wiki/tools/stegsnow",
             ),
             (
@@ -295,8 +288,7 @@ BRANCHES: list[Branch] = [
                 "encodings",
                 "CyberChef Magic",
                 "CyberChef → Magic",
-                "Brainfuck / Whitespace / Piet / Malbolge and base-N chains; "
-                "try CyberChef Magic.",
+                "Brainfuck / Whitespace / Piet / Malbolge and base-N chains; try CyberChef Magic.",
                 "/wiki/techniques/encodings",
             ),
         ],
@@ -323,8 +315,7 @@ BRANCHES: list[Branch] = [
                 "polyglot?",
                 "two magic bytes",
                 "check for multiple magic numbers",
-                "A file valid as two formats (PDF/ZIP, JPEG/ZIP, GIF/JS); file "
-                "will not flag it.",
+                "A file valid as two formats (PDF/ZIP, JPEG/ZIP, GIF/JS); file will not flag it.",
                 "/wiki/techniques/files-archives",
             ),
             (
@@ -338,8 +329,7 @@ BRANCHES: list[Branch] = [
                 "fcrackzip -u -D",
                 "crack zip",
                 "fcrackzip -u -D -p rockyou.txt file.zip",
-                "ZipCrypto is weak (also bkcrack known-plaintext); AES-256 is "
-                "not.",
+                "ZipCrypto is weak (also bkcrack known-plaintext); AES-256 is not.",
                 "/wiki/cheatsheet/brute-force",
             ),
         ],
@@ -386,8 +376,7 @@ BRANCHES: list[Branch] = [
                 "file / hex editor",
                 "identify",
                 "file target",
-                "Trust file over the extension; inspect the bytes in a hex "
-                "editor.",
+                "Trust file over the extension; inspect the bytes in a hex editor.",
                 "/wiki/tools/file",
             ),
             (
@@ -401,8 +390,7 @@ BRANCHES: list[Branch] = [
                 "raw import",
                 "GIMP / Audacity",
                 "import as raw data",
-                "Import an unknown blob as raw image (GIMP) or raw audio "
-                "(Audacity).",
+                "Import an unknown blob as raw image (GIMP) or raw audio (Audacity).",
                 "/wiki/techniques/steganalysis",
             ),
             (
