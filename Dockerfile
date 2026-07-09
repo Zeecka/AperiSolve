@@ -39,17 +39,6 @@ RUN cd /tmp/jphs && make all
 RUN cd /tmp/jphs && cp jphide jpseek /usr/local/bin/
 RUN rm -rf /tmp/jphs
 
-# Didier Stevens' pdfid (PDF suspicious-object triage). Network-dependent
-# download (fine on CI; may need a retry on flaky networks). The slim runtime
-# has no bare `python`, so normalize the shebang to python3. Unzipped via
-# python's stdlib zipfile so no `unzip` package is needed in the builder.
-RUN wget https://didierstevens.com/files/software/pdfid_v0_2_8.zip -O /tmp/pdfid.zip \
-    && python3 -c "import zipfile; zipfile.ZipFile('/tmp/pdfid.zip').extractall('/tmp/pdfid')" \
-    && cp /tmp/pdfid/pdfid.py /usr/local/bin/pdfid \
-    && sed -i '1s|^#!.*python.*|#!/usr/bin/env python3|' /usr/local/bin/pdfid \
-    && chmod +x /usr/local/bin/pdfid \
-    && rm -rf /tmp/pdfid /tmp/pdfid.zip
-
 # ==========================
 # Stage 2 : Image runtime minimale
 # ==========================
@@ -104,8 +93,13 @@ COPY --from=builder /usr/local/bin/jphide /usr/local/bin/jphide
 COPY --from=builder /usr/local/bin/jpseek /usr/local/bin/jpseek
 COPY --from=builder /usr/local/bin/jsteg /usr/local/bin/jsteg
 
-# Copy pdfid (Didier Stevens) for PDF triage
-COPY --from=builder /usr/local/bin/pdfid /usr/local/bin/pdfid
+# Vendored pdfid.py (Didier Stevens, v0.2.10; docker/) for PDF triage. Vendored
+# rather than downloaded at build time: didierstevens.com is frequently
+# unreachable, and a failed wget used to silently drop pdfid from the image and
+# skip the prod deploy. Shebang is pre-normalized to python3 (slim has no bare
+# `python`).
+COPY docker/pdfid.py /usr/local/bin/pdfid
+RUN chmod +x /usr/local/bin/pdfid
 
 # Command to start
 CMD gunicorn -w ${WEB_WORKERS:-8} -b 0.0.0.0:5000 --access-logfile - --error-logfile - --log-level info --capture-output aperisolve.utils.wsgi:application
