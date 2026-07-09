@@ -58,8 +58,9 @@ The in-app wiki (`/wiki/`) is plain Markdown — the easiest way to contribute:
 
 - Pages live in `aperisolve/wiki_content/en/`. Drop a `.md` file and it appears
   automatically with navigation, SEO metadata and the sitemap entry. The
-  sidebar sections are **folder-driven**: top-level files (e.g. `cheatsheet.md`)
-  go under "Wiki", files under `techniques/` go under "Techniques", and
+  sidebar sections are **folder-driven**: top-level files (e.g.
+  `getting-started.md`) go under "Wiki", files under `techniques/` go under
+  "Techniques", and
   `tools/<analyzer>.md` go under "Tools". To add a new sidebar section, create a
   new top-level folder and add its label to `SECTION_ORDER` / `_section_label`
   in `aperisolve/wiki.py`.
@@ -76,11 +77,33 @@ The in-app wiki (`/wiki/`) is plain Markdown — the easiest way to contribute:
   Callout boxes are available via python-markdown admonitions
   (`!!! tip "…"`, `!!! warning "…"`).
 - Preview locally with `FLASK_DEBUG=1` (page cache is bypassed).
-- The wiki is organized like HackTricks: a `methodology` triage page and a
-  `cheatsheet` decision tree feed into per-medium `techniques/` pages, which
-  cross-link to the per-analyzer `tools/` pages. Improvements and corrections
-  are welcome, as are translations (the non-English wiki is currently
-  English-only and falls back automatically).
+- The wiki is organized like HackTricks: a `methodology` triage page and the
+  standalone [cheatsheet](#-cheatsheet--decision-tree-map) decision tree feed
+  into per-medium `techniques/` pages, which cross-link to the per-analyzer
+  `tools/` pages. Improvements and corrections are welcome, as are translations
+  (the non-English wiki is currently English-only and falls back automatically).
+
+### 🗺️ Cheatsheet & decision-tree map
+
+The cheatsheet is **not** a wiki page — it is a standalone page served by
+`aperisolve/cheatsheet.py`:
+
+- `/cheatsheet` renders `aperisolve/cheatsheet_content/en/cheatsheet.md` (same
+  Markdown pipeline as the wiki, English fallback). The per-medium command
+  checklists it links to still live in the wiki under `wiki_content/*/cheatsheet/`.
+- `/cheatsheet/map` is a near-fullscreen interactive decision tree: hover a step
+  for the command and a link to its tool, and download the whole tree as PNG or
+  PDF.
+- The map's SVG, its tooltip data (`decision-tree.json`) and the editable
+  Excalidraw scene are all generated from one model. Edit the `BRANCHES` list in
+  `scripts/gen_decision_tree.py`, then regenerate:
+
+  ```console
+  $ python scripts/gen_decision_tree.py
+  ```
+
+  Commit the regenerated `aperisolve/static/img/cheatsheet/decision-tree.*`
+  artifacts alongside the script change.
 
 ### 🌍 Translations
 
@@ -100,8 +123,9 @@ Portuguese. Machine-translated drafts are welcome; native review even more so.
   Commit both the `.po` and compiled `.mo` files (the dev compose mounts the
   source tree directly, so the runtime needs the committed `.mo`).
 - **Wiki pages** are translated by mirroring the English file:
-  `aperisolve/wiki_content/fr/cheatsheet.md` translates
-  `aperisolve/wiki_content/en/cheatsheet.md`. Untranslated pages
+  `aperisolve/wiki_content/fr/techniques/images.md` translates
+  `aperisolve/wiki_content/en/techniques/images.md` (the standalone cheatsheet
+  mirrors the same way under `cheatsheet_content/<lang>/`). Untranslated pages
   automatically fall back to English with a banner, canonicalize to the
   English URL and stay out of the sitemap — so partial translations are
   fine. The wiki content is currently **English-only** (the previous

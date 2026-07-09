@@ -233,6 +233,6 @@ When a disk image or blob contains many embedded files, carve them by signature:
 
 ## Related
 
-- Drive a challenge from the [cheatsheet](/wiki/cheatsheet#polyglot).
+- Drive a challenge from the [cheatsheet](/cheatsheet#polyglot).
 - Appended data inside a PNG specifically:
   [Images — PNG structure](/wiki/techniques/images#png-structure-tricks).

@@ -13,7 +13,7 @@ and only then apply content-level extraction** — cheapest and most common
 checks first.
 
 This page is the method. When you are mid-challenge and just need "what do I
-try next", jump to the [cheatsheet](/wiki/cheatsheet) decision tree.
+try next", jump to the [cheatsheet](/cheatsheet) decision tree.
 
 ## The three rules that save the most time
 
@@ -133,7 +133,7 @@ interpretation:
 
 ## Next steps
 
-- Keep the [cheatsheet](/wiki/cheatsheet) open for the by-file-type decision
+- Keep the [cheatsheet](/cheatsheet) open for the by-file-type decision
   tree and the "when stuck" checklist.
 - When automated detectors disagree or you suspect a subtle embedding, read
   [Steganalysis](/wiki/techniques/steganalysis).

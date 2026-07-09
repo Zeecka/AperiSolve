@@ -112,4 +112,4 @@ A message painted into the **spectrogram** of the soundtrack is a very common
 - Carve embedded files and inspect the container:
   [Files & Archives](/wiki/techniques/files-archives).
 - Decode a recovered blob: [Encodings & obfuscation](/wiki/techniques/encodings).
-- Drive a challenge from the [cheatsheet](/wiki/cheatsheet#video).
+- Drive a challenge from the [cheatsheet](/cheatsheet#video).

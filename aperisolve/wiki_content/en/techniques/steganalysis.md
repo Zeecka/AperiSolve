@@ -71,7 +71,7 @@ Aperi'Solve front-loads the detection steps you would otherwise run by hand:
 What it does **not** do — and you must run yourself — is deep statistical
 detection (StegExpose/Aletheia), audio spectrograms, and passphrase brute-force
 beyond the single password you supply. Those are the manual steps in the
-[cheatsheet](/wiki/cheatsheet#stuck).
+[cheatsheet](/cheatsheet#stuck).
 
 ## Related
 

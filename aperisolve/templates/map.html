@@ -1,0 +1,45 @@
+{% extends 'base.html' %}
+{% block title %}{{ _("Steganography decision tree") }} - Aperi'Solve{% endblock %}
+{% block meta_description %}{{ _("An interactive steganography decision tree: identify the file type, then work each branch top to bottom. Hover any step for the command; download as PNG or PDF.") }}{% endblock %}
+{% block meta %}
+<link rel="canonical" href="{{ base_url }}{{ canonical_path }}">
+{% if is_fallback %}<meta name="robots" content="noindex">{% endif %}
+{% endblock %}
+{# No animated background and no chrome: the map owns the whole viewport. #}
+{% block background %}{% endblock %}
+{% block background_scripts %}{% endblock %}
+{% block site_footer %}{% endblock %}
+{% block main_content %}
+<div class="ds-page">
+  <div class="ds-toolbar">
+    <a class="ds-back" href="{{ lang_prefix }}/cheatsheet">
+      <i class="fa fa-arrow-left"></i><span>{{ _("Cheatsheet") }}</span>
+    </a>
+    <h1 class="ds-title">{{ _("Steganography decision tree") }}</h1>
+    <div class="ds-actions">
+      <div class="ds-zoom" role="group" aria-label="{{ _("Zoom") }}">
+        <button type="button" id="ds-zoom-out" class="ds-btn" aria-label="{{ _("Zoom out") }}"><i class="fa fa-minus"></i></button>
+        <button type="button" id="ds-zoom-reset" class="ds-btn ds-btn-reset">{{ _("Fit") }}</button>
+        <button type="button" id="ds-zoom-in" class="ds-btn" aria-label="{{ _("Zoom in") }}"><i class="fa fa-plus"></i></button>
+      </div>
+      <button type="button" id="ds-dl-png" class="ds-btn ds-btn-dl"><i class="fa fa-image"></i><span>PNG</span></button>
+      <button type="button" id="ds-dl-pdf" class="ds-btn ds-btn-dl"><i class="fa fa-file-pdf"></i><span>PDF</span></button>
+    </div>
+  </div>
+  <div class="ds-viewport" id="ds-viewport">
+    <div class="ds-canvas" id="ds-canvas">
+      {{ svg_markup | safe }}
+    </div>
+  </div>
+  <p class="ds-hint">
+    <i class="fa fa-circle-info"></i>
+    {{ _("Hover or tap a step for the command and details · drag to pan · scroll to zoom") }}
+  </p>
+</div>
+<div class="ds-tooltip" id="ds-tooltip" role="tooltip" hidden></div>
+<script type="application/json" id="ds-data">{{ data_json | safe }}</script>
+{% endblock %}
+{% block footer_content %}
+<script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.2/dist/jspdf.umd.min.js" crossorigin="anonymous"></script>
+<script src="/static/js/decision_map.js?v={{ config["PROJECT_VERSION"] }}"></script>
+{% endblock %}

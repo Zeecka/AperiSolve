@@ -20,7 +20,7 @@ and open a tool's guide when you need the exact command.
 - **[Methodology](/wiki/methodology)** — the triage workflow: what to run
   first, second and third on *any* file, and the rules that save the most
   time.
-- **[Cheatsheet](/wiki/cheatsheet)** — a decision tree by file type, a
+- **[Cheatsheet](/cheatsheet)** — a decision tree by file type, a
   Tell → Tool lookup table, and a "when stuck" checklist. This is the page to
   keep open during a CTF. It splits into per-medium command checklists:
   [image](/wiki/cheatsheet/image), [audio](/wiki/cheatsheet/audio),
@@ -45,7 +45,7 @@ and open a tool's guide when you need the exact command.
 
 New to steganography challenges? Read the
 [methodology](/wiki/methodology) once, then drive every challenge from the
-[cheatsheet](/wiki/cheatsheet). New to Aperi'Solve itself? See
+[cheatsheet](/cheatsheet). New to Aperi'Solve itself? See
 [getting started](/wiki/getting-started).
 
 ## Tool reference

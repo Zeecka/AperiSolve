@@ -47,7 +47,9 @@
 
   <!-- Main content area -->
   <main class="flex-grow-1">
+    {% block main_content %}
     <div class="container mt-5">
+      {% block site_header %}
       <header class="site-header mb-4 d-flex justify-content-between align-items-center flex-wrap gap-2">
         <a class="title-link d-inline-flex align-items-center text-decoration-none" href="/" aria-label="{{ _("Aperi'Solve Home") }}">
           <img src="/static/img/logo.svg" alt="Aperi'Solve logo" class="logo-img me-3" width="80" height="80">
@@ -58,15 +60,19 @@
         </a>
         <nav class="header-nav" aria-label="{{ _("Main navigation") }}">
           <a class="footer-link me-3" href="{{ lang_prefix }}/wiki/"><i class="fa-solid fa-book-open me-1"></i>{{ _("Wiki") }}</a>
-          <a class="footer-link" href="{{ lang_prefix }}/wiki/cheatsheet"><i class="fa-regular fa-circle-question me-1"></i>{{ _("Cheatsheet") }}</a>
+          <a class="footer-link" href="{{ lang_prefix }}/cheatsheet"><i class="fa-regular fa-circle-question me-1"></i>{{ _("Cheatsheet") }}</a>
         </nav>
       </header>
+      {% endblock %}
       {% block body_content %} {% endblock %}
     </div>
+    {% endblock %}
   </main>
 
   <!-- Footer -->
+  {% block site_footer %}
   {% include "footer.html" %}
+  {% endblock %}
 
   <!-- Modal Structure -->
   <div id="image-modal-container" role="dialog" aria-modal="true" aria-label="{{ _("Image preview") }}">

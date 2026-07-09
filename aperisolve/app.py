@@ -20,6 +20,7 @@ from sqlalchemy.exc import IntegrityError, SQLAlchemyError
 from werkzeug.wrappers.response import Response as WerkzeugResponse
 
 from .analyzers.registry import archive_tools, tool_order
+from .cheatsheet import cheatsheet_bp, cheatsheet_lastmod
 from .config import (
     ADSENSE_CLIENT,
     ADSENSE_SLOT_INDEX,
@@ -151,7 +152,9 @@ def _register_error_handlers(app: Flask) -> None:
         """Inject language context: prefix, switcher targets, JS catalog."""
         switch = None
         endpoint = request.endpoint or ""
-        if endpoint.startswith(("pages.", "wiki.", "pages_i18n.", "wiki_i18n.")):
+        if endpoint.startswith(
+            ("pages.", "wiki.", "cheatsheet.", "pages_i18n.", "wiki_i18n.", "cheatsheet_i18n."),
+        ):
             bare = request.path
             prefix = lang_prefix()
             if prefix and bare.startswith(prefix):
@@ -200,8 +203,8 @@ def _register_page_routes(app: Flask) -> None:
 
     @app.route("/faq")
     def faq() -> WerkzeugResponse:
-        """Redirect the legacy FAQ URL to the wiki cheatsheet."""
-        return redirect("/wiki/cheatsheet", code=301)
+        """Redirect the legacy FAQ URL to the cheatsheet."""
+        return redirect("/cheatsheet", code=301)
 
     @app.route("/<string(length=32):hash_val>", methods=["GET"])
     def result_page(hash_val: str) -> str:
@@ -269,6 +272,11 @@ def _sitemap_entries() -> list[tuple[str, str | None, list[tuple[str, str]]]]:
     home_alts = alternates_for("/")
     entries: list[tuple[str, str | None, list[tuple[str, str]]]] = [("/", None, home_alts)]
     entries += [(f"/{lang}/", None, home_alts) for lang in PREFIX_LANGS]
+    # The standalone cheatsheet is English-only for now; only the English URL is
+    # indexable (prefixed languages fall back and canonicalize to it).
+    entries.append(
+        ("/cheatsheet", cheatsheet_lastmod(), alternates_for("/cheatsheet", [DEFAULT_LANG])),
+    )
     for page in wiki_pages():
         langs = translated_langs(page.slug)
         alts = alternates_for(page.path, [DEFAULT_LANG, *langs])
@@ -705,6 +713,8 @@ def create_app() -> Flask:
     app.register_blueprint(pages_bp, url_prefix=LANG_PREFIX_RULE, name="pages_i18n")
     app.register_blueprint(wiki_bp)
     app.register_blueprint(wiki_bp, url_prefix=LANG_PREFIX_RULE, name="wiki_i18n")
+    app.register_blueprint(cheatsheet_bp)
+    app.register_blueprint(cheatsheet_bp, url_prefix=LANG_PREFIX_RULE, name="cheatsheet_i18n")
     return app
 
 

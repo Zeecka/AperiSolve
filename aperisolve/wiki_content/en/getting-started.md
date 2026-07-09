@@ -50,7 +50,7 @@ Aperi'Solve automates the first passes, but many techniques need manual work:
 
 - Follow the [methodology](/wiki/methodology) for a repeatable triage order on
   any file.
-- Keep the [cheatsheet](/wiki/cheatsheet) open for the by-file-type decision
+- Keep the [cheatsheet](/cheatsheet) open for the by-file-type decision
   tree and the "when stuck" checklist.
 - Dive into a medium: [Images](/wiki/techniques/images),
   [Audio](/wiki/techniques/audio),

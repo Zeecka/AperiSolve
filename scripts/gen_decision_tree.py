@@ -1,13 +1,21 @@
 #!/usr/bin/env python3
-"""Generate the steganography decision-tree mindmap for the wiki cheatsheet.
+"""Generate the steganography decision-tree mindmap for the cheatsheet.
 
-Emits two artifacts from a single node/edge model so they never drift:
+Emits three artifacts from a single node/edge model so they never drift:
 
-* ``decision-tree.svg``       — hand-drawn (Excalidraw-style) mindmap embedded
-                                in ``/wiki/cheatsheet``.
+* ``decision-tree.svg``        — hand-drawn (Excalidraw-style) mindmap. Used as
+                                 the thumbnail on ``/cheatsheet`` and, inlined,
+                                 as the interactive map on ``/cheatsheet/map``.
+* ``decision-tree.json``       — the same model as data: powers the hover
+                                 tooltips (full command, detail, wiki link) on
+                                 the interactive map page.
 * ``decision-tree.excalidraw`` — the editable Excalidraw scene; open it at
                                  https://excalidraw.com to refine the diagram
                                  and re-export.
+
+The SVG carries a transparent "hit" overlay per step (``class="ds-step"`` with
+``data-b``/``data-s`` indices into the JSON) so the map page can attach hover,
+keyboard focus and export handlers without a second renderer.
 
 Run: ``python scripts/gen_decision_tree.py`` (pure standard library).
 """
@@ -24,102 +32,386 @@ OUT_DIR = Path(__file__).resolve().parent.parent / "aperisolve" / "static" / "im
 
 ROOT_TITLE = "ANY FILE"
 ROOT_SUB = "run first:  file · exiftool · strings · binwalk"
+ROOT_DETAIL = (
+    "Identify the real type with `file` (never trust the extension), then pick "
+    "the branch below. On every file first: `exiftool -a -u -g1`, "
+    "`strings -n 8` (add `-e l` / `-e b` for UTF-16), and `binwalk`."
+)
 
-# (label, accent color, [ (line1, line2), ... ] ordered steps)
-BRANCHES: list[tuple[str, str, list[tuple[str, str]]]] = [
+# Each branch: label, accent color, and an ordered list of steps. A step is
+# (cmd, hint, full, detail, href):
+#   cmd    short mono label shown in the pill (line 1)
+#   hint   dim sub-label in the pill (line 2, may be "")
+#   full   the concrete command / action, copyable from the tooltip
+#   detail one-sentence explanation shown on hover
+#   href   a wiki path (client prepends the language prefix) or absolute URL;
+#          "" for none.
+Step = tuple[str, str, str, str, str]
+Branch = tuple[str, str, list[Step]]
+
+BRANCHES: list[Branch] = [
     (
         "PNG / BMP",
         "#9fef00",
         [
-            ("zsteg -a", "LSB text / files"),
-            ("pngcheck -vtp7f", "CRC / IHDR size"),
-            ("bit planes", "all channels + MSB"),
-            ("data after IEND", "carve the trailer"),
-            ("palette remap", "indexed PNG"),
-            ("OpenStego", "randomized LSB"),
+            (
+                "zsteg -a",
+                "LSB text / files",
+                "zsteg -a file.png",
+                "Scan every common LSB channel/bit-order combo for hidden text "
+                "or files; extract a line with zsteg -E.",
+                "/wiki/tools/zsteg",
+            ),
+            (
+                "pngcheck -vtp7f",
+                "CRC / IHDR size",
+                "pngcheck -vtp7f file.png",
+                "A CRC error in IHDR means an edited header; a shrunken "
+                "width/height hides pixels below the visible image.",
+                "/wiki/tools/pngcheck",
+            ),
+            (
+                "bit planes",
+                "all channels + MSB",
+                "decomposer / Stegsolve",
+                "Browse every bit plane and every channel including alpha; try "
+                "MSB and column-major order, not just RGB LSB.",
+                "/wiki/tools/decomposer",
+            ),
+            (
+                "data after IEND",
+                "carve the trailer",
+                "binwalk -e file.png",
+                "Data appended after the IEND chunk — carve it with "
+                "binwalk/foremost or by byte offset.",
+                "/wiki/tools/foremost",
+            ),
+            (
+                "palette remap",
+                "indexed PNG",
+                "color remapping / randomize palette",
+                "Indexed PNGs can hide an image in the palette; randomize or "
+                "remap it to reveal the drawing.",
+                "/wiki/tools/color_remapping",
+            ),
+            (
+                "OpenStego",
+                "randomized LSB",
+                "openstego extract -sf file.png",
+                "Randomized-LSB payloads that zsteg misses; needs OpenStego "
+                "(and maybe a key).",
+                "/wiki/tools/openstego",
+            ),
         ],
     ),
     (
         "JPEG",
         "#ffa657",
         [
-            ("steghide -p ''", "try empty pass"),
-            ("stegseek rockyou", "crack passphrase"),
-            ("outguess / jsteg", "jphide"),
-            ("stegdetect", "statistical"),
+            (
+                "steghide -p ''",
+                "try empty pass",
+                "steghide extract -sf file.jpg -p ''",
+                "steghide is the most common JPEG tool; try the empty password "
+                "first, then the filename / challenge name.",
+                "/wiki/tools/steghide",
+            ),
+            (
+                "stegseek rockyou",
+                "crack passphrase",
+                "stegseek file.jpg rockyou.txt",
+                "Cracks a steghide passphrase against rockyou in seconds.",
+                "/wiki/tools/stegseek",
+            ),
+            (
+                "outguess / jsteg",
+                "jphide",
+                "outguess -r file.jpg out.txt",
+                "If it isn't steghide, try OutGuess, jsteg, or JPHide (jpseek). "
+                "zsteg does NOT work on JPEG.",
+                "/wiki/tools/outguess",
+            ),
+            (
+                "stegdetect",
+                "statistical",
+                "stegdetect file.jpg",
+                "Statistical detector that hints which JPEG tool was used.",
+                "/wiki/techniques/images",
+            ),
         ],
     ),
     (
         "GIF / APNG",
         "#d2a8ff",
         [
-            ("extract frames", "ffmpeg -vsync 0"),
-            ("frame durations", "morse / binary"),
-            ("diff frames", "consecutive"),
-            ("palette tricks", ""),
+            (
+                "extract frames",
+                "ffmpeg -vsync 0",
+                "ffmpeg -i file.gif -vsync 0 out/f%d.png",
+                "Animations can carry zero-duration frames; extract every frame "
+                "then run the PNG checklist on them.",
+                "/wiki/techniques/images",
+            ),
+            (
+                "frame durations",
+                "morse / binary",
+                "identify -verbose file.gif",
+                "Per-frame delays can encode morse / binary / ASCII.",
+                "/wiki/tools/identify",
+            ),
+            (
+                "diff frames",
+                "consecutive",
+                "compare frame N vs N+1",
+                "A payload can live in the difference between two "
+                "near-identical frames.",
+                "/wiki/techniques/images",
+            ),
+            (
+                "palette tricks",
+                "",
+                "randomize / remap palette",
+                "Same indexed-color palette tricks as PNG.",
+                "/wiki/tools/color_remapping",
+            ),
         ],
     ),
     (
         "AUDIO",
         "#79c0ff",
         [
-            ("spectrogram FIRST", "Audacity / sox"),
-            ("waveform", "-> Morse"),
-            ("WAV LSB", "stegolsb wavsteg"),
-            ("SSTV / DTMF / FSK", "QSSTV / minimodem"),
-            ("steghide", "DeepSound"),
+            (
+                "spectrogram FIRST",
+                "Audacity / sox",
+                "sox file.wav -n spectrogram -o spec.png",
+                "View the frequency domain first — text and QR codes are often "
+                "drawn there; check above 20 kHz and below 20 Hz.",
+                "/wiki/tools/spectrogram",
+            ),
+            (
+                "waveform",
+                "→ Morse",
+                "audacity file.wav",
+                "Obvious on/off bursts in the waveform decode as Morse.",
+                "/wiki/techniques/audio",
+            ),
+            (
+                "WAV LSB",
+                "stegolsb wavsteg",
+                "stegolsb wavsteg -r -i file.wav -o out.txt -n 1 -b 1000",
+                "LSB payloads in WAV samples; they often don't start at "
+                "sample 0.",
+                "/wiki/techniques/audio",
+            ),
+            (
+                "SSTV / DTMF / FSK",
+                "QSSTV / minimodem",
+                "minimodem --rx 1200",
+                "Decode images with QSSTV, phone tones with a DTMF decoder, "
+                "modem tones with minimodem / multimon-ng.",
+                "/wiki/techniques/audio",
+            ),
+            (
+                "steghide",
+                "DeepSound",
+                "steghide extract -sf file.wav",
+                "Passworded containers: steghide (WAV/AU) or DeepSound.",
+                "/wiki/tools/steghide",
+            ),
         ],
     ),
     (
         "VIDEO",
         "#f778ba",
         [
-            ("ffprobe streams", "count tracks"),
-            ("extract frames", "ffmpeg -vsync 0"),
-            ("subtitle / attach", "-map 0:s / dump"),
-            ("audio track", "-> spectrogram"),
-            ("moov / trailing", "exiftool · binwalk"),
+            (
+                "ffprobe streams",
+                "count tracks",
+                "ffprobe file.mp4",
+                "An extra subtitle, attachment or data track is often the "
+                "whole trick.",
+                "/wiki/techniques/video",
+            ),
+            (
+                "extract frames",
+                "ffmpeg -vsync 0",
+                "ffmpeg -i file.mp4 -vsync 0 out/f%05d.png",
+                "Run the PNG checklist (zsteg, bit planes) on the lossless "
+                "frames.",
+                "/wiki/techniques/video",
+            ),
+            (
+                "subtitle / attach",
+                "-map 0:s / dump",
+                "ffmpeg -i file.mkv -map 0:s:0 subs.srt",
+                "Extract subtitle tracks and attached files (fonts, images).",
+                "/wiki/techniques/video",
+            ),
+            (
+                "audio track",
+                "→ spectrogram",
+                "ffmpeg -i file.mp4 -vn audio.wav",
+                "Pull the audio track, then treat it as an audio challenge "
+                "(spectrogram first).",
+                "/wiki/techniques/audio",
+            ),
+            (
+                "moov / trailing",
+                "exiftool · binwalk",
+                "binwalk file.mp4",
+                "Metadata and bytes past the moov atom.",
+                "/wiki/tools/exiftool",
+            ),
         ],
     ),
     (
         "TEXT",
         "#56d4bc",
         [
-            ("cat -A -> stegsnow", "whitespace"),
-            ("zero-width", "U+200B / C / D"),
-            ("homoglyphs", "mixed alphabets"),
-            ("encodings", "CyberChef Magic"),
+            (
+                "cat -A → stegsnow",
+                "whitespace",
+                "stegsnow -C file.txt",
+                "Trailing spaces/tabs; reveal with cat -A, extract with "
+                "stegsnow.",
+                "/wiki/tools/stegsnow",
+            ),
+            (
+                "zero-width",
+                "U+200B / C / D",
+                "compare wc -c to the visible length",
+                "Invisible zero-width characters; inspect code points with xxd "
+                "or a zero-width decoder.",
+                "/wiki/techniques/text",
+            ),
+            (
+                "homoglyphs",
+                "mixed alphabets",
+                "Irongeek homoglyph decoder",
+                "Latin a vs Cyrillic а — a homoglyph decoder separates them.",  # noqa: RUF001
+                "/wiki/techniques/text",
+            ),
+            (
+                "encodings",
+                "CyberChef Magic",
+                "CyberChef → Magic",
+                "Brainfuck / Whitespace / Piet / Malbolge and base-N chains; "
+                "try CyberChef Magic.",
+                "/wiki/techniques/encodings",
+            ),
         ],
     ),
     (
         "ARCHIVE / DOC",
         "#ff7b72",
         [
-            ("unzip / 7z", "appended zip"),
-            ("binwalk -e", "carve embedded"),
-            ("polyglot?", "two magic bytes"),
-            ("pdf / docx / apk", "it's a zip"),
-            ("fcrackzip -u -D", "crack zip"),
+            (
+                "unzip / 7z",
+                "appended zip",
+                "unzip file.png",
+                "An appended archive; unzip / 7z l often just works.",
+                "/wiki/tools/binwalk",
+            ),
+            (
+                "binwalk -e",
+                "carve embedded",
+                "binwalk -e file.bin",
+                "Carve embedded / compressed files out of the container.",
+                "/wiki/tools/binwalk",
+            ),
+            (
+                "polyglot?",
+                "two magic bytes",
+                "check for multiple magic numbers",
+                "A file valid as two formats (PDF/ZIP, JPEG/ZIP, GIF/JS); file "
+                "will not flag it.",
+                "/wiki/techniques/files-archives",
+            ),
+            (
+                "pdf / docx / apk",
+                "it's a zip",
+                "7z x file.docx",
+                ".docx / .pptx / .jar / .apk are ZIPs; PDFs: pdfdetach -saveall.",
+                "/wiki/tools/pdfinfo",
+            ),
+            (
+                "fcrackzip -u -D",
+                "crack zip",
+                "fcrackzip -u -D -p rockyou.txt file.zip",
+                "ZipCrypto is weak (also bkcrack known-plaintext); AES-256 is "
+                "not.",
+                "/wiki/cheatsheet/brute-force",
+            ),
         ],
     ),
     (
         "PCAP / NET",
         "#e3b341",
         [
-            ("tshark -qz io,phs", "what's inside"),
-            ("--export-objects", "carve HTTP/SMB"),
-            ("usb.capdata", "keystrokes"),
-            ("dns.qry.name", "exfil in subdomains"),
+            (
+                "tshark -qz io,phs",
+                "what's inside",
+                "tshark -r file.pcap -qz io,phs",
+                "The protocol hierarchy shows which protocols carry data.",
+                "/wiki/cheatsheet/network",
+            ),
+            (
+                "--export-objects",
+                "carve HTTP/SMB",
+                "tshark -r file.pcap --export-objects http,out/",
+                "Carve transferred files out of HTTP / SMB / TFTP.",
+                "/wiki/cheatsheet/network",
+            ),
+            (
+                "usb.capdata",
+                "keystrokes",
+                "tshark -r f.pcap -Y usb.capdata -T fields -e usb.capdata",
+                "USB HID captures decode to keystrokes / mouse movement.",
+                "/wiki/cheatsheet/network",
+            ),
+            (
+                "dns.qry.name",
+                "exfil in subdomains",
+                "tshark -r f.pcap -Y dns -T fields -e dns.qry.name",
+                "Data exfiltrated in DNS subdomains.",
+                "/wiki/cheatsheet/network",
+            ),
         ],
     ),
     (
         "UNKNOWN / RAW",
         "#8b949e",
         [
-            ("file / hexed.it", "identify"),
-            ("binvis.io", "visualize bytes"),
-            ("raw import", "GIMP / Audacity"),
-            ("QR / Braille", "decode blob"),
+            (
+                "file / hex editor",
+                "identify",
+                "file target",
+                "Trust file over the extension; inspect the bytes in a hex "
+                "editor.",
+                "/wiki/tools/file",
+            ),
+            (
+                "binvis.io",
+                "visualize bytes",
+                "open binvis.io",
+                "Visualize byte entropy / patterns to spot hidden structure.",
+                "https://binvis.io/",
+            ),
+            (
+                "raw import",
+                "GIMP / Audacity",
+                "import as raw data",
+                "Import an unknown blob as raw image (GIMP) or raw audio "
+                "(Audacity).",
+                "/wiki/techniques/steganalysis",
+            ),
+            (
+                "QR / Braille",
+                "decode blob",
+                "zbarimg --raw img.png",
+                "Decode QR / barcodes with zbarimg; Braille / semaphore by hand.",
+                "/wiki/techniques/encodings",
+            ),
         ],
     ),
 ]
@@ -136,7 +428,7 @@ ROOT_W, ROOT_H = 480, 66
 ROOT_X, ROOT_Y = (W - ROOT_W) / 2, 20
 HEADER_Y, HEADER_H = 150, 40
 STEP_Y0, STEP_H, STEP_PITCH = 214, 50, 62
-MAX_STEPS = max(len(b[2]) for b in BRANCHES)
+MAX_STEPS = max(len(steps) for _, _, steps in BRANCHES)
 H = int(STEP_Y0 + MAX_STEPS * STEP_PITCH + 18)
 
 DARK_TEXT = "#0b121f"
@@ -160,7 +452,7 @@ def svg() -> str:
     parts: list[str] = []
     parts.append(
         f'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 {W} {H}" '
-        f'width="{W}" height="{H}" role="img" '
+        f'width="{W}" height="{H}" role="img" class="decision-tree-svg" '
         f'aria-label="Steganography decision tree by file type" '
         f'font-family="{FONT}">'
     )
@@ -183,11 +475,14 @@ def svg() -> str:
     )
     parts.append(
         f'<text x="{W - 24}" y="34" text-anchor="end" font-family="{MONO}" '
-        f'font-size="12" fill="{DIM_TEXT}">numbers = try in this order · details below</text>'
+        f'font-size="12" fill="{DIM_TEXT}">numbers = try in this order · hover for detail</text>'
     )
 
     shapes: list[str] = []
     labels: list[str] = []
+    # Transparent interaction overlays, drawn last so they sit on top and
+    # receive pointer/keyboard events on the map page (invisible otherwise).
+    hits: list[str] = []
 
     # Connectors root -> headers (drawn first, behind).
     rbx, rby = W / 2, ROOT_Y + ROOT_H
@@ -213,6 +508,13 @@ def svg() -> str:
         f'<text x="{W / 2:.0f}" y="{ROOT_Y + 50}" text-anchor="middle" '
         f'font-family="{MONO}" font-size="12.5" fill="{LIGHT_TEXT}">{html.escape(ROOT_SUB)}</text>'
     )
+    root_aria = f"{ROOT_TITLE}: run first — {ROOT_SUB}"
+    hits.append(
+        f'<rect class="ds-step" data-root="1" x="{ROOT_X:.0f}" y="{ROOT_Y}" '
+        f'width="{ROOT_W}" height="{ROOT_H}" rx="14" fill="#9fef00" stroke="#9fef00" '
+        f'fill-opacity="0" stroke-opacity="0" pointer-events="all" tabindex="0" '
+        f'role="button" aria-label="{html.escape(root_aria)}"/>'
+    )
 
     for i, (label, color, steps) in enumerate(BRANCHES):
         cx = col_center(i)
@@ -233,7 +535,7 @@ def svg() -> str:
             f'font-size="15" font-weight="700" fill="{DARK_TEXT}">{html.escape(label)}</text>'
         )
         # Steps.
-        for j, (l1, l2) in enumerate(steps):
+        for j, (l1, l2, _full, _detail, _href) in enumerate(steps):
             sy = STEP_Y0 + j * STEP_PITCH
             shapes.append(
                 f'<rect x="{hx:.0f}" y="{sy}" width="{PILL_W}" height="{STEP_H}" '
@@ -263,11 +565,47 @@ def svg() -> str:
                     f'font-size="11.5" fill="{LIGHT_TEXT}" font-weight="600">'
                     f"{html.escape(l1)}</text>"
                 )
+            aria = f"{label} step {j + 1}: {l1}" + (f" — {l2}" if l2 else "")
+            hits.append(
+                f'<rect class="ds-step" data-b="{i}" data-s="{j}" x="{hx:.0f}" y="{sy}" '
+                f'width="{PILL_W}" height="{STEP_H}" rx="11" fill="{color}" stroke="{color}" '
+                f'fill-opacity="0" stroke-opacity="0" pointer-events="all" tabindex="0" '
+                f'role="button" aria-label="{html.escape(aria)}"/>'
+            )
 
     parts.append(f'<g filter="url(#rough)">{"".join(shapes)}</g>')
     parts.append("".join(labels))
+    parts.append(f'<g class="ds-hits">{"".join(hits)}</g>')
     parts.append("</svg>")
     return "".join(parts)
+
+
+# --- Data (JSON) renderer ------------------------------------------------
+
+
+def data() -> dict:
+    """The diagram model as data, consumed by the interactive map page."""
+    return {
+        "root": {"title": ROOT_TITLE, "sub": ROOT_SUB, "detail": ROOT_DETAIL},
+        "branches": [
+            {
+                "label": label,
+                "color": color,
+                "steps": [
+                    {
+                        "n": j + 1,
+                        "cmd": l1,
+                        "hint": l2,
+                        "full": full,
+                        "detail": detail,
+                        "href": href,
+                    }
+                    for j, (l1, l2, full, detail, href) in enumerate(steps)
+                ],
+            }
+            for label, color, steps in BRANCHES
+        ],
+    }
 
 
 # --- Excalidraw scene renderer ------------------------------------------
@@ -418,7 +756,7 @@ def excalidraw() -> dict:
             )
         )
         idx += 1
-        for j, (l1, l2) in enumerate(steps):
+        for j, (l1, l2, _full, _detail, _href) in enumerate(steps):
             sy = STEP_Y0 + j * STEP_PITCH
             sid = f"s{i}-{j}"
             text = f"{j + 1}. {l1}" + (f"\n{l2}" if l2 else "")
@@ -449,10 +787,16 @@ def excalidraw() -> dict:
 def main() -> None:
     OUT_DIR.mkdir(parents=True, exist_ok=True)
     (OUT_DIR / "decision-tree.svg").write_text(svg(), encoding="utf-8")
+    (OUT_DIR / "decision-tree.json").write_text(
+        json.dumps(data(), indent=2, ensure_ascii=False) + "\n", encoding="utf-8"
+    )
     (OUT_DIR / "decision-tree.excalidraw").write_text(
         json.dumps(excalidraw(), indent=2), encoding="utf-8"
     )
-    print(f"wrote decision-tree.svg ({W}x{H}) and decision-tree.excalidraw to {OUT_DIR}")
+    print(
+        f"wrote decision-tree.svg ({W}x{H}), decision-tree.json and "
+        f"decision-tree.excalidraw to {OUT_DIR}"
+    )
 
 
 if __name__ == "__main__":

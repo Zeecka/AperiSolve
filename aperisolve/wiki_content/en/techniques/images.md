@@ -296,7 +296,7 @@ Extraction often yields *another* image rather than the flag directly:
 
 ## Related
 
-- Drive a challenge from the [cheatsheet decision tree](/wiki/cheatsheet#image).
+- Drive a challenge from the [cheatsheet decision tree](/cheatsheet#image).
 - Statistical detection: [Steganalysis](/wiki/techniques/steganalysis).
 - Appended archives and polyglots:
   [Files & Archives](/wiki/techniques/files-archives).

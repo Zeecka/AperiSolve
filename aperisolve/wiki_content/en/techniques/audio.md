@@ -174,6 +174,6 @@ the audio — check whether the declared size matches the file.
 
 ## Related
 
-- Drive a challenge from the [cheatsheet](/wiki/cheatsheet#audio).
+- Drive a challenge from the [cheatsheet](/cheatsheet#audio).
 - Raw, headerless audio: import it into Audacity via the
   [methodology raw-data tips](/wiki/methodology).

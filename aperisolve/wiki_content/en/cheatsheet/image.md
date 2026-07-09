@@ -7,7 +7,7 @@ Order: 10
 
 Copy-paste command recipes for image challenges, ordered **most-common first**.
 For *why* each works, read the [Images technique page](/wiki/techniques/images);
-to triage across file types, use the [decision tree](/wiki/cheatsheet#triage).
+to triage across file types, use the [decision tree](/cheatsheet#triage).
 
 **Identify the real format first — the branch depends on it:**
 

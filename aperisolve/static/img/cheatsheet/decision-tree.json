@@ -1,0 +1,391 @@
+{
+  "root": {
+    "title": "ANY FILE",
+    "sub": "run first:  file · exiftool · strings · binwalk",
+    "detail": "Identify the real type with `file` (never trust the extension), then pick the branch below. On every file first: `exiftool -a -u -g1`, `strings -n 8` (add `-e l` / `-e b` for UTF-16), and `binwalk`."
+  },
+  "branches": [
+    {
+      "label": "PNG / BMP",
+      "color": "#9fef00",
+      "steps": [
+        {
+          "n": 1,
+          "cmd": "zsteg -a",
+          "hint": "LSB text / files",
+          "full": "zsteg -a file.png",
+          "detail": "Scan every common LSB channel/bit-order combo for hidden text or files; extract a line with zsteg -E.",
+          "href": "/wiki/tools/zsteg"
+        },
+        {
+          "n": 2,
+          "cmd": "pngcheck -vtp7f",
+          "hint": "CRC / IHDR size",
+          "full": "pngcheck -vtp7f file.png",
+          "detail": "A CRC error in IHDR means an edited header; a shrunken width/height hides pixels below the visible image.",
+          "href": "/wiki/tools/pngcheck"
+        },
+        {
+          "n": 3,
+          "cmd": "bit planes",
+          "hint": "all channels + MSB",
+          "full": "decomposer / Stegsolve",
+          "detail": "Browse every bit plane and every channel including alpha; try MSB and column-major order, not just RGB LSB.",
+          "href": "/wiki/tools/decomposer"
+        },
+        {
+          "n": 4,
+          "cmd": "data after IEND",
+          "hint": "carve the trailer",
+          "full": "binwalk -e file.png",
+          "detail": "Data appended after the IEND chunk — carve it with binwalk/foremost or by byte offset.",
+          "href": "/wiki/tools/foremost"
+        },
+        {
+          "n": 5,
+          "cmd": "palette remap",
+          "hint": "indexed PNG",
+          "full": "color remapping / randomize palette",
+          "detail": "Indexed PNGs can hide an image in the palette; randomize or remap it to reveal the drawing.",
+          "href": "/wiki/tools/color_remapping"
+        },
+        {
+          "n": 6,
+          "cmd": "OpenStego",
+          "hint": "randomized LSB",
+          "full": "openstego extract -sf file.png",
+          "detail": "Randomized-LSB payloads that zsteg misses; needs OpenStego (and maybe a key).",
+          "href": "/wiki/tools/openstego"
+        }
+      ]
+    },
+    {
+      "label": "JPEG",
+      "color": "#ffa657",
+      "steps": [
+        {
+          "n": 1,
+          "cmd": "steghide -p ''",
+          "hint": "try empty pass",
+          "full": "steghide extract -sf file.jpg -p ''",
+          "detail": "steghide is the most common JPEG tool; try the empty password first, then the filename / challenge name.",
+          "href": "/wiki/tools/steghide"
+        },
+        {
+          "n": 2,
+          "cmd": "stegseek rockyou",
+          "hint": "crack passphrase",
+          "full": "stegseek file.jpg rockyou.txt",
+          "detail": "Cracks a steghide passphrase against rockyou in seconds.",
+          "href": "/wiki/tools/stegseek"
+        },
+        {
+          "n": 3,
+          "cmd": "outguess / jsteg",
+          "hint": "jphide",
+          "full": "outguess -r file.jpg out.txt",
+          "detail": "If it isn't steghide, try OutGuess, jsteg, or JPHide (jpseek). zsteg does NOT work on JPEG.",
+          "href": "/wiki/tools/outguess"
+        },
+        {
+          "n": 4,
+          "cmd": "stegdetect",
+          "hint": "statistical",
+          "full": "stegdetect file.jpg",
+          "detail": "Statistical detector that hints which JPEG tool was used.",
+          "href": "/wiki/techniques/images"
+        }
+      ]
+    },
+    {
+      "label": "GIF / APNG",
+      "color": "#d2a8ff",
+      "steps": [
+        {
+          "n": 1,
+          "cmd": "extract frames",
+          "hint": "ffmpeg -vsync 0",
+          "full": "ffmpeg -i file.gif -vsync 0 out/f%d.png",
+          "detail": "Animations can carry zero-duration frames; extract every frame then run the PNG checklist on them.",
+          "href": "/wiki/techniques/images"
+        },
+        {
+          "n": 2,
+          "cmd": "frame durations",
+          "hint": "morse / binary",
+          "full": "identify -verbose file.gif",
+          "detail": "Per-frame delays can encode morse / binary / ASCII.",
+          "href": "/wiki/tools/identify"
+        },
+        {
+          "n": 3,
+          "cmd": "diff frames",
+          "hint": "consecutive",
+          "full": "compare frame N vs N+1",
+          "detail": "A payload can live in the difference between two near-identical frames.",
+          "href": "/wiki/techniques/images"
+        },
+        {
+          "n": 4,
+          "cmd": "palette tricks",
+          "hint": "",
+          "full": "randomize / remap palette",
+          "detail": "Same indexed-color palette tricks as PNG.",
+          "href": "/wiki/tools/color_remapping"
+        }
+      ]
+    },
+    {
+      "label": "AUDIO",
+      "color": "#79c0ff",
+      "steps": [
+        {
+          "n": 1,
+          "cmd": "spectrogram FIRST",
+          "hint": "Audacity / sox",
+          "full": "sox file.wav -n spectrogram -o spec.png",
+          "detail": "View the frequency domain first — text and QR codes are often drawn there; check above 20 kHz and below 20 Hz.",
+          "href": "/wiki/tools/spectrogram"
+        },
+        {
+          "n": 2,
+          "cmd": "waveform",
+          "hint": "→ Morse",
+          "full": "audacity file.wav",
+          "detail": "Obvious on/off bursts in the waveform decode as Morse.",
+          "href": "/wiki/techniques/audio"
+        },
+        {
+          "n": 3,
+          "cmd": "WAV LSB",
+          "hint": "stegolsb wavsteg",
+          "full": "stegolsb wavsteg -r -i file.wav -o out.txt -n 1 -b 1000",
+          "detail": "LSB payloads in WAV samples; they often don't start at sample 0.",
+          "href": "/wiki/techniques/audio"
+        },
+        {
+          "n": 4,
+          "cmd": "SSTV / DTMF / FSK",
+          "hint": "QSSTV / minimodem",
+          "full": "minimodem --rx 1200",
+          "detail": "Decode images with QSSTV, phone tones with a DTMF decoder, modem tones with minimodem / multimon-ng.",
+          "href": "/wiki/techniques/audio"
+        },
+        {
+          "n": 5,
+          "cmd": "steghide",
+          "hint": "DeepSound",
+          "full": "steghide extract -sf file.wav",
+          "detail": "Passworded containers: steghide (WAV/AU) or DeepSound.",
+          "href": "/wiki/tools/steghide"
+        }
+      ]
+    },
+    {
+      "label": "VIDEO",
+      "color": "#f778ba",
+      "steps": [
+        {
+          "n": 1,
+          "cmd": "ffprobe streams",
+          "hint": "count tracks",
+          "full": "ffprobe file.mp4",
+          "detail": "An extra subtitle, attachment or data track is often the whole trick.",
+          "href": "/wiki/techniques/video"
+        },
+        {
+          "n": 2,
+          "cmd": "extract frames",
+          "hint": "ffmpeg -vsync 0",
+          "full": "ffmpeg -i file.mp4 -vsync 0 out/f%05d.png",
+          "detail": "Run the PNG checklist (zsteg, bit planes) on the lossless frames.",
+          "href": "/wiki/techniques/video"
+        },
+        {
+          "n": 3,
+          "cmd": "subtitle / attach",
+          "hint": "-map 0:s / dump",
+          "full": "ffmpeg -i file.mkv -map 0:s:0 subs.srt",
+          "detail": "Extract subtitle tracks and attached files (fonts, images).",
+          "href": "/wiki/techniques/video"
+        },
+        {
+          "n": 4,
+          "cmd": "audio track",
+          "hint": "→ spectrogram",
+          "full": "ffmpeg -i file.mp4 -vn audio.wav",
+          "detail": "Pull the audio track, then treat it as an audio challenge (spectrogram first).",
+          "href": "/wiki/techniques/audio"
+        },
+        {
+          "n": 5,
+          "cmd": "moov / trailing",
+          "hint": "exiftool · binwalk",
+          "full": "binwalk file.mp4",
+          "detail": "Metadata and bytes past the moov atom.",
+          "href": "/wiki/tools/exiftool"
+        }
+      ]
+    },
+    {
+      "label": "TEXT",
+      "color": "#56d4bc",
+      "steps": [
+        {
+          "n": 1,
+          "cmd": "cat -A → stegsnow",
+          "hint": "whitespace",
+          "full": "stegsnow -C file.txt",
+          "detail": "Trailing spaces/tabs; reveal with cat -A, extract with stegsnow.",
+          "href": "/wiki/tools/stegsnow"
+        },
+        {
+          "n": 2,
+          "cmd": "zero-width",
+          "hint": "U+200B / C / D",
+          "full": "compare wc -c to the visible length",
+          "detail": "Invisible zero-width characters; inspect code points with xxd or a zero-width decoder.",
+          "href": "/wiki/techniques/text"
+        },
+        {
+          "n": 3,
+          "cmd": "homoglyphs",
+          "hint": "mixed alphabets",
+          "full": "Irongeek homoglyph decoder",
+          "detail": "Latin a vs Cyrillic а — a homoglyph decoder separates them.",
+          "href": "/wiki/techniques/text"
+        },
+        {
+          "n": 4,
+          "cmd": "encodings",
+          "hint": "CyberChef Magic",
+          "full": "CyberChef → Magic",
+          "detail": "Brainfuck / Whitespace / Piet / Malbolge and base-N chains; try CyberChef Magic.",
+          "href": "/wiki/techniques/encodings"
+        }
+      ]
+    },
+    {
+      "label": "ARCHIVE / DOC",
+      "color": "#ff7b72",
+      "steps": [
+        {
+          "n": 1,
+          "cmd": "unzip / 7z",
+          "hint": "appended zip",
+          "full": "unzip file.png",
+          "detail": "An appended archive; unzip / 7z l often just works.",
+          "href": "/wiki/tools/binwalk"
+        },
+        {
+          "n": 2,
+          "cmd": "binwalk -e",
+          "hint": "carve embedded",
+          "full": "binwalk -e file.bin",
+          "detail": "Carve embedded / compressed files out of the container.",
+          "href": "/wiki/tools/binwalk"
+        },
+        {
+          "n": 3,
+          "cmd": "polyglot?",
+          "hint": "two magic bytes",
+          "full": "check for multiple magic numbers",
+          "detail": "A file valid as two formats (PDF/ZIP, JPEG/ZIP, GIF/JS); file will not flag it.",
+          "href": "/wiki/techniques/files-archives"
+        },
+        {
+          "n": 4,
+          "cmd": "pdf / docx / apk",
+          "hint": "it's a zip",
+          "full": "7z x file.docx",
+          "detail": ".docx / .pptx / .jar / .apk are ZIPs; PDFs: pdfdetach -saveall.",
+          "href": "/wiki/tools/pdfinfo"
+        },
+        {
+          "n": 5,
+          "cmd": "fcrackzip -u -D",
+          "hint": "crack zip",
+          "full": "fcrackzip -u -D -p rockyou.txt file.zip",
+          "detail": "ZipCrypto is weak (also bkcrack known-plaintext); AES-256 is not.",
+          "href": "/wiki/cheatsheet/brute-force"
+        }
+      ]
+    },
+    {
+      "label": "PCAP / NET",
+      "color": "#e3b341",
+      "steps": [
+        {
+          "n": 1,
+          "cmd": "tshark -qz io,phs",
+          "hint": "what's inside",
+          "full": "tshark -r file.pcap -qz io,phs",
+          "detail": "The protocol hierarchy shows which protocols carry data.",
+          "href": "/wiki/cheatsheet/network"
+        },
+        {
+          "n": 2,
+          "cmd": "--export-objects",
+          "hint": "carve HTTP/SMB",
+          "full": "tshark -r file.pcap --export-objects http,out/",
+          "detail": "Carve transferred files out of HTTP / SMB / TFTP.",
+          "href": "/wiki/cheatsheet/network"
+        },
+        {
+          "n": 3,
+          "cmd": "usb.capdata",
+          "hint": "keystrokes",
+          "full": "tshark -r f.pcap -Y usb.capdata -T fields -e usb.capdata",
+          "detail": "USB HID captures decode to keystrokes / mouse movement.",
+          "href": "/wiki/cheatsheet/network"
+        },
+        {
+          "n": 4,
+          "cmd": "dns.qry.name",
+          "hint": "exfil in subdomains",
+          "full": "tshark -r f.pcap -Y dns -T fields -e dns.qry.name",
+          "detail": "Data exfiltrated in DNS subdomains.",
+          "href": "/wiki/cheatsheet/network"
+        }
+      ]
+    },
+    {
+      "label": "UNKNOWN / RAW",
+      "color": "#8b949e",
+      "steps": [
+        {
+          "n": 1,
+          "cmd": "file / hex editor",
+          "hint": "identify",
+          "full": "file target",
+          "detail": "Trust file over the extension; inspect the bytes in a hex editor.",
+          "href": "/wiki/tools/file"
+        },
+        {
+          "n": 2,
+          "cmd": "binvis.io",
+          "hint": "visualize bytes",
+          "full": "open binvis.io",
+          "detail": "Visualize byte entropy / patterns to spot hidden structure.",
+          "href": "https://binvis.io/"
+        },
+        {
+          "n": 3,
+          "cmd": "raw import",
+          "hint": "GIMP / Audacity",
+          "full": "import as raw data",
+          "detail": "Import an unknown blob as raw image (GIMP) or raw audio (Audacity).",
+          "href": "/wiki/techniques/steganalysis"
+        },
+        {
+          "n": 4,
+          "cmd": "QR / Braille",
+          "hint": "decode blob",
+          "full": "zbarimg --raw img.png",
+          "detail": "Decode QR / barcodes with zbarimg; Braille / semaphore by hand.",
+          "href": "/wiki/techniques/encodings"
+        }
+      ]
+    }
+  ]
+}

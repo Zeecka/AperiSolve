@@ -126,4 +126,4 @@ unknown one.
   [Text & Unicode](/wiki/techniques/text).
 - The triage flow that gets you here:
   [Methodology](/wiki/methodology#6-near-stego-encodings).
-- Drive a challenge from the [cheatsheet](/wiki/cheatsheet).
+- Drive a challenge from the [cheatsheet](/cheatsheet).

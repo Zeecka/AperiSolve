@@ -1,7 +1,5 @@
 Title: Steganography CTF Cheatsheet - Decision Tree
 Description: A steganography decision tree for CTF players: a by-file-type triage flow, frequency-ordered checklists for PNG, JPEG, GIF, audio, text and archives, a Tell to Tool lookup table, and a when-stuck checklist.
-NavTitle: Cheatsheet
-Order: 30
 
 # Cheatsheet
 
@@ -21,11 +19,15 @@ Identify the real file type with [`file`](/wiki/tools/file), pick your branch in
 the map below, then work top to bottom — each branch is ordered
 **most-common first**. The detailed checklists follow the map.
 
-[![Steganography decision tree: identify the file type, then work each branch top to bottom](/static/img/cheatsheet/decision-tree.svg)](/static/img/cheatsheet/decision-tree.svg){: .decision-map }
+[![Steganography decision tree: identify the file type, then work each branch top to bottom](/static/img/cheatsheet/decision-tree.svg)](/cheatsheet/map){: .decision-map }
 
-*Click the map to open it full size. It is drawn in Excalidraw — grab the
-[editable source](/static/img/cheatsheet/decision-tree.excalidraw) to remix it
-at [excalidraw.com](https://excalidraw.com).*
+[Open the full-screen interactive map](/cheatsheet/map){: .decision-map-cta }
+
+*Hover any step on the [interactive map](/cheatsheet/map) for the full command, a
+one-line explanation and a link to the tool — and download the whole tree as PNG
+or PDF. Prefer to remix it? Grab the
+[editable source](/static/img/cheatsheet/decision-tree.excalidraw) for
+[excalidraw.com](https://excalidraw.com).*
 
 **Run these on every file first (all file types):**
 

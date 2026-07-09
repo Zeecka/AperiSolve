@@ -14,11 +14,12 @@ from pathlib import Path
 from typing import TypedDict
 
 import markdown
-from flask import Blueprint, Response, abort, g, render_template
+from flask import Blueprint, Response, abort, g, redirect, render_template
 from flask_babel import gettext as _
+from werkzeug.wrappers.response import Response as WerkzeugResponse
 
 from .config import FLASK_DEBUG
-from .i18n import DEFAULT_LANG, PREFIX_LANGS, alternates_for, register_lang_handling
+from .i18n import DEFAULT_LANG, PREFIX_LANGS, alternates_for, lang_prefix, register_lang_handling
 
 WIKI_CONTENT_DIR = Path(__file__).parent.resolve() / "wiki_content"
 MARKDOWN_EXTENSIONS = [
@@ -320,6 +321,16 @@ def wiki_search() -> Response:
     if FLASK_DEBUG or lang not in _search_cache:
         _search_cache[lang] = json.dumps({"pages": _search_index(lang)}, ensure_ascii=False)
     return Response(_search_cache[lang], mimetype="application/json")
+
+
+@wiki_bp.route("/wiki/cheatsheet")
+def wiki_cheatsheet_redirect() -> WerkzeugResponse:
+    """Redirect the legacy /wiki/cheatsheet URL to the standalone cheatsheet.
+
+    Static rule, so Werkzeug ranks it above the ``<path:slug>`` converter; the
+    per-medium checklists under ``/wiki/cheatsheet/<name>`` still resolve there.
+    """
+    return redirect(f"{lang_prefix()}/cheatsheet", code=301)
 
 
 @wiki_bp.route("/wiki/<path:slug>")

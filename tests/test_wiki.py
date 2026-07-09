@@ -7,20 +7,6 @@ from flask.testing import FlaskClient
 from aperisolve.analyzers.registry import discover_analyzers
 from aperisolve.wiki import load_page, wiki_pages, wiki_tool_names
 
-CHEATSHEET_ANCHORS = [
-    "triage",
-    "image",
-    "png",
-    "jpg",
-    "gif",
-    "audio",
-    "text",
-    "polyglot",
-    "tell-tool",
-    "stuck",
-    "more",
-]
-
 
 def test_wiki_index_renders(client: FlaskClient) -> None:
     """The wiki landing page lists the tool guides."""
@@ -51,15 +37,15 @@ def test_technique_page_renders(client: FlaskClient) -> None:
 
 
 def test_sidebar_shows_section_groups(client: FlaskClient) -> None:
-    """The folder-driven sidebar renders the three top-level sections."""
+    """The folder-driven sidebar renders the top-level sections."""
     html = client.get("/wiki/").get_data(as_text=True)
-    for heading in ("Wiki", "Techniques", "Tools"):
+    for heading in ("Wiki", "Cheatsheet", "Techniques", "Tools"):
         assert f">{heading}</h2>" in html, f"missing sidebar section {heading}"
 
 
 def test_cheatsheet_section_and_deep_pages(client: FlaskClient) -> None:
-    """The per-medium cheatsheet split renders as its own sidebar section."""
-    html = client.get("/wiki/cheatsheet").get_data(as_text=True)
+    """The per-medium checklist split renders as its own sidebar section."""
+    html = client.get("/wiki/cheatsheet/image").get_data(as_text=True)
     assert ">Cheatsheet</h2>" in html  # the folder-driven sidebar section
     assert client.get("/wiki/cheatsheet/image").status_code == 200
     assert client.get("/wiki/cheatsheet/network").status_code == 200
@@ -68,23 +54,9 @@ def test_cheatsheet_section_and_deep_pages(client: FlaskClient) -> None:
 
 def test_wiki_page_disables_animated_background(client: FlaskClient) -> None:
     """Content pages skip the Three.js background for Core Web Vitals."""
-    html = client.get("/wiki/cheatsheet").get_data(as_text=True)
+    html = client.get("/wiki/methodology").get_data(as_text=True)
     assert "three-bg" not in html
     assert "background.js" not in html
-
-
-def test_cheatsheet_preserves_legacy_anchors(client: FlaskClient) -> None:
-    """Inbound #png/#jpg/... links must keep working after the migration."""
-    html = client.get("/wiki/cheatsheet").get_data(as_text=True)
-    for anchor in CHEATSHEET_ANCHORS:
-        assert f'id="{anchor}"' in html, f"missing anchor {anchor}"
-
-
-def test_faq_redirects_permanently(client: FlaskClient) -> None:
-    """The legacy /faq URL 301s to the cheatsheet."""
-    response = client.get("/faq")
-    assert response.status_code == 301
-    assert response.headers["Location"].endswith("/wiki/cheatsheet")
 
 
 def test_unknown_page_is_404(client: FlaskClient) -> None:
@@ -107,15 +79,14 @@ def test_sitemap_lists_wiki_pages(client: FlaskClient) -> None:
 
 def test_no_ads_rendered_by_default(client: FlaskClient) -> None:
     """Self-hosted instances (no ADSENSE_* env) render no ad units."""
-    html = client.get("/wiki/cheatsheet").get_data(as_text=True)
+    html = client.get("/wiki/tools/zsteg").get_data(as_text=True)
     assert "adsbygoogle" not in html
 
 
 def test_wiki_heading_permalinks(client: FlaskClient) -> None:
-    """Headings get clickable ¶ permalinks wired to their (legacy) ids."""
-    html = client.get("/wiki/cheatsheet").get_data(as_text=True)
+    """Headings get clickable ¶ permalinks wired to their ids."""
+    html = client.get("/wiki/techniques/images").get_data(as_text=True)
     assert 'class="headerlink"' in html
-    assert 'href="#png"' in html
 
 
 def test_wiki_toc_rail_rendered(client: FlaskClient) -> None:
@@ -141,8 +112,8 @@ def test_wiki_search_index(client: FlaskClient) -> None:
     assert response.mimetype == "application/json"
     pages = json.loads(response.get_data(as_text=True))["pages"]
     assert any(page["path"] == "/wiki/tools/zsteg" for page in pages)
-    cheatsheet = next(page for page in pages if page["path"] == "/wiki/cheatsheet")
-    assert any(heading["id"] == "png" for heading in cheatsheet["headings"])
+    # The standalone cheatsheet is no longer a wiki page, so it is not indexed.
+    assert not any(page["path"] == "/wiki/cheatsheet" for page in pages)
     # The route is also mounted under the language prefix (English fallback).
     assert client.get("/fr/wiki/search.json").status_code == 200
 

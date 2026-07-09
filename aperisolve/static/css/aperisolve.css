@@ -1571,6 +1571,253 @@ footer::before {
     margin: 0 auto;
     border: 1px solid var(--green-line);
     border-radius: var(--border-radius);
+    transition: border-color 0.15s, box-shadow 0.15s;
+}
+
+#cheatsheet a.decision-map:hover img {
+    border-color: var(--theme-green);
+    box-shadow: 0 0 0.6rem var(--green-glow);
+}
+
+/* Cheatsheet: call-to-action linking to the full-screen interactive map. */
+#cheatsheet a.decision-map-cta {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--spacing-sm);
+    margin: 0 0 var(--spacing-md);
+    padding: var(--spacing-sm) var(--spacing-md);
+    background: var(--green-tint);
+    border: 1px solid var(--green-line);
+    border-radius: var(--border-radius);
+    color: var(--theme-green);
+    font-weight: 600;
+    text-decoration: none;
+    transition: border-color 0.15s, box-shadow 0.15s;
+}
+
+#cheatsheet a.decision-map-cta::before {
+    font-family: "Font Awesome 7 Free";
+    font-weight: 900;
+    content: "\f542"; /* diagram-project */
+}
+
+#cheatsheet a.decision-map-cta:hover {
+    border-color: var(--theme-green);
+    box-shadow: 0 0 0.5rem var(--green-glow);
+}
+
+/* ----- Full-screen interactive decision-tree map (/cheatsheet/map) ----- */
+.ds-page {
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+    height: 100dvh;
+    overflow: hidden;
+}
+
+.ds-toolbar {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-md);
+    flex-wrap: wrap;
+    padding: var(--spacing-sm) var(--spacing-md);
+    border-bottom: 1px solid var(--green-line);
+    background: rgba(11, 18, 31, 0.92);
+    backdrop-filter: blur(4px);
+}
+
+.ds-back {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--spacing-xs);
+    color: var(--text-dim);
+    text-decoration: none;
+    white-space: nowrap;
+}
+
+.ds-back:hover {
+    color: var(--theme-green);
+}
+
+.ds-title {
+    margin: 0;
+    font-size: 1rem;
+    color: var(--theme-green);
+    white-space: nowrap;
+}
+
+.ds-actions {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-sm);
+    margin-left: auto;
+    flex-wrap: wrap;
+}
+
+.ds-zoom {
+    display: inline-flex;
+    gap: 2px;
+}
+
+.ds-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--spacing-xs);
+    padding: var(--spacing-xs) var(--spacing-sm);
+    background: transparent;
+    border: 1px solid var(--green-line);
+    border-radius: var(--border-radius);
+    color: var(--text);
+    font: inherit;
+    cursor: pointer;
+    transition: border-color 0.15s, box-shadow 0.15s, color 0.15s;
+}
+
+.ds-btn:hover {
+    border-color: var(--theme-green);
+    color: var(--theme-green);
+    box-shadow: 0 0 0.4rem var(--green-glow);
+}
+
+.ds-btn-dl {
+    color: var(--theme-green);
+}
+
+.ds-viewport {
+    position: relative;
+    flex: 1 1 auto;
+    overflow: hidden;
+    cursor: grab;
+    touch-action: none;
+    background:
+        radial-gradient(circle at 50% 0, rgba(159, 239, 0, 0.05), transparent 60%),
+        var(--theme-dark-blue);
+}
+
+.ds-viewport.is-grabbing {
+    cursor: grabbing;
+}
+
+.ds-canvas {
+    position: absolute;
+    top: 0;
+    left: 0;
+    transform-origin: 0 0;
+    opacity: 0;
+    will-change: transform;
+}
+
+.ds-canvas.ds-ready {
+    opacity: 1;
+    transition: opacity 0.2s ease;
+}
+
+.ds-canvas svg {
+    display: block;
+}
+
+/* Step overlays are transparent until hovered / focused. */
+.ds-canvas .ds-step {
+    cursor: pointer;
+    transition: fill-opacity 0.12s, stroke-opacity 0.12s;
+}
+
+.ds-canvas .ds-step:hover,
+.ds-canvas .ds-step:focus-visible {
+    fill-opacity: 0.14;
+    stroke-opacity: 0.95;
+    stroke-width: 2.5;
+    outline: none;
+}
+
+.ds-hint {
+    margin: 0;
+    padding: var(--spacing-xs) var(--spacing-md);
+    text-align: center;
+    font-size: 0.8rem;
+    color: var(--text-dim);
+    border-top: 1px solid var(--green-line-soft);
+    background: rgba(11, 18, 31, 0.92);
+}
+
+.ds-tooltip {
+    position: fixed;
+    z-index: 1080;
+    max-width: 320px;
+    padding: var(--spacing-sm) var(--spacing-md);
+    background: var(--surface-1);
+    border: 1px solid var(--green-line);
+    border-radius: var(--border-radius);
+    box-shadow: var(--shadow-pop);
+    color: var(--text);
+    opacity: 0;
+    transform: translateY(4px);
+    transition: opacity 0.12s, transform 0.12s;
+    pointer-events: none;
+}
+
+.ds-tooltip.is-visible {
+    opacity: 1;
+    transform: none;
+    pointer-events: auto;
+}
+
+.ds-tt-head {
+    font-weight: 700;
+    margin-bottom: var(--spacing-xs);
+}
+
+.ds-tt-cmd {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-sm);
+    padding: var(--spacing-xs) var(--spacing-sm);
+    margin-bottom: var(--spacing-xs);
+    background: rgba(0, 0, 0, 0.3);
+    border: 1px solid var(--green-line-soft);
+    border-radius: var(--border-radius);
+}
+
+.ds-tt-cmd code {
+    flex: 1;
+    font-size: 0.82rem;
+    color: var(--theme-green);
+    word-break: break-all;
+}
+
+.ds-tt-copy {
+    padding: 2px;
+    background: transparent;
+    border: none;
+    color: var(--text-dim);
+    cursor: pointer;
+}
+
+.ds-tt-copy:hover {
+    color: var(--theme-green);
+}
+
+.ds-tt-detail {
+    margin: 0 0 var(--spacing-xs);
+    font-size: 0.85rem;
+    color: var(--text);
+}
+
+.ds-tt-link {
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: var(--theme-green);
+    text-decoration: none;
+}
+
+.ds-tt-link:hover {
+    text-decoration: underline;
+}
+
+@media (max-width: 36rem) {
+    .ds-title {
+        display: none;
+    }
 }
 
 .breadcrumb .breadcrumb-item a {

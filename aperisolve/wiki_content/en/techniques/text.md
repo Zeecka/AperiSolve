@@ -129,6 +129,6 @@ identify an unknown one.
 
 ## Related
 
-- Drive a challenge from the [cheatsheet](/wiki/cheatsheet#text).
+- Drive a challenge from the [cheatsheet](/cheatsheet#text).
 - Whitespace also appears in source files and archives —
   [Files & Archives](/wiki/techniques/files-archives).
