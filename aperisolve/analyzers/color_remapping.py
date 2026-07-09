@@ -20,6 +20,7 @@ class ColorRemappingAnalyzer(SubprocessAnalyzer):
 
     name = "color_remapping"
     display_order = 20
+    accepts = frozenset({"image"})
 
     def _normalize_image(self, img_np: np.ndarray) -> tuple[np.ndarray, int]:
         """Normalize image to have RGB or RGBA channels.

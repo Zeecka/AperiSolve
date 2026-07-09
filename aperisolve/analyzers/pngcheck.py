@@ -10,6 +10,7 @@ class PngcheckAnalyzer(SubprocessAnalyzer):
 
     name = "pngcheck"
     display_order = 80
+    accepts = frozenset({"png"})
 
     def __init__(self, input_img: Path, output_dir: Path) -> None:
         """Initialize the pngcheck analyzer."""

@@ -10,6 +10,7 @@ class ZstegAnalyzer(SubprocessAnalyzer):
 
     name = "zsteg"
     display_order = 150
+    accepts = frozenset({"png"})
 
     def __init__(self, input_img: Path, output_dir: Path) -> None:
         """Initialize the zsteg analyzer."""

@@ -14,6 +14,7 @@ class PCRTAnalyzer(SubprocessAnalyzer):
     name = "pcrt"
     has_archive = True
     display_order = 90
+    accepts = frozenset({"png"})
 
     def _write_repaired_data(self, data: bytes) -> str:
         """Write recovered image."""

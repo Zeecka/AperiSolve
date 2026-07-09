@@ -10,6 +10,7 @@ class JstegAnalyzer(SubprocessAnalyzer):
 
     name = "jsteg"
     display_order = 130
+    accepts = frozenset({"jpeg"})
 
     def __init__(self, input_img: Path, output_dir: Path) -> None:
         """Initialize the jsteg analyzer."""

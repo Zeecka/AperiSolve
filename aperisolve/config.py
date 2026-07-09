@@ -34,6 +34,9 @@ MAX_STORE_TIME = int(getenv("MAX_STORE_TIME", "259200"))  # 3 days by default
 MAX_CONTENT_LENGTH = int(getenv("MAX_CONTENT_LENGTH", "1048576"))  # 1 MB by default
 CLEAR_AT_RESTART = int(getenv("CLEAR_AT_RESTART", "0"))
 
+# Recognised image file extensions. No longer the upload gate (any file type is
+# accepted); this now backs the derived-image serving gate (/image/<hash>/<name>)
+# and the extension fallback in aperisolve.filetype.
 IMAGE_EXTENSIONS = [".png", ".jpg", ".jpeg", ".gif", ".bmp", ".webp", ".tiff"]
 
 GOOGLE_ADS_TXT = getenv("GOOGLE_ADS_TXT", "")

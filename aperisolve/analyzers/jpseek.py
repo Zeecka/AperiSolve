@@ -10,6 +10,7 @@ class JpseekAnalyzer(SubprocessAnalyzer):
     has_archive = True
     needs_password = True
     display_order = 120
+    accepts = frozenset({"jpeg"})
 
     def build_cmd(self, password: str | None = None) -> list[str]:
         """Build the jpseek command wrapped with expect for password support."""

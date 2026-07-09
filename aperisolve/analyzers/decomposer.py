@@ -18,6 +18,7 @@ class DecomposerAnalyzer(SubprocessAnalyzer):
 
     name = "decomposer"
     display_order = 10
+    accepts = frozenset({"image"})
 
     def get_results(self, password: str | None = None) -> dict[str, Any]:
         """Analyze an image submission using bits decomposition."""

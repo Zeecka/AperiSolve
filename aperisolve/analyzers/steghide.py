@@ -13,6 +13,7 @@ class SteghideAnalyzer(SubprocessAnalyzer):
     has_archive = True
     needs_password = True
     display_order = 110
+    accepts = frozenset({"jpeg", "bmp", "wav", "au"})
 
     def build_cmd(self, password: str | None = None) -> list[str]:
         """Build the steghide command for info or extraction."""

@@ -17,6 +17,9 @@ class TemplateAnalyzer(SubprocessAnalyzer):
     needs_password = True  # The tool receives the submission password.
     deep_only = False  # Only run when the user requests a deep analysis.
     display_order = 1000  # Frontend rendering position (lower renders first).
+    # File-type gate (optional): set an ``accepts`` frozenset of tags (e.g.
+    # ``{"png"}``) to run only on matching uploads; the inherited empty default
+    # runs on any file. See aperisolve/filetype.py for the available tags.
 
     def build_cmd(self, password: str | None = None) -> list[str]:
         """Build command for a placeholder analyzer implementation."""

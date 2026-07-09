@@ -11,6 +11,7 @@ from .analyzers.base_analyzer import SubprocessAnalyzer
 from .analyzers.registry import get_analyzers
 from .app import create_app
 from .config import RESULT_FOLDER
+from .filetype import detect_file_type
 from .models import Image, Submission, db
 from .utils.sentry import initialize_sentry
 
@@ -51,6 +52,11 @@ def analyze_image(submission_hash: str) -> None:
             result_path = RESULT_FOLDER / img_hash / submission_hash
             result_path.mkdir(parents=True, exist_ok=True)
 
+            # Classify once, before spawning threads, so every analyzer shares a
+            # single immutable snapshot of the detected file-type tags (no
+            # per-thread re-detection, no race on the shared session/filesystem).
+            tags = detect_file_type(img_path).tags
+
             threads: list[threading.Thread] = []
 
             def run_analyzer(analyzer_cls: type[SubprocessAnalyzer]) -> None:
@@ -78,7 +84,7 @@ def analyze_image(submission_hash: str) -> None:
                         scope.fingerprint = ["analyzer-error", analyzer_cls.name]
                         sentry_sdk.capture_exception(exc)
 
-            for analyzer_cls in get_analyzers(deep=deep_analysis):
+            for analyzer_cls in get_analyzers(deep=deep_analysis, tags=tags):
                 thread = threading.Thread(target=run_analyzer, args=(analyzer_cls,))
                 threads.append(thread)
                 thread.start()

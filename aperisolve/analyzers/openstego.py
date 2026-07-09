@@ -13,6 +13,7 @@ class OpenStegoAnalyzer(SubprocessAnalyzer):
     needs_password = True
     display_order = 140
     max_attempts = 2  # build_cmd cycles AES128 then AES256
+    accepts = frozenset({"image"})
 
     def __init__(self, input_img: Path, output_dir: Path) -> None:
         """Initialize the OpenStego analyzer."""

@@ -13,6 +13,7 @@ class OutguessAnalyzer(SubprocessAnalyzer):
     needs_password = True
     deep_only = True
     display_order = 70
+    accepts = frozenset({"jpeg"})
 
     def build_cmd(self, password: str | None = None) -> list[str]:
         """Build the outguess extraction command."""

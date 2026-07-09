@@ -10,6 +10,7 @@ class IdentifyAnalyzer(SubprocessAnalyzer):
 
     name = "identify"
     display_order = 100
+    accepts = frozenset({"image"})
 
     def __init__(self, input_img: Path, output_dir: Path) -> None:
         """Initialize the identify analyzer."""

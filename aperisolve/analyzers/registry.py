@@ -31,9 +31,26 @@ def discover_analyzers() -> list[type[SubprocessAnalyzer]]:
     return sorted(REGISTRY, key=lambda cls: (cls.display_order, cls.name))
 
 
-def get_analyzers(*, deep: bool) -> list[type[SubprocessAnalyzer]]:
-    """Return the analyzers to run for a submission."""
-    return [cls for cls in discover_analyzers() if deep or not cls.deep_only]
+def get_analyzers(
+    *,
+    deep: bool,
+    tags: frozenset[str] | None = None,
+) -> list[type[SubprocessAnalyzer]]:
+    """Return the analyzers to run for a submission.
+
+    ``deep`` includes the ``deep_only`` analyzers. ``tags`` are the detected
+    file-type tags (see :mod:`aperisolve.filetype`); when provided, an analyzer
+    is skipped unless it is file-agnostic (empty ``accepts``) or its ``accepts``
+    intersects ``tags``. ``tags=None`` disables the gate (legacy behavior).
+    """
+    result: list[type[SubprocessAnalyzer]] = []
+    for cls in discover_analyzers():
+        if cls.deep_only and not deep:
+            continue
+        if tags is not None and cls.accepts and not (cls.accepts & tags):
+            continue
+        result.append(cls)
+    return result
 
 
 def archive_tools() -> frozenset[str]:

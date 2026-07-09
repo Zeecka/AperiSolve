@@ -36,6 +36,8 @@ class SubprocessAnalyzer(ABC):
     - ``deep_only``: only run when the user requests a deep analysis.
     - ``display_order``: frontend rendering position (lower renders first).
     - ``register``: opt-out flag for templates/abstract intermediates.
+    - ``accepts``: file-type gate — empty runs on any file; else runs iff
+      ``accepts & detected.tags`` is non-empty (see ``aperisolve.filetype``).
     """
 
     name: ClassVar[str]
@@ -48,6 +50,9 @@ class SubprocessAnalyzer(ABC):
     # algorithms) set this >1; ``analyze`` re-runs ``get_results`` while the
     # previous attempt errored, and ``build_cmd`` supplies the next variant.
     max_attempts: ClassVar[int] = 1
+    # File-type gate. Empty = file-agnostic (runs on ANY upload). Otherwise runs
+    # iff (accepts & detected.tags) is non-empty. See aperisolve/filetype.py.
+    accepts: ClassVar[frozenset[str]] = frozenset()
 
     input_img: Path
     output_dir: Path
