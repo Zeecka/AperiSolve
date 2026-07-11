@@ -369,8 +369,7 @@ class PNG:
             return None
         if math.comb(len(pos_list), count) > MAX_DOS2UNIX_COMBINATIONS:
             self._log(
-                f"Skipping DOS->Unix repair: search space too large "
-                f"(C({len(pos_list)}, {count}))",
+                f"Skipping DOS->Unix repair: search space too large (C({len(pos_list)}, {count}))",
             )
             return None
 
@@ -378,8 +377,7 @@ class PNG:
         for pos_combo in itertools.combinations(pos_list, count):
             if time.monotonic() > deadline:
                 self._log(
-                    f"DOS->Unix repair stopped after {DOS2UNIX_DEADLINE_SECONDS}s "
-                    "without a match",
+                    f"DOS->Unix repair stopped after {DOS2UNIX_DEADLINE_SECONDS}s without a match",
                 )
                 return None
             test_data = chunk_data

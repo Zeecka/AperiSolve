@@ -22,7 +22,10 @@ def test_dos2unix_recovers_genuine_mangling() -> None:
     count = original.count(b"\x0d\x0a")
 
     recovered = PNG(b"")._fix_dos2unix(  # noqa: SLF001
-        b"IDAT", mangled, _crc(b"IDAT", original), count,
+        b"IDAT",
+        mangled,
+        _crc(b"IDAT", original),
+        count,
     )
 
     assert recovered == original
@@ -45,7 +48,10 @@ def test_dos2unix_rejects_excessive_insertion_count() -> None:
     """A count larger than the allowed insertions is refused up front."""
     chunk_data = b"\x0a" * 200
     result = PNG(b"")._fix_dos2unix(  # noqa: SLF001
-        b"IDAT", chunk_data, b"\x00\x00\x00\x00", 100,
+        b"IDAT",
+        chunk_data,
+        b"\x00\x00\x00\x00",
+        100,
     )
     assert result is None
 
