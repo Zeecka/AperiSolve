@@ -1,6 +1,7 @@
 """PNG Class for analyzer modules."""
 
 import itertools
+import math
 import re
 import struct
 import threading
@@ -28,6 +29,15 @@ IDAT_NOT_FOUND_OFFSET = -5
 # subprocess timeout (it is not a subprocess); a crafted PNG must not be able
 # to pin a core until RQ kills the whole job.
 BRUTEFORCE_DEADLINE_SECONDS = 30
+
+# _fix_dos2unix() tries every way to reinsert `count` carriage returns among the
+# newline positions: C(len(pos_list), count) CRC checks. Both numbers come
+# straight from the uploaded file, so bound the search. A genuine DOS->Unix
+# mangling only flips a handful of bytes; anything past these limits is a
+# crafted file trying to pin a core.
+MAX_DOS2UNIX_COMBINATIONS = 100_000
+MAX_DOS2UNIX_INSERTIONS = 64
+DOS2UNIX_DEADLINE_SECONDS = 2
 
 _db_app: Flask | None = None
 _db_app_lock = threading.Lock()
@@ -351,7 +361,27 @@ class PNG:
         pos = -1
         while (pos := chunk_data.find(b"\x0a", pos + 1)) != -1:
             pos_list.append(pos)
+
+        # Bound the search before doing any work: math.comb is cheap even for
+        # huge inputs, so an abusive chunk is rejected without any CRC check.
+        if not 0 < count <= min(len(pos_list), MAX_DOS2UNIX_INSERTIONS):
+            self._log("Skipping DOS->Unix repair: insertion count out of range")
+            return None
+        if math.comb(len(pos_list), count) > MAX_DOS2UNIX_COMBINATIONS:
+            self._log(
+                f"Skipping DOS->Unix repair: search space too large "
+                f"(C({len(pos_list)}, {count}))",
+            )
+            return None
+
+        deadline = time.monotonic() + DOS2UNIX_DEADLINE_SECONDS
         for pos_combo in itertools.combinations(pos_list, count):
+            if time.monotonic() > deadline:
+                self._log(
+                    f"DOS->Unix repair stopped after {DOS2UNIX_DEADLINE_SECONDS}s "
+                    "without a match",
+                )
+                return None
             test_data = chunk_data
             for i, pos in enumerate(pos_combo):
                 test_data = test_data[: pos + i] + b"\x0d" + test_data[pos + i :]
