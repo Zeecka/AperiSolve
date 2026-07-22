@@ -18,7 +18,7 @@ dependencies = [
     "redis",
     "rq",
     "psycopg2-binary",
-    "Pillow>=11",
+    "Pillow>=12.3",
     "gunicorn",
     "sentry-sdk[flask,sqlalchemy,rq]",
     "Markdown",
