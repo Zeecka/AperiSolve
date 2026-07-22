@@ -10,11 +10,13 @@ import numpy as np
 import pytest
 from PIL import Image
 
+from aperisolve.analyzers.color_remapping import RANDOM_REMAPPING_COUNT, ColorRemappingAnalyzer
 from aperisolve.analyzers.decomposer import DecomposerAnalyzer
 from aperisolve.analyzers.file import FileAnalyzer
 from aperisolve.analyzers.outguess import OutguessAnalyzer
 from aperisolve.analyzers.pdfid import PdfidAnalyzer
 from aperisolve.analyzers.pdfinfo import PdfinfoAnalyzer
+from aperisolve.analyzers.pil_utils import PALETTE_NOTE
 from aperisolve.analyzers.spectrogram import SpectrogramAnalyzer
 from aperisolve.analyzers.strings import StringsAnalyzer
 from aperisolve.filetype import detect_file_type
@@ -218,3 +220,79 @@ def test_detect_file_type_missing_path_never_raises() -> None:
     ft = detect_file_type(Path("/nonexistent/aperisolve/does-not-exist.bin"))
     assert ft.kind == "other"
     assert ft.tags == frozenset()
+
+
+def _synthetic_image(path: Path, mode: str, size: tuple[int, int] = (16, 16)) -> None:
+    """Write a small deterministic image in the requested PIL ``mode``.
+
+    A fixed ramp (rather than random noise) keeps the input reproducible; the
+    remapping the analyzer applies on top is what varies.
+    """
+    w, h = size
+    base = (np.arange(w * h, dtype=np.uint8) % 251).reshape(h, w)
+    if mode == "L":
+        Image.fromarray(base, "L").save(path)
+        return
+    green = (base + 80).astype(np.uint8)
+    blue = (base + 160).astype(np.uint8)
+    if mode == "RGB":
+        Image.fromarray(np.dstack([base, green, blue]), "RGB").save(path)
+    elif mode == "RGBA":
+        alpha = np.full((h, w), 200, dtype=np.uint8)
+        Image.fromarray(np.dstack([base, green, blue, alpha]), "RGBA").save(path)
+    elif mode == "P":
+        Image.fromarray(np.dstack([base, green, blue]), "RGB").convert("P").save(path)
+    else:
+        msg = f"unsupported mode {mode}"
+        raise ValueError(msg)
+
+
+@pytest.mark.parametrize(
+    ("mode", "expected_out_mode"),
+    [("L", "RGB"), ("RGB", "RGB"), ("RGBA", "RGBA"), ("P", "RGB")],
+)
+def test_color_remapping_supports_common_modes(
+    tmp_path: Path,
+    mode: str,
+    expected_out_mode: str,
+) -> None:
+    """Grayscale, RGB, RGBA and palette inputs each yield the full set of PNGs.
+
+    RGBA keeps its alpha channel (output stays RGBA); every other mode is
+    emitted as RGB, exercising both branches of ``_create_remapped_image``.
+    """
+    src = tmp_path / f"{mode.lower()}.png"
+    _synthetic_image(src, mode)
+    ColorRemappingAnalyzer.execute(src, tmp_path)
+
+    entry = _read_results(tmp_path)["color_remapping"]
+    assert entry["status"] == "ok", entry
+    assert len(entry["images"]["Color Remapping"]) == RANDOM_REMAPPING_COUNT
+
+    for i in range(RANDOM_REMAPPING_COUNT):
+        png = tmp_path / f"color_remapping_{i:02d}.png"
+        assert png.exists(), png
+        with Image.open(png) as img:
+            img.load()
+            assert img.mode == expected_out_mode, (png.name, img.mode)
+
+
+def test_color_remapping_notes_palette_conversion(tmp_path: Path) -> None:
+    """A palette (mode 'P') input is converted to RGB and carries the note."""
+    src = tmp_path / "palette.png"
+    _synthetic_image(src, "P")
+    ColorRemappingAnalyzer.execute(src, tmp_path)
+
+    entry = _read_results(tmp_path)["color_remapping"]
+    assert entry["status"] == "ok", entry
+    assert entry["note"] == PALETTE_NOTE
+
+
+def test_color_remapping_errors_on_undecodable_input(tmp_path: Path) -> None:
+    """A file Pillow cannot decode is recorded as an error, never an exception."""
+    junk = tmp_path / "not-an-image.png"
+    junk.write_bytes(os.urandom(2048))
+    ColorRemappingAnalyzer.execute(junk, tmp_path)
+
+    entry = _read_results(tmp_path)["color_remapping"]
+    assert entry["status"] == "error", entry
