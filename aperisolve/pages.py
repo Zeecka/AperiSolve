@@ -15,10 +15,13 @@ register_lang_handling(pages_bp)
 
 MAX_SHOW_IMAGES = 100
 
-# Extension -> Font Awesome icon for the browse gallery's non-image cards. The
-# stored upload is classified cheaply by extension here (not via
-# detect_file_type) to avoid a subprocess probe per gallery row.
+# Extensions the browse gallery previews inline. Uploads are classified cheaply
+# by extension here (not via detect_file_type) to avoid a subprocess probe per
+# gallery row; the values only pick a preview element, not analyzer gating.
 _AUDIO_EXTENSIONS = frozenset({".wav", ".mp3", ".flac", ".ogg", ".m4a", ".au"})
+_VIDEO_EXTENSIONS = frozenset(
+    {".mp4", ".m4v", ".webm", ".avi", ".flv", ".mkv", ".mov", ".wmv", ".mpeg", ".mpg", ".ogv"},
+)
 
 
 def _file_icon(suffix: str) -> str:
@@ -27,6 +30,8 @@ def _file_icon(suffix: str) -> str:
         return "fa-file-pdf"
     if suffix in _AUDIO_EXTENSIONS:
         return "fa-file-audio"
+    if suffix in _VIDEO_EXTENSIONS:
+        return "fa-file-video"
     return "fa-file"
 
 
@@ -53,11 +58,18 @@ def show() -> str:
         last_sub = img.submissions[-1]
         suffix = Path(str(img.file)).suffix.lower()
         row: dict[str, str] = {"file": f"/image/{img.hash}", "link": f"/{last_sub.hash}"}
+        label = suffix.removeprefix(".").upper() or "FILE"
         if suffix in IMAGE_EXTENSIONS:
             row["kind"] = "image"
+        elif suffix in _VIDEO_EXTENSIONS:
+            row["kind"] = "video"
+            row["label"] = label
+        elif suffix in _AUDIO_EXTENSIONS:
+            row["kind"] = "audio"
+            row["label"] = label
         else:
             row["kind"] = "other"
             row["icon"] = _file_icon(suffix)
-            row["label"] = suffix.removeprefix(".").upper() or "FILE"
+            row["label"] = label
         images.append(row)
     return render_template("show.html", images=images)

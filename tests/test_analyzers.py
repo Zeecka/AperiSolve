@@ -222,6 +222,30 @@ def test_detect_file_type_missing_path_never_raises() -> None:
     assert ft.tags == frozenset()
 
 
+@pytest.mark.parametrize("ext", [".mp4", ".webm", ".avi", ".flv", ".mkv", ".mov"])
+def test_detect_file_type_video_by_extension(tmp_path: Path, ext: str) -> None:
+    """Video uploads classify as kind 'video' carrying a 'video' tag.
+
+    Content is random bytes: ``file``/Pillow return nothing usable, so this
+    exercises the extension fallback and runs whether or not ``file`` is present.
+    """
+    clip = tmp_path / f"clip{ext}"
+    clip.write_bytes(os.urandom(2048))
+    ft = detect_file_type(clip)
+    assert ft.kind == "video", (ext, ft.kind, ft.mime)
+    assert "video" in ft.tags
+
+
+def test_detect_file_type_ogg_container_split(tmp_path: Path) -> None:
+    """The ambiguous OGG container splits by extension: .ogv video, .ogg audio."""
+    ogv = tmp_path / "clip.ogv"
+    ogv.write_bytes(os.urandom(1024))
+    ogg = tmp_path / "sound.ogg"
+    ogg.write_bytes(os.urandom(1024))
+    assert detect_file_type(ogv).kind == "video"
+    assert detect_file_type(ogg).kind == "audio"
+
+
 def _synthetic_image(path: Path, mode: str, size: tuple[int, int] = (16, 16)) -> None:
     """Write a small deterministic image in the requested PIL ``mode``.
 

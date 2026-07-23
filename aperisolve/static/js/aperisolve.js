@@ -215,9 +215,9 @@ document.addEventListener("keydown", function (e) {
 
 // Build the type-appropriate original-file preview shown in the info panel.
 // The upload can now be any file, so branch on the backend-detected kind:
-// image -> <img>, audio -> player, everything else -> a download file card.
-// The default is ALWAYS the file card, never a bare <img>, so an unknown or
-// non-image upload cannot render a broken image.
+// image -> <img>, video -> player, audio -> player, everything else -> a
+// download file card. The default is ALWAYS the file card, never a bare <img>,
+// so an unknown or non-image upload cannot render a broken image.
 function renderMainPreview(infoData) {
   const src = escapeHtml(infoData.image_path);
   const rawName =
@@ -227,6 +227,10 @@ function renderMainPreview(infoData) {
 
   if (infoData.kind === "image") {
     return `<img src="${src}" alt="${t("Analyzed file")}"/>`;
+  }
+  if (infoData.kind === "video") {
+    // #t=0.1 nudges the browser to render a poster frame instead of a blank box.
+    return `<video controls preload="metadata" playsinline src="${src}#t=0.1"></video>`;
   }
   if (infoData.kind === "audio") {
     return `<audio controls preload="metadata" src="${src}"></audio>`;

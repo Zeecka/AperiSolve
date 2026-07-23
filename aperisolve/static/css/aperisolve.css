@@ -469,9 +469,18 @@ button:focus-visible,
 }
 
 /* Type-aware original preview. The image kind still renders a plain <img>
-   (styled by `#result img`); audio and every other kind need their own rules. */
+   (styled by `#result img`); video/audio and every other kind need their own
+   rules. The video is capped so a tall portrait clip cannot dominate the panel. */
 #main_image audio {
     width: 100%;
+}
+
+#main_image video {
+    width: 100%;
+    height: auto;
+    max-height: 70vh;
+    border-radius: var(--border-radius);
+    background-color: #000;
 }
 
 /* Download card for non-image / non-audio uploads (info panel and the browse
@@ -676,6 +685,42 @@ td {
     transform: translateY(-0.25rem);
     box-shadow: 0 0 0.625rem var(--theme-green-shadow);
     border-color: var(--theme-green);
+}
+
+/* Browse-gallery inline media (video/audio). The playable control sits above a
+   label that links to the full analysis, since the control itself can't be
+   wrapped in that link. */
+.browse-media-card {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-sm);
+    padding: var(--spacing-sm);
+    background-color: rgba(0, 0, 0, 0.18);
+    border: 1px dashed var(--green-line);
+}
+
+.browse-media {
+    width: 100%;
+    display: block;
+}
+
+.browse-media-card video.browse-media {
+    aspect-ratio: 16 / 9;
+    object-fit: contain;
+    background-color: #000;
+    border-radius: var(--border-radius);
+}
+
+.browse-media-open {
+    text-align: center;
+    color: var(--theme-green);
+    font-size: 0.9rem;
+    text-decoration: none;
+    overflow-wrap: anywhere;
+}
+
+.browse-media-open:hover {
+    text-decoration: underline;
 }
 
 /* ======== Modal ======== */

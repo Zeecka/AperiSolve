@@ -10,7 +10,7 @@ Detection order (first confident hit wins):
 
 1. ``file --mime-type -b <path>`` (libmagic CLI, fixed argv, 5 s timeout).
 2. Pillow ``Image.open(...).format`` -> ``image/<format>``.
-3. An extension table (audio/pdf formats + :data:`aperisolve.config.IMAGE_EXTENSIONS`).
+3. An extension table (audio/video/pdf formats + :data:`aperisolve.config.IMAGE_EXTENSIONS`).
 4. ``application/octet-stream``.
 """
 
@@ -34,9 +34,9 @@ _CACHE_SIZE = 1024
 class FileType:
     """Detected content type of an upload.
 
-    ``kind`` (one of ``"image"``, ``"audio"``, ``"pdf"``, ``"other"``) drives
-    the frontend preview; ``tags`` gate which analyzers run (see
-    ``aperisolve.analyzers.base_analyzer.SubprocessAnalyzer.accepts``).
+    ``kind`` (one of ``"image"``, ``"audio"``, ``"video"``, ``"pdf"``,
+    ``"other"``) drives the frontend preview; ``tags`` gate which analyzers run
+    (see ``aperisolve.analyzers.base_analyzer.SubprocessAnalyzer.accepts``).
     """
 
     mime: str
@@ -49,6 +49,9 @@ class FileType:
 # ``file(1)`` labels a container ambiguously (e.g. ``application/ogg``).
 _IMAGE_FORMATS = frozenset({"png", "jpeg", "gif", "bmp", "webp", "tiff"})
 _AUDIO_FORMATS = frozenset({"wav", "mp3", "flac", "ogg", "m4a", "au"})
+_VIDEO_FORMATS = frozenset(
+    {"mp4", "webm", "avi", "flv", "mkv", "mov", "wmv", "mpeg", "m4v", "ogv", "3gp", "ts"},
+)
 
 # Known MIME strings (as emitted by libmagic/Pillow/the extension table),
 # mapped to their canonical format tag.
@@ -77,11 +80,29 @@ _MIME_FORMAT_TAGS: dict[str, str] = {
     "audio/x-m4a": "m4a",
     "audio/basic": "au",
     "audio/x-au": "au",
+    "video/mp4": "mp4",
+    "video/webm": "webm",
+    "video/x-msvideo": "avi",
+    "video/avi": "avi",
+    "video/x-flv": "flv",
+    "video/x-matroska": "mkv",
+    "video/quicktime": "mov",
+    "video/x-ms-wmv": "wmv",
+    "video/mpeg": "mpeg",
+    "video/x-m4v": "m4v",
+    "video/ogg": "ogv",
+    "video/3gpp": "3gp",
+    "video/mp2t": "ts",
     "application/pdf": "pdf",
 }
 
 # Kind -> the tag added alongside the format tag. ``other`` contributes none.
-_KIND_TAG: dict[str, str] = {"image": "image", "audio": "audio", "pdf": "pdf"}
+_KIND_TAG: dict[str, str] = {
+    "image": "image",
+    "audio": "audio",
+    "video": "video",
+    "pdf": "pdf",
+}
 
 # MIME strings that carry no format information; treated as "not confident" so
 # detection falls through to Pillow / the extension table.
@@ -101,6 +122,24 @@ _DOC_AUDIO_EXT_MIME: dict[str, str] = {
     ".pdf": "application/pdf",
 }
 
+# Extension -> MIME fallback for video types (step 3). Kept separate from the
+# audio/document table only for readability; both are merged in below.
+_VIDEO_EXT_MIME: dict[str, str] = {
+    ".mp4": "video/mp4",
+    ".m4v": "video/x-m4v",
+    ".webm": "video/webm",
+    ".avi": "video/x-msvideo",
+    ".flv": "video/x-flv",
+    ".mkv": "video/x-matroska",
+    ".mov": "video/quicktime",
+    ".wmv": "video/x-ms-wmv",
+    ".mpeg": "video/mpeg",
+    ".mpg": "video/mpeg",
+    ".ogv": "video/ogg",
+    ".3gp": "video/3gpp",
+    ".ts": "video/mp2t",
+}
+
 # Image extensions whose MIME is not simply ``image/<ext>``.
 _IMAGE_EXT_MIME_OVERRIDES: dict[str, str] = {
     ".jpg": "image/jpeg",
@@ -116,8 +155,9 @@ def _image_ext_to_mime(ext: str) -> str:
 
 
 def _build_ext_mime_table() -> dict[str, str]:
-    """Extension -> MIME fallback table (audio/pdf + configured image types)."""
+    """Extension -> MIME fallback table (audio/video/pdf + configured image types)."""
     table = dict(_DOC_AUDIO_EXT_MIME)
+    table.update(_VIDEO_EXT_MIME)
     for ext in IMAGE_EXTENSIONS:
         table.setdefault(ext.lower(), _image_ext_to_mime(ext.lower()))
     return table
@@ -130,6 +170,8 @@ def _kind_for(mime: str, fmt: str) -> str:
     """Derive the coarse ``kind`` from the MIME prefix, backed by the format tag."""
     if mime.startswith("image/") or fmt in _IMAGE_FORMATS:
         return "image"
+    if mime.startswith("video/") or fmt in _VIDEO_FORMATS:
+        return "video"
     if mime.startswith("audio/") or fmt in _AUDIO_FORMATS:
         return "audio"
     if mime == "application/pdf" or fmt == "pdf":

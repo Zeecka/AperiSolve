@@ -513,7 +513,7 @@ def _register_data_routes(app: Flask) -> None:
         names = [name for name in {sub.filename for sub in image.submissions} if name]
         passwords = [pwd for pwd in {sub.password for sub in image.submissions} if pwd]
         # detect_file_type is best-effort and never raises; kind drives the
-        # frontend preview (image/audio/pdf/other) and mime is informational.
+        # frontend preview (image/video/audio/pdf/other) and mime is informational.
         file_type = detect_file_type(Path(image.file))
         response = jsonify(
             {
