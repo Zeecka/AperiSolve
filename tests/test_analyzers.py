@@ -148,11 +148,14 @@ def test_spectrogram_renders_for_pcm_wav(
 
     entry = _read_results(tmp_path)["spectrogram"]
     assert entry["status"] == "ok", entry
-    assert entry["images"]["Spectrogram"], entry
     assert entry["output"]["Sample rate"] == f"{_WAV_RATE} Hz"
     assert entry["output"]["Channels"] == str(n_channels)
 
-    for name in ("spectrogram.png", "waveform.png"):
+    # One annotated spectrogram per channel, keyed under the same "Spectrogram".
+    spec_urls = entry["images"]["Spectrogram"]
+    assert len(spec_urls) == n_channels, entry
+    channel_pngs = [f"spectrogram-{i + 1}.png" for i in range(n_channels)]
+    for name in (*channel_pngs, "waveform.png"):
         png = tmp_path / name
         assert png.exists(), name
         with Image.open(png) as img:

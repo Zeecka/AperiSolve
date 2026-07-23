@@ -666,6 +666,15 @@ td {
     width: 75%;
 }
 
+/* Spectrograms and the waveform are wide landscape plots (spectrogram.py draws
+   a ~1078px-wide canvas); give each its own full-width row instead of squeezing
+   it into the default 25% thumbnail grid, so it renders wider than it is tall. */
+.a-spectrogram .results_img {
+    width: 100%;
+    margin: auto;
+    text-align: center;
+}
+
 .browse-images {
     display: inline-block;
     padding: var(--spacing-md);
