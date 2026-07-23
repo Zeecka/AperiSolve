@@ -206,10 +206,17 @@ def test_detect_file_type_wav() -> None:
     assert "audio" in ft.tags
 
 
+# Deterministic, content-uninformative filler: ``file`` and Pillow both report
+# ``application/octet-stream`` for an all-zero blob, so detection falls through
+# to the extension table. Random bytes occasionally match a libmagic signature
+# and would flake these extension-fallback assertions, so keep the bytes fixed.
+_UNINFORMATIVE_BYTES = b"\x00" * 1024
+
+
 def test_detect_file_type_unknown_binary(tmp_path: Path) -> None:
     """An unrecognised .bin blob degrades to kind 'other' with no gating tags."""
     blob = tmp_path / "mystery.bin"
-    blob.write_bytes(os.urandom(4096))
+    blob.write_bytes(_UNINFORMATIVE_BYTES)
     ft = detect_file_type(blob)
     assert ft.kind == "other"
     assert ft.tags == frozenset()
@@ -226,11 +233,12 @@ def test_detect_file_type_missing_path_never_raises() -> None:
 def test_detect_file_type_video_by_extension(tmp_path: Path, ext: str) -> None:
     """Video uploads classify as kind 'video' carrying a 'video' tag.
 
-    Content is random bytes: ``file``/Pillow return nothing usable, so this
-    exercises the extension fallback and runs whether or not ``file`` is present.
+    Content is uninformative filler: ``file``/Pillow return nothing usable, so
+    this exercises the extension fallback and runs whether or not ``file`` is
+    present.
     """
     clip = tmp_path / f"clip{ext}"
-    clip.write_bytes(os.urandom(2048))
+    clip.write_bytes(_UNINFORMATIVE_BYTES)
     ft = detect_file_type(clip)
     assert ft.kind == "video", (ext, ft.kind, ft.mime)
     assert "video" in ft.tags
@@ -239,9 +247,9 @@ def test_detect_file_type_video_by_extension(tmp_path: Path, ext: str) -> None:
 def test_detect_file_type_ogg_container_split(tmp_path: Path) -> None:
     """The ambiguous OGG container splits by extension: .ogv video, .ogg audio."""
     ogv = tmp_path / "clip.ogv"
-    ogv.write_bytes(os.urandom(1024))
+    ogv.write_bytes(_UNINFORMATIVE_BYTES)
     ogg = tmp_path / "sound.ogg"
-    ogg.write_bytes(os.urandom(1024))
+    ogg.write_bytes(_UNINFORMATIVE_BYTES)
     assert detect_file_type(ogv).kind == "video"
     assert detect_file_type(ogg).kind == "audio"
 
