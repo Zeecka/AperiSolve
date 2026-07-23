@@ -25,8 +25,8 @@ Try it now: **https://www.aperisolve.com**
 
 Support Aperi'Solve:
 
-<a href="https://buymeacoffee.com/aperisolve">
-  <img src="https://cdn.buymeacoffee.com/buttons/v2/default-yellow.png" height="40" />
+<a href="https://github.com/sponsors/Zeecka">
+  <img src="https://img.shields.io/badge/Sponsor-Zeecka-ea4aaa?logo=githubsponsors&logoColor=white&style=for-the-badge" alt="Sponsor Aperi'Solve on GitHub" />
 </a>
 
 ---

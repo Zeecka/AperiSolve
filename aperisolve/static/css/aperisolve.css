@@ -852,9 +852,8 @@ footer::before {
     justify-content: center;
 }
 
-/* Only the icon-only links (Wiki, Cheatsheet, GitHub, X) get a square hover
-   pill. The Buy-Me-A-Coffee link holds a wide banner image, so it must keep
-   its intrinsic width — matching on :has(i) excludes it. */
+/* The footer links are all icon-only (Sponsor, Wiki, Cheatsheet, GitHub, X)
+   and share a square hover pill. */
 .link-container > .footer-link:has(i) {
     width: 2.25rem;
     height: 2.25rem;
@@ -869,18 +868,6 @@ footer::before {
 .link-container > .footer-link:has(i):hover {
     background-color: var(--green-tint);
     text-shadow: none;
-}
-
-.footer-icon-img {
-    height: 1.5rem;
-    width: auto;
-    display: block;
-    border-radius: 0.35rem;
-    transition: transform 0.2s ease;
-}
-
-.link-container > .footer-link:has(img):hover .footer-icon-img {
-    transform: translateY(-0.0625rem);
 }
 
 /* ======== Utility ======== */
@@ -1029,10 +1016,6 @@ footer::before {
         margin-bottom: var(--spacing-sm);
     }
 
-    .footer-icon-img {
-        height: 1.5rem;
-    }
-
     #cheatsheet > div {
         padding: var(--spacing-sm);
         margin-bottom: var(--spacing-xl);
@@ -1128,10 +1111,6 @@ footer::before {
         font-size: 1.25rem;
     }
 
-    .footer-icon-img {
-        height: 1.375rem;
-    }
-
     #image-modal-container img {
         width: 95%;
     }
@@ -1186,10 +1165,6 @@ footer::before {
 
     .footer-link i {
         font-size: 1.1rem;
-    }
-
-    .footer-icon-img {
-        height: 1.25rem;
     }
 }
 
