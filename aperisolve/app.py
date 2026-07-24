@@ -57,6 +57,7 @@ from .i18n import (
 from .limits import is_local_request, limiter
 from .models import Image, Submission, UploadLog, cleanup_old_entries, db
 from .pages import pages_bp
+from .site_content import promo_html
 from .utils.sentry import initialize_sentry
 from .utils.utils import get_client_ip
 from .wiki import page_lastmod, translated_langs, wiki_bp, wiki_pages, wiki_tool_names
@@ -146,6 +147,11 @@ def _register_error_handlers(app: Flask) -> None:
     def inject_base_url() -> dict[str, str]:
         """Inject the public base URL into all templates."""
         return {"base_url": _base_url()}
+
+    @app.context_processor
+    def inject_site_content() -> dict[str, str | None]:
+        """Inject deployment-local site content (promo banner); None when absent."""
+        return {"promo_html": promo_html(str(get_locale()))}
 
     @app.context_processor
     def inject_i18n() -> dict[str, Any]:

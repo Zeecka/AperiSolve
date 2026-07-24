@@ -10,6 +10,10 @@ __pycache__
 aperisolve.egg-info
 aperisolve/results
 aperisolve/removed_images
+# Deployment-local content (promo banner, ...): kept out of the public image and
+# bind-mounted only on the hosted deployment via compose.prod.yml. This excludes
+# the site_content/ directory only, not the site_content.py loader module.
+aperisolve/site_content
 docs
 examples
 tests

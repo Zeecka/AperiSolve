@@ -1,0 +1,15 @@
+# Production-only overrides for the hosted deployment (aperisolve.com).
+#
+# Applied on top of compose.yml by the release workflow:
+#   docker compose -f compose.yml -f compose.prod.yml <cmd>
+#
+# It bind-mounts deployment-local site content (the promo banner, ...) that is
+# deliberately excluded from the public Docker image (.dockerignore). The
+# committed content ships in git and lands on the server via the deploy step's
+# `git pull`, so self-hosted images neither contain nor render it. Do NOT use
+# this file for a plain `docker compose up` — it is not auto-merged, and the
+# stock compose.yml is what self-hosters run.
+services:
+  web:
+    volumes:
+      - ./aperisolve/site_content:/app/aperisolve/site_content:ro

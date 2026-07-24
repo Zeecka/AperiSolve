@@ -1,0 +1,8 @@
+{#- Deployment-local promo banner. Rendered only when site_content is mounted
+    (hosted deployment); the directory is excluded from the public image, so
+    self-hosted instances show nothing. See aperisolve/site_content.py. -#}
+{%- if promo_html %}
+<aside class="promo-banner card p-3 mb-4 text-center text-body-secondary small">
+  {{ promo_html | safe }}
+</aside>
+{%- endif %}

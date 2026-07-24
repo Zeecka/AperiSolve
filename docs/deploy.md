@@ -20,8 +20,11 @@ Production deployment is **tag-driven**. Nothing deploys on a push to
    - SSHes to the production server (`PROD_SSH_*` secrets), regenerates
      `.env` from `.env.example` plus the repository's Actions
      variables/secrets (ports, limits, ads, Sentry, database, ...);
-   - runs `docker compose pull && docker compose down && docker compose
-     up -d` (never `down -v`: the volumes hold the database and results).
+   - runs `docker compose -f compose.yml -f compose.prod.yml
+     pull && ... down && ... up -d` (never `down -v`: the volumes hold the
+     database and results). The `compose.prod.yml` overlay bind-mounts
+     deployment-local site content (see below); self-hosters run the stock
+     `compose.yml` alone.
 
 The compose stack runs seven services: `web` (gunicorn), `worker` (RQ),
 `cron` (RQ cron scheduler driving the retention cleanup), `initdb`
@@ -35,6 +38,29 @@ every variable. Deploy-time values come from GitHub Actions variables and
 secrets — to change a production setting (e.g. `MAX_CONTENT_LENGTH`,
 `ADSENSE_*`, `SITE_BASE_URL`), edit the repository's Actions configuration
 and re-deploy with a tag.
+
+## Deployment-local site content
+
+Content that should appear on **aperisolve.com only** — not in the public
+Docker image self-hosters pull — lives under `aperisolve/site_content/`.
+That directory is:
+
+- **excluded from the image** via `.dockerignore`, so the published
+  `ghcr.io/zeecka/aperisolve` image never contains it;
+- **bind-mounted read-only on production** via `compose.prod.yml`, which the
+  deploy step layers on top of `compose.yml`.
+
+It is committed to git, so the content reaches the server through the deploy
+step's `git pull` and stays version-controlled. Self-hosted instances have no
+such directory, and every loader in `aperisolve/site_content.py` returns
+`None`, so their templates render nothing.
+
+Today it backs a small promo banner on the home and result pages:
+`site_content/promo/<lang>.md` (Markdown, English `en.md` fallback). The
+rendered HTML is cached per language and re-rendered when the file's mtime
+changes, so editing it on the server takes effect on the next request. To add
+a prod-only wiki page, standalone route, etc., add a loader here and a matching
+content sub-directory.
 
 ## Branches
 

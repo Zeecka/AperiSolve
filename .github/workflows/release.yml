@@ -103,8 +103,11 @@ jobs:
             SENTRY_ENVIRONMENT=${{ vars.SENTRY_ENVIRONMENT }}
             EOF
 
-            docker compose pull
+            # compose.prod.yml bind-mounts deployment-local site content
+            # (promo banner, ...) kept out of the public image; it is applied
+            # only here, never for self-hosted `docker compose up`.
+            docker compose -f compose.yml -f compose.prod.yml pull
             # No -v here: volumes hold the database and stored results.
-            docker compose down
-            docker compose up -d
+            docker compose -f compose.yml -f compose.prod.yml down
+            docker compose -f compose.yml -f compose.prod.yml up -d
             docker image prune -f

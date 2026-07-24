@@ -8,6 +8,7 @@
   <div id="result-infos" class="mb-4"></div>
   <div id="result-analyzers" class="mb-4" aria-live="polite"></div>
   {{ ads.ad_unit(config["ADSENSE_SLOT_RESULT"]) }}
+  {% include 'partials/promo.html' %}
   <div id="result-removal" class="mb-4"></div>
 </section>
 {% endblock %}
