@@ -1,1 +1,3 @@
-¿Quieres mejorar tus habilidades en Linux? Prueba <a href="https://vimlegends.com" rel="sponsored noopener" target="_blank">VimLegends</a> y <a href="https://tmuxlegends.com" rel="sponsored noopener" target="_blank">TmuxLegends</a>.
+¿Quieres mejorar tus habilidades en Linux?
+
+<a href="https://vimlegends.com" rel="sponsored noopener" target="_blank">VimLegends</a> <a href="https://tmuxlegends.com" rel="sponsored noopener" target="_blank">TmuxLegends</a>

@@ -1854,6 +1854,77 @@ footer::before {
     text-decoration: none;
 }
 
+/* ======== Promotional banner (deployment-local site content) ======== */
+/* A centered tagline over a row of link "buttons". A soft green wash and the
+   ghost-CTA button style (shared with the wiki prev/next and cheatsheet map
+   links) set it apart from the plain surface cards without competing with the
+   loud solid-green .btn reserved for the primary Analyze action. */
+.promo-banner {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: var(--spacing-md);
+    text-align: center;
+    background-image:
+        radial-gradient(circle at 50% 0, rgba(159, 239, 0, 0.09), transparent 70%),
+        linear-gradient(180deg, rgba(159, 239, 0, 0.03), rgba(0, 0, 0, 0) 45%);
+}
+
+.promo-banner p {
+    margin: 0;
+}
+
+/* The tagline: any paragraph that is not the link row. */
+.promo-banner p:not(:has(a)) {
+    color: var(--text);
+    font-weight: 500;
+}
+
+/* The link row: the paragraph holding the promo links, centered and wrapping. */
+.promo-banner p:has(a) {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: center;
+    gap: var(--spacing-sm);
+}
+
+.promo-banner a {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--spacing-xs);
+    padding: 0.5rem 1.1rem;
+    background-color: var(--green-tint);
+    border: 1px solid var(--green-line);
+    border-radius: 0.55rem;
+    color: var(--theme-green);
+    font-weight: 600;
+    text-decoration: none;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease,
+        background-color 0.2s ease, transform 0.15s ease;
+}
+
+.promo-banner a::before {
+    font-family: "Font Awesome 7 Free";
+    font-weight: 900;
+    content: "\f120"; /* terminal — on-brand for the Linux tooling promoted */
+    font-size: 0.85em;
+    opacity: 0.85;
+}
+
+.promo-banner a:hover {
+    background-color: rgba(159, 239, 0, 0.15);
+    border-color: var(--theme-green);
+    box-shadow: 0 0 0.5rem var(--green-glow);
+    text-shadow: none;
+    transform: translateY(-0.0625rem);
+}
+
+.promo-banner a:active {
+    transform: translateY(0);
+}
+
 /* Ads: height is reserved up front so late-loading units never shift content */
 .ad-container {
     min-height: 280px;

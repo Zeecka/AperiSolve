@@ -1,1 +1,3 @@
-Хотите прокачать свои навыки Linux? Попробуйте <a href="https://vimlegends.com" rel="sponsored noopener" target="_blank">VimLegends</a> и <a href="https://tmuxlegends.com" rel="sponsored noopener" target="_blank">TmuxLegends</a>.
+Хотите прокачать свои навыки Linux?
+
+<a href="https://vimlegends.com" rel="sponsored noopener" target="_blank">VimLegends</a> <a href="https://tmuxlegends.com" rel="sponsored noopener" target="_blank">TmuxLegends</a>
