@@ -4,20 +4,19 @@ This script is meant to be run ONCE at deploy time, never from Gunicorn or runti
 If CLEAR_AT_RESTART is set, database will be reset at launch time.
 """
 
-import os
 from shutil import rmtree
 
 import sentry_sdk
 from sqlalchemy import inspect
 
 from aperisolve.app import create_app
-from aperisolve.config import RESULT_FOLDER
+from aperisolve.config import CLEAR_AT_RESTART, RESULT_FOLDER
 from aperisolve.models import db, fill_ihdr_db
 
 
 def main() -> None:
     """Database initialization main function."""
-    reset = os.getenv("CLEAR_AT_RESTART") == "1"
+    reset = bool(CLEAR_AT_RESTART)
 
     app = create_app()
 

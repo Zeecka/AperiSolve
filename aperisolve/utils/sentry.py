@@ -9,10 +9,21 @@ from sentry_sdk.integrations.sqlalchemy import SqlalchemyIntegration
 from sentry_sdk.integrations.threading import ThreadingIntegration
 from sentry_sdk.utils import BadDsn
 
+
+def _float_env(name: str, default: float) -> float:
+    """Float env var, treating empty as unset.
+
+    The deploy writes KEY= when a GitHub variable is missing; float("") must
+    not crash the container.
+    """
+    raw = os.environ.get(name)
+    return float(raw) if raw else default
+
+
 SENTRY_DSN = os.environ.get("SENTRY_DSN")
 SENTRY_ENVIRONMENT = os.environ.get("SENTRY_ENVIRONMENT", "development")
-SENTRY_TRACES_SAMPLE_RATE = float(os.environ.get("SENTRY_TRACES_SAMPLE_RATE", "0.1"))
-SENTRY_PROFILES_SAMPLE_RATE = float(os.environ.get("SENTRY_PROFILES_SAMPLE_RATE", "0.1"))
+SENTRY_TRACES_SAMPLE_RATE = _float_env("SENTRY_TRACES_SAMPLE_RATE", 0.1)
+SENTRY_PROFILES_SAMPLE_RATE = _float_env("SENTRY_PROFILES_SAMPLE_RATE", 0.1)
 SENTRY_RELEASE = os.environ.get("SENTRY_RELEASE", "1.0.0")
 
 

@@ -12,14 +12,26 @@ except PackageNotFoundError:
 
 PROJECT_VERSION = getenv("PROJECT_VERSION", _package_version)
 
-REMOVAL_MIN_AGE_SECONDS = int(getenv("REMOVAL_MIN_AGE_SECONDS", "300"))  # 5 minutes
-MAX_PENDING_TIME = int(getenv("MAX_PENDING_TIME", "600"))  # 10 minutes by default
+
+def _int_env(name: str, default: int) -> int:
+    """Integer env var, treating empty as unset.
+
+    The release workflow writes `KEY=` lines for GitHub variables that are not
+    set, and docker compose passes those through as empty strings — which must
+    fall back to the default rather than crash every container on int("").
+    """
+    raw = getenv(name)
+    return int(raw) if raw else default
+
+
+REMOVAL_MIN_AGE_SECONDS = _int_env("REMOVAL_MIN_AGE_SECONDS", 300)  # 5 minutes
+MAX_PENDING_TIME = _int_env("MAX_PENDING_TIME", 600)  # 10 minutes by default
 
 # Per-subprocess wall clock. Some analyzers run two tool subprocesses in
 # sequence (steghide info+extract, openstego's two algorithms) plus a 7z
 # archive step, so this must stay well below MAX_PENDING_TIME for the whole
 # job to fit inside JOB_TIMEOUT.
-SUBPROCESS_TIMEOUT = int(getenv("SUBPROCESS_TIMEOUT", str(max(60, MAX_PENDING_TIME // 2))))
+SUBPROCESS_TIMEOUT = _int_env("SUBPROCESS_TIMEOUT", max(60, MAX_PENDING_TIME // 2))
 
 # RQ kills the analysis job after this; headroom over the analyzer budget so
 # analyzers time out (and record their error) before RQ kills the job mid-write.
@@ -29,10 +41,10 @@ JOB_TIMEOUT = MAX_PENDING_TIME + 60
 # died or was killed by RQ. Must exceed JOB_TIMEOUT or cleanup could delete a
 # submission whose job is still legitimately running.
 STALE_SUBMISSION_CUTOFF = JOB_TIMEOUT + 60
-CLEANUP_INTERVAL_SECONDS = int(getenv("CLEANUP_INTERVAL_SECONDS", "900"))  # 15 minutes
-MAX_STORE_TIME = int(getenv("MAX_STORE_TIME", "259200"))  # 3 days by default
-MAX_CONTENT_LENGTH = int(getenv("MAX_CONTENT_LENGTH", "1048576"))  # 1 MB by default
-CLEAR_AT_RESTART = int(getenv("CLEAR_AT_RESTART", "0"))
+CLEANUP_INTERVAL_SECONDS = _int_env("CLEANUP_INTERVAL_SECONDS", 900)  # 15 minutes
+MAX_STORE_TIME = _int_env("MAX_STORE_TIME", 259200)  # 3 days by default
+MAX_CONTENT_LENGTH = _int_env("MAX_CONTENT_LENGTH", 1048576)  # 1 MB by default
+CLEAR_AT_RESTART = _int_env("CLEAR_AT_RESTART", 0)
 
 # Recognised image file extensions. No longer the upload gate (any file type is
 # accepted); this now backs the derived-image serving gate (/image/<hash>/<name>)
