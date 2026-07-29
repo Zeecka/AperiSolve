@@ -227,7 +227,9 @@ def _mime_from_pillow(path: Path) -> str:
     try:
         with Image.open(path) as img:
             fmt = img.format
-    except (OSError, UnidentifiedImageError, ValueError):
+    # DecompressionBombError subclasses neither OSError nor ValueError; without
+    # it a bomb upload would kill the RQ job at classification time.
+    except (OSError, UnidentifiedImageError, ValueError, Image.DecompressionBombError):
         return ""
     return f"image/{fmt.lower()}" if fmt else ""
 

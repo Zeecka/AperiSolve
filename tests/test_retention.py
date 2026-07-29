@@ -12,6 +12,7 @@ from aperisolve.config import MAX_STORE_TIME, STALE_SUBMISSION_CUTOFF
 from aperisolve.models import (
     Image,
     Submission,
+    UploadLog,
     _cleanup_images,
     _cleanup_submissions,
     cleanup_old_entries,
@@ -142,3 +143,20 @@ def test_orphan_image_past_stale_cutoff_is_deleted(app: Flask) -> None:
         _add_image(IMG_HASH, last_submission_date=orphaned)
         _cleanup_images()
         assert db.session.get(Image, IMG_HASH) is None
+
+
+@pytest.mark.usefixtures("result_folder")
+def test_old_upload_logs_are_swept(app: Flask) -> None:
+    """UploadLog rows (IP + User-Agent) must not outlive MAX_STORE_TIME."""
+    with app.app_context():
+        db.session.add(
+            UploadLog(
+                ip_address="192.0.2.1",
+                image_hash=IMG_HASH,
+                upload_time=_naive_utcnow() - timedelta(seconds=MAX_STORE_TIME + 60),
+            ),
+        )
+        db.session.add(UploadLog(ip_address="192.0.2.2", image_hash=IMG_HASH))
+        db.session.commit()
+        cleanup_old_entries()
+        assert [log.ip_address for log in UploadLog.query.all()] == ["192.0.2.2"]

@@ -212,6 +212,22 @@ def _cleanup_images() -> None:
         shutil.rmtree(RESULT_FOLDER / img_hash, ignore_errors=True)
 
 
+def _cleanup_upload_logs() -> None:
+    """Delete upload logs past the retention window.
+
+    UploadLog rows carry IP and User-Agent; they must not outlive the
+    MAX_STORE_TIME window the rest of the retention story promises. The
+    removal guards only ever inspect logs for images that still exist, and
+    those are themselves bounded by MAX_STORE_TIME.
+    """
+    cutoff = datetime.now(UTC).replace(tzinfo=None) - timedelta(seconds=MAX_STORE_TIME)
+    try:
+        UploadLog.query.filter(UploadLog.upload_time < cutoff).delete(synchronize_session=False)
+        db.session.commit()
+    except SQLAlchemyError:
+        db.session.rollback()
+
+
 def cleanup_old_entries() -> None:
     """Clean up old and incomplete entries from the database and file system.
 
@@ -223,3 +239,4 @@ def cleanup_old_entries() -> None:
     except SQLAlchemyError:
         db.session.rollback()
     _cleanup_images()
+    _cleanup_upload_logs()

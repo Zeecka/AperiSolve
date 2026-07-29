@@ -549,6 +549,7 @@ def _register_data_routes(app: Flask) -> None:
         return _build_result_response(result_path)
 
     @app.route("/download/<hash_val>/<tool>")
+    @limiter.limit("30 per minute; 300 per hour", exempt_when=_is_local_request)
     def download_output(hash_val: str, tool: str) -> Response:
         """Download output of a specific analyzer for a submission hash."""
         submission = Submission.query.filter_by(hash=hash_val).first_or_404()
@@ -565,6 +566,9 @@ def _register_data_routes(app: Flask) -> None:
 
     @app.route("/image/<img_name>")
     @app.route("/image/<hash_val>/<img_name>")
+    # Generous: one result page legitimately fetches ~40 derived images in a
+    # burst (they cache immutably afterwards).
+    @limiter.limit("600 per minute", exempt_when=_is_local_request)
     def get_image(hash_val: str | None = None, img_name: str | None = None) -> Response:
         """Download an image for a submission hash or by direct image filename.
 
@@ -721,6 +725,20 @@ def create_app() -> Flask:
     app.register_blueprint(wiki_bp, url_prefix=LANG_PREFIX_RULE, name="wiki_i18n")
     app.register_blueprint(cheatsheet_bp)
     app.register_blueprint(cheatsheet_bp, url_prefix=LANG_PREFIX_RULE, name="cheatsheet_i18n")
+
+    @app.after_request
+    def set_security_headers(response: Response) -> Response:
+        # Baseline hardening; a strict CSP is deferred until the inline
+        # scripts in base.html move to nonces (docs/improvement-plan.md).
+        response.headers.setdefault("X-Content-Type-Options", "nosniff")
+        response.headers.setdefault("X-Frame-Options", "SAMEORIGIN")
+        response.headers.setdefault("Referrer-Policy", "strict-origin-when-cross-origin")
+        response.headers.setdefault(
+            "Permissions-Policy",
+            "camera=(), microphone=(), geolocation=()",
+        )
+        return response
+
     return app
 
 
