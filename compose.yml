@@ -1,13 +1,25 @@
+# Bounded logs everywhere: the default json-file driver grows without limit,
+# and web's access log is the highest-volume stream in the stack.
+x-logging: &default-logging
+  driver: json-file
+  options:
+    max-size: "10m"
+    max-file: "3"
+
 services:
   web:
     image: ghcr.io/zeecka/aperisolve:latest
     #build: .
     container_name: aperisolve-web
     restart: always
+    mem_limit: 2g
+    logging: *default-logging
     ports:
       - "${WEB_APP_PORT:-5000}:5000"
     volumes:
       - apresults:/app/aperisolve/results
+      # Images archived by the removal flow must survive redeploys.
+      - apremoved:/app/aperisolve/removed_images
     depends_on:
       postgres:
         condition: service_healthy
@@ -38,6 +50,7 @@ services:
     # blast radius of a decompression bomb or runaway tool.
     mem_limit: 2g
     cpus: 2
+    logging: *default-logging
     volumes:
       - apresults:/app/aperisolve/results
     depends_on:
@@ -55,6 +68,7 @@ services:
     #build: .
     container_name: aperisolve-cron
     restart: always
+    logging: *default-logging
     command: rq cron aperisolve.cron --url redis://redis:6379/0
     volumes:
       - apresults:/app/aperisolve/results
@@ -72,6 +86,7 @@ services:
     image: ghcr.io/zeecka/aperisolve:latest
     #build: .
     container_name: aperisolve-initdb
+    logging: *default-logging
     command: python -m aperisolve.utils.init_db
     volumes:
       - apresults:/app/aperisolve/results
@@ -86,6 +101,8 @@ services:
     image: postgres:18
     container_name: postgres
     restart: always
+    mem_limit: 1g
+    logging: *default-logging
     volumes:
       - pgdata:/var/lib/postgresql
     healthcheck:
@@ -100,6 +117,8 @@ services:
     image: redis:7
     container_name: redis
     restart: always
+    mem_limit: 512m
+    logging: *default-logging
     healthcheck:
       test: ["CMD", "redis-cli", "ping"]
       interval: 5s
@@ -109,18 +128,23 @@ services:
       - .env
 
   rqdashboard:
-    image: eoranged/rq-dashboard
+    # Third-party image: pinned, and given only the one variable it needs —
+    # never the full .env (which carries the Postgres password and DSNs).
+    image: eoranged/rq-dashboard:v0.6.3
     container_name: rq-dashboard
     restart: always
+    mem_limit: 256m
+    logging: *default-logging
     ports:
       # Loopback only: RQ Dashboard has no auth and lets anyone requeue or
       # delete jobs. Reach it over SSH tunnelling.
       - "127.0.0.1:9181:9181"
     depends_on:
       - redis
-    env_file:
-      - .env
+    environment:
+      RQ_DASHBOARD_REDIS_URL: ${RQ_DASHBOARD_REDIS_URL:-redis://redis:6379/0}
 
 volumes:
   apresults:
+  apremoved:
   pgdata:

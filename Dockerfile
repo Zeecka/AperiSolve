@@ -101,5 +101,7 @@ COPY --from=builder /usr/local/bin/jsteg /usr/local/bin/jsteg
 COPY docker/pdfid.py /usr/local/bin/pdfid
 RUN chmod +x /usr/local/bin/pdfid
 
-# Command to start
-CMD gunicorn -w ${WEB_WORKERS:-8} -b 0.0.0.0:5000 --access-logfile - --error-logfile - --log-level info --capture-output aperisolve.utils.wsgi:application
+# Command to start. `exec` makes gunicorn PID 1 so it receives SIGTERM and
+# drains in-flight requests on `docker stop` instead of being SIGKILLed
+# (shell form is kept for the ${WEB_WORKERS} expansion).
+CMD exec gunicorn -w ${WEB_WORKERS:-8} -b 0.0.0.0:5000 --access-logfile - --error-logfile - --log-level info --capture-output aperisolve.utils.wsgi:application
