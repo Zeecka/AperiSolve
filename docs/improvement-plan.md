@@ -68,8 +68,9 @@ next tagged release.
 
 ## P2 — deferred (tracked, not in this pass)
 
-- [ ] pybabel catalog regen + fill: 21 msgids (incl. the "Analyze File" CTA)
-  missing from all six `.po` files; 4 more untranslated per language.
+- [x] pybabel catalog regen + fill: all six `.po` catalogs re-synced from a
+  fresh extract and fully translated (MT drafts per the standing i18n
+  decision); `.mo` binaries recompiled in step.
 - [ ] Re-translate the EN wiki (38 pages) into fr/es/de/ru/zh/pt.
 - [ ] Port the unblob analyzer from `copilot/unblob-extractor`.
 - [ ] pgdata backup/restore job + documented procedure.
