@@ -322,7 +322,7 @@ msgstr "📂 Datei hierher ziehen oder klicken zum Auswählen"
 
 #: aperisolve/templates/index.html:42
 msgid "Choose file"
-msgstr "Datei auswählen"
+msgstr "Eine Datei auswählen"
 
 #: aperisolve/templates/index.html:43
 msgid "Choose a file"
@@ -362,9 +362,9 @@ msgid ""
 "work each branch top to bottom. Hover any step for the command; download "
 "as PNG or PDF."
 msgstr ""
-"Ein interaktiver Steganografie-Entscheidungsbaum: Bestimme den Dateityp "
-"und arbeite jeden Zweig von oben nach unten ab. Fahre über einen Schritt,"
-" um den Befehl zu sehen; als PNG oder PDF herunterladbar."
+"Interaktiver Steganografie-Entscheidungsbaum: Bestimme den Dateityp und "
+"arbeite jeden Zweig ab. Fahre über einen Schritt für den Befehl; als PNG "
+"oder PDF ladbar."
 
 #: aperisolve/templates/map.html:20
 msgid "Zoom"

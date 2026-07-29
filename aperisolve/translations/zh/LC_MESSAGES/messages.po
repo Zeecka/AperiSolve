@@ -308,7 +308,7 @@ msgstr "📂 将文件拖放到此处，或点击选择"
 
 #: aperisolve/templates/index.html:42
 msgid "Choose file"
-msgstr "选择文件"
+msgstr "选择一个文件"
 
 #: aperisolve/templates/index.html:43
 msgid "Choose a file"

@@ -317,7 +317,7 @@ msgstr "📂 Arrastra y suelta un archivo aquí o haz clic para seleccionar"
 
 #: aperisolve/templates/index.html:42
 msgid "Choose file"
-msgstr "Elegir archivo"
+msgstr "Elegir un archivo"
 
 #: aperisolve/templates/index.html:43
 msgid "Choose a file"
@@ -357,9 +357,9 @@ msgid ""
 "work each branch top to bottom. Hover any step for the command; download "
 "as PNG or PDF."
 msgstr ""
-"Un árbol de decisión interactivo de esteganografía: identifica el tipo de"
-" archivo y recorre cada rama de arriba abajo. Pasa el cursor sobre un "
-"paso para ver el comando; descárgalo en PNG o PDF."
+"Árbol de decisión interactivo de esteganografía: identifica el tipo de "
+"archivo y recorre cada rama. Pasa el cursor sobre un paso para ver el "
+"comando; descarga en PNG o PDF."
 
 #: aperisolve/templates/map.html:20
 msgid "Zoom"

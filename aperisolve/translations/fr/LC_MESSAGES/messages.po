@@ -358,9 +358,9 @@ msgid ""
 "work each branch top to bottom. Hover any step for the command; download "
 "as PNG or PDF."
 msgstr ""
-"Un arbre de décision interactif pour la stéganographie : identifiez le "
-"type de fichier, puis parcourez chaque branche de haut en bas. Survolez "
-"une étape pour afficher la commande ; téléchargez en PNG ou en PDF."
+"Arbre de décision interactif de stéganographie : identifiez le type de "
+"fichier, puis parcourez chaque branche. Survolez une étape pour la "
+"commande ; export PNG ou PDF."
 
 #: aperisolve/templates/map.html:20
 msgid "Zoom"
