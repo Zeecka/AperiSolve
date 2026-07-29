@@ -9,7 +9,20 @@
 # `git pull`, so self-hosted images neither contain nor render it. Do NOT use
 # this file for a plain `docker compose up` — it is not auto-merged, and the
 # stock compose.yml is what self-hosters run.
+# It also pins the app services to the released version tag (PROJECT_VERSION
+# is written into .env by the deploy step) so prod runs the exact image the
+# tag built, never a stale or newer :latest.
 services:
   web:
+    image: ghcr.io/zeecka/aperisolve:${PROJECT_VERSION:-latest}
     volumes:
       - ./aperisolve/site_content:/app/aperisolve/site_content:ro
+
+  worker:
+    image: ghcr.io/zeecka/aperisolve:${PROJECT_VERSION:-latest}
+
+  cron:
+    image: ghcr.io/zeecka/aperisolve:${PROJECT_VERSION:-latest}
+
+  initdb:
+    image: ghcr.io/zeecka/aperisolve:${PROJECT_VERSION:-latest}

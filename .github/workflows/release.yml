@@ -8,8 +8,37 @@ on:
       - '*'
 
 jobs:
+  # Deploy gate: a tag must never ship code that fails lint/type/tests. Kept
+  # to one Python version for speed; the full matrix (and pip-audit, which can
+  # go red on advisories unrelated to the release) stays in lint.yml.
+  tests:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+
+      - name: Set up Python
+        uses: actions/setup-python@v7
+        with:
+          python-version: "3.14"
+
+      - name: Set up uv
+        uses: astral-sh/setup-uv@v7
+
+      - name: Sync Python dependencies
+        run: uv sync --frozen --extra dev
+
+      - name: Lint, type-check and test
+        run: |
+          uv run ruff check .
+          uv run ruff format . --check
+          uv run ty check aperisolve
+          uv run pytest -q --cov=aperisolve --cov-fail-under=55
+
   docker-releases:
     runs-on: ubuntu-latest
+    needs: tests
 
     env:
       RELEASE_VERSION: ${{ github.ref_name }}
@@ -53,10 +82,18 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Wait for image propagation
+      - name: Wait for image availability in registry
         run: |
-          echo "Waiting 120 seconds for image to propagate in registry..."
-          sleep 120
+          for i in $(seq 1 30); do
+            if docker manifest inspect "ghcr.io/zeecka/aperisolve:${{ github.ref_name }}" > /dev/null 2>&1; then
+              echo "Image ghcr.io/zeecka/aperisolve:${{ github.ref_name }} is available."
+              exit 0
+            fi
+            echo "Image not yet available, retrying in 10s... ($i/30)"
+            sleep 10
+          done
+          echo "Image still not available after 300s." >&2
+          exit 1
 
       - name: Deploy to production server
         uses: appleboy/ssh-action@v1.2.5
@@ -69,7 +106,10 @@ jobs:
             set -e
             cd /root/AperiSolve
 
-            git pull
+            # Deploy the tagged commit, not whatever main currently is:
+            # compose files and site_content must match the image being run.
+            git fetch --force --tags origin
+            git checkout --force "${{ github.ref_name }}"
 
             cat .env.example | grep -v '^PROJECT_VERSION=' > .env
             cat <<EOF >> .env
