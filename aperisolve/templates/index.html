@@ -39,7 +39,9 @@
     <div id="drop-zone" class="drop-zone border border-2 border-dashed rounded-3 p-4 text-center">
       <p id="drag-msg" class="mb-3">{{ _("📂 Drag and drop a file here or click to select") }}</p>
       <input type="file" id="image" name="image" class="visually-hidden" required>
-      <button type="button" class="btn" id="browse-btn" aria-label="{{ _('Choose file') }}">
+      {# No aria-label: the visible text is the accessible name. An aria-label
+         would override it, and voice-control users say what they see. #}
+      <button type="button" class="btn" id="browse-btn">
         <i class="fa fa-folder-open me-2"></i>{{ _("Choose a file") }}
       </button>
     </div>

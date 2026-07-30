@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2026-07-29 17:36+0000\n"
+"POT-Creation-Date: 2026-07-30 12:19+0000\n"
 "PO-Revision-Date: 2026-07-05 13:23+0000\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language: es\n"
@@ -18,55 +18,55 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Generated-By: Babel 2.18.0\n"
 
-#: aperisolve/app.py:194
+#: aperisolve/app.py:184
 msgid "Image size exceeded"
 msgstr "Tamaño de imagen excedido"
 
-#: aperisolve/app.py:199
+#: aperisolve/app.py:189
 msgid "Resource not found"
 msgstr "Recurso no encontrado"
 
-#: aperisolve/app.py:204
+#: aperisolve/app.py:194
 msgid "Too many requests, please slow down."
 msgstr "Demasiadas solicitudes, por favor reduzca el ritmo."
 
-#: aperisolve/app.py:377 aperisolve/app.py:384
+#: aperisolve/app.py:367 aperisolve/app.py:374
 msgid "No image provided"
 msgstr "No se proporcionó ninguna imagen"
 
-#: aperisolve/app.py:389
+#: aperisolve/app.py:379
 msgid "Unsupported file type"
 msgstr "Tipo de archivo no compatible"
 
-#: aperisolve/app.py:492 aperisolve/app.py:500
+#: aperisolve/app.py:482 aperisolve/app.py:490
 msgid "Results not ready yet..."
 msgstr "Los resultados aún no están listos..."
 
-#: aperisolve/app.py:622
+#: aperisolve/app.py:612
 #, python-format
 msgid "Image must be at least %(min)d seconds old. Current age: %(age)ds"
 msgstr ""
 "La imagen debe tener al menos %(min)d segundos. Antigüedad actual: "
 "%(age)ds"
 
-#: aperisolve/app.py:638
+#: aperisolve/app.py:628
 msgid "Image uploaded from multiple IP addresses. Removal is not allowed."
 msgstr "Imagen subida desde varias direcciones IP. No se permite la eliminación."
 
-#: aperisolve/app.py:654
+#: aperisolve/app.py:644
 msgid "Failed to remove image"
 msgstr "Error al eliminar la imagen"
 
-#: aperisolve/app.py:665
+#: aperisolve/app.py:655
 msgid "No password to remove"
 msgstr "No hay contraseña que eliminar"
 
-#: aperisolve/app.py:673
+#: aperisolve/app.py:663
 #, python-format
 msgid "Submission must be at least %(min)d seconds old. Current age: %(age)ds"
 msgstr "El envío debe tener al menos %(min)d segundos. Antigüedad actual: %(age)ds"
 
-#: aperisolve/app.py:690
+#: aperisolve/app.py:680
 msgid ""
 "Submission uploaded from multiple IP addresses. Password removal is not "
 "allowed."
@@ -74,7 +74,7 @@ msgstr ""
 "Envío subido desde varias direcciones IP. No se permite eliminar la "
 "contraseña."
 
-#: aperisolve/app.py:705
+#: aperisolve/app.py:695
 msgid "Failed to remove password"
 msgstr "Error al eliminar la contraseña"
 
@@ -222,7 +222,7 @@ msgid "Analyzed file"
 msgstr "Archivo analizado"
 
 #: aperisolve/templates/base.html:62 aperisolve/templates/footer.html:39
-#: aperisolve/templates/wiki.html:67 aperisolve/wiki.py:239
+#: aperisolve/templates/wiki.html:65 aperisolve/wiki.py:239
 msgid "Wiki"
 msgstr "Wiki"
 
@@ -252,17 +252,17 @@ msgstr "Navegación principal"
 msgid "Image preview"
 msgstr "Vista previa de la imagen"
 
-#: aperisolve/templates/cheatsheet.html:41 aperisolve/templates/wiki.html:66
+#: aperisolve/templates/cheatsheet.html:41 aperisolve/templates/wiki.html:64
 msgid "Home"
 msgstr "Inicio"
 
-#: aperisolve/templates/cheatsheet.html:47 aperisolve/templates/wiki.html:73
+#: aperisolve/templates/cheatsheet.html:47 aperisolve/templates/wiki.html:71
 msgid "This page has not been translated yet; showing the English version."
 msgstr "Esta página aún no ha sido traducida; se muestra la versión en inglés."
 
 #: aperisolve/templates/cheatsheet.html:56
-#: aperisolve/templates/cheatsheet.html:57 aperisolve/templates/wiki.html:97
-#: aperisolve/templates/wiki.html:98
+#: aperisolve/templates/cheatsheet.html:57 aperisolve/templates/wiki.html:94
+#: aperisolve/templates/wiki.html:95
 msgid "On this page"
 msgstr "En esta página"
 
@@ -315,35 +315,31 @@ msgstr "Archivo"
 msgid "📂 Drag and drop a file here or click to select"
 msgstr "📂 Arrastra y suelta un archivo aquí o haz clic para seleccionar"
 
-#: aperisolve/templates/index.html:42
-msgid "Choose file"
-msgstr "Elegir un archivo"
-
-#: aperisolve/templates/index.html:43
+#: aperisolve/templates/index.html:45
 msgid "Choose a file"
 msgstr "Elegir un archivo"
 
-#: aperisolve/templates/index.html:50
+#: aperisolve/templates/index.html:52
 msgid "Password"
 msgstr "Contraseña"
 
-#: aperisolve/templates/index.html:50
+#: aperisolve/templates/index.html:52
 msgid "(optional)"
 msgstr "(opcional)"
 
-#: aperisolve/templates/index.html:51
+#: aperisolve/templates/index.html:53
 msgid "Enter password if required"
 msgstr "Introduce la contraseña si es necesaria"
 
-#: aperisolve/templates/index.html:58
+#: aperisolve/templates/index.html:60
 msgid "Deep analysis"
 msgstr "Análisis profundo"
 
-#: aperisolve/templates/index.html:58
+#: aperisolve/templates/index.html:60
 msgid "(slower, more thorough)"
 msgstr "(más lento, más exhaustivo)"
 
-#: aperisolve/templates/index.html:64
+#: aperisolve/templates/index.html:66
 msgid "Analyze File"
 msgstr "Analizar archivo"
 
@@ -401,19 +397,19 @@ msgstr "Aún no hay envíos para explorar."
 msgid "Analyze an image"
 msgstr "Analizar una imagen"
 
-#: aperisolve/templates/wiki.html:41
+#: aperisolve/templates/wiki.html:40
 msgid "Wiki navigation"
 msgstr "Navegación del wiki"
 
-#: aperisolve/templates/wiki.html:44
+#: aperisolve/templates/wiki.html:43
 msgid "Search the wiki…"
 msgstr "Buscar en la wiki…"
 
-#: aperisolve/templates/wiki.html:45
+#: aperisolve/templates/wiki.html:44
 msgid "Search the wiki"
 msgstr "Buscar en la wiki"
 
-#: aperisolve/templates/wiki.html:81
+#: aperisolve/templates/wiki.html:78
 msgid "Page navigation"
 msgstr "Navegación de páginas"
 

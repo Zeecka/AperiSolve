@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2026-07-29 17:36+0000\n"
+"POT-Creation-Date: 2026-07-30 12:19+0000\n"
 "PO-Revision-Date: 2026-07-05 13:23+0000\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language: zh\n"
@@ -18,59 +18,59 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Generated-By: Babel 2.18.0\n"
 
-#: aperisolve/app.py:194
+#: aperisolve/app.py:184
 msgid "Image size exceeded"
 msgstr "图片大小超出限制"
 
-#: aperisolve/app.py:199
+#: aperisolve/app.py:189
 msgid "Resource not found"
 msgstr "未找到资源"
 
-#: aperisolve/app.py:204
+#: aperisolve/app.py:194
 msgid "Too many requests, please slow down."
 msgstr "请求过多，请放慢速度。"
 
-#: aperisolve/app.py:377 aperisolve/app.py:384
+#: aperisolve/app.py:367 aperisolve/app.py:374
 msgid "No image provided"
 msgstr "未提供图片"
 
-#: aperisolve/app.py:389
+#: aperisolve/app.py:379
 msgid "Unsupported file type"
 msgstr "不支持的文件类型"
 
-#: aperisolve/app.py:492 aperisolve/app.py:500
+#: aperisolve/app.py:482 aperisolve/app.py:490
 msgid "Results not ready yet..."
 msgstr "结果尚未就绪..."
 
-#: aperisolve/app.py:622
+#: aperisolve/app.py:612
 #, python-format
 msgid "Image must be at least %(min)d seconds old. Current age: %(age)ds"
 msgstr "图片上传时间必须至少满 %(min)d 秒。当前时长：%(age)d 秒"
 
-#: aperisolve/app.py:638
+#: aperisolve/app.py:628
 msgid "Image uploaded from multiple IP addresses. Removal is not allowed."
 msgstr "图片由多个 IP 地址上传，不允许删除。"
 
-#: aperisolve/app.py:654
+#: aperisolve/app.py:644
 msgid "Failed to remove image"
 msgstr "删除图片失败"
 
-#: aperisolve/app.py:665
+#: aperisolve/app.py:655
 msgid "No password to remove"
 msgstr "没有可删除的密码"
 
-#: aperisolve/app.py:673
+#: aperisolve/app.py:663
 #, python-format
 msgid "Submission must be at least %(min)d seconds old. Current age: %(age)ds"
 msgstr "提交时间必须至少满 %(min)d 秒。当前时长：%(age)d 秒"
 
-#: aperisolve/app.py:690
+#: aperisolve/app.py:680
 msgid ""
 "Submission uploaded from multiple IP addresses. Password removal is not "
 "allowed."
 msgstr "提交由多个 IP 地址上传，不允许删除密码。"
 
-#: aperisolve/app.py:705
+#: aperisolve/app.py:695
 msgid "Failed to remove password"
 msgstr "删除密码失败"
 
@@ -216,7 +216,7 @@ msgid "Analyzed file"
 msgstr "已分析的文件"
 
 #: aperisolve/templates/base.html:62 aperisolve/templates/footer.html:39
-#: aperisolve/templates/wiki.html:67 aperisolve/wiki.py:239
+#: aperisolve/templates/wiki.html:65 aperisolve/wiki.py:239
 msgid "Wiki"
 msgstr "维基"
 
@@ -246,17 +246,17 @@ msgstr "主导航"
 msgid "Image preview"
 msgstr "图片预览"
 
-#: aperisolve/templates/cheatsheet.html:41 aperisolve/templates/wiki.html:66
+#: aperisolve/templates/cheatsheet.html:41 aperisolve/templates/wiki.html:64
 msgid "Home"
 msgstr "首页"
 
-#: aperisolve/templates/cheatsheet.html:47 aperisolve/templates/wiki.html:73
+#: aperisolve/templates/cheatsheet.html:47 aperisolve/templates/wiki.html:71
 msgid "This page has not been translated yet; showing the English version."
 msgstr "该页面尚未翻译；当前显示英文版本。"
 
 #: aperisolve/templates/cheatsheet.html:56
-#: aperisolve/templates/cheatsheet.html:57 aperisolve/templates/wiki.html:97
-#: aperisolve/templates/wiki.html:98
+#: aperisolve/templates/cheatsheet.html:57 aperisolve/templates/wiki.html:94
+#: aperisolve/templates/wiki.html:95
 msgid "On this page"
 msgstr "本页内容"
 
@@ -306,35 +306,31 @@ msgstr "文件"
 msgid "📂 Drag and drop a file here or click to select"
 msgstr "📂 将文件拖放到此处，或点击选择"
 
-#: aperisolve/templates/index.html:42
-msgid "Choose file"
-msgstr "选择一个文件"
-
-#: aperisolve/templates/index.html:43
+#: aperisolve/templates/index.html:45
 msgid "Choose a file"
 msgstr "选择一个文件"
 
-#: aperisolve/templates/index.html:50
+#: aperisolve/templates/index.html:52
 msgid "Password"
 msgstr "密码"
 
-#: aperisolve/templates/index.html:50
+#: aperisolve/templates/index.html:52
 msgid "(optional)"
 msgstr "（可选）"
 
-#: aperisolve/templates/index.html:51
+#: aperisolve/templates/index.html:53
 msgid "Enter password if required"
 msgstr "如有需要请输入密码"
 
-#: aperisolve/templates/index.html:58
+#: aperisolve/templates/index.html:60
 msgid "Deep analysis"
 msgstr "深度分析"
 
-#: aperisolve/templates/index.html:58
+#: aperisolve/templates/index.html:60
 msgid "(slower, more thorough)"
 msgstr "（较慢，更彻底）"
 
-#: aperisolve/templates/index.html:64
+#: aperisolve/templates/index.html:66
 msgid "Analyze File"
 msgstr "分析文件"
 
@@ -387,19 +383,19 @@ msgstr "暂无可浏览的提交。"
 msgid "Analyze an image"
 msgstr "分析图片"
 
-#: aperisolve/templates/wiki.html:41
+#: aperisolve/templates/wiki.html:40
 msgid "Wiki navigation"
 msgstr "维基导航"
 
-#: aperisolve/templates/wiki.html:44
+#: aperisolve/templates/wiki.html:43
 msgid "Search the wiki…"
 msgstr "搜索 Wiki…"
 
-#: aperisolve/templates/wiki.html:45
+#: aperisolve/templates/wiki.html:44
 msgid "Search the wiki"
 msgstr "搜索 Wiki"
 
-#: aperisolve/templates/wiki.html:81
+#: aperisolve/templates/wiki.html:78
 msgid "Page navigation"
 msgstr "页面导航"
 
