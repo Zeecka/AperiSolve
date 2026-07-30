@@ -1,5 +1,4 @@
 {% extends 'base.html' %}
-{% import 'partials/ads.html' as ads %}
 {% block meta %}
 <meta name="robots" content="noindex">
 {% endblock %}
@@ -7,7 +6,6 @@
 <section id="result" class="results-section">
   <div id="result-infos" class="mb-4"></div>
   <div id="result-analyzers" class="mb-4" aria-live="polite"></div>
-  {{ ads.ad_unit(config["ADSENSE_SLOT_RESULT"]) }}
   {% include 'partials/promo.html' %}
   <div id="result-removal" class="mb-4"></div>
 </section>

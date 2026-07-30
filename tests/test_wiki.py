@@ -77,10 +77,11 @@ def test_sitemap_lists_wiki_pages(client: FlaskClient) -> None:
         assert page.path in xml
 
 
-def test_no_ads_rendered_by_default(client: FlaskClient) -> None:
-    """Self-hosted instances (no ADSENSE_* env) render no ad units."""
+def test_server_never_injects_ad_markup(client: FlaskClient) -> None:
+    """No ad markup is server-rendered: placement is left to AdSense Auto ads."""
     html = client.get("/wiki/tools/zsteg").get_data(as_text=True)
     assert "adsbygoogle" not in html
+    assert "data-ad-slot" not in html
 
 
 def test_wiki_heading_permalinks(client: FlaskClient) -> None:

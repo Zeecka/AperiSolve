@@ -1444,7 +1444,6 @@ footer::before {
     .row > aside,
     nav[aria-label="breadcrumb"],
     .breadcrumb,
-    .ad-container,
     .adsbygoogle,
     .copy-icon,
     .wiki-print-btn,
@@ -1923,17 +1922,6 @@ footer::before {
 
 .promo-banner a:active {
     transform: translateY(0);
-}
-
-/* Ads: height is reserved up front so late-loading units never shift content */
-.ad-container {
-    min-height: 280px;
-    margin: var(--spacing-lg) 0;
-}
-
-.ad-container:has(ins[data-ad-status="unfilled"]) {
-    min-height: 0;
-    margin: 0;
 }
 
 /* Language switcher (no-JS <details> dropdown, opens upward from the footer) */

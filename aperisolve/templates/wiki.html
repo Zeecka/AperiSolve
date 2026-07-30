@@ -1,5 +1,4 @@
 {% extends 'base.html' %}
-{% import 'partials/ads.html' as ads %}
 {% block title %}{{ page.title }} - Aperi'Solve{% endblock %}
 {% block meta_description %}{{ page.description or page.title }}{% endblock %}
 {% block meta %}
@@ -57,7 +56,6 @@
         {% endfor %}
       </ul>
       {% endfor %}
-      {{ ads.ad_unit(config["ADSENSE_SLOT_WIKI_SIDEBAR"]) }}
     </nav>
   </aside>
   <div class="col-lg-6">
@@ -75,7 +73,6 @@
     {% endif %}
     <article id="cheatsheet" class="wiki-article card p-4">
       {{ page.html | safe }}
-      {{ ads.ad_unit(config["ADSENSE_SLOT_WIKI_ARTICLE"]) }}
     </article>
     {% if prev_page or next_page %}
     <nav class="wiki-prevnext d-flex justify-content-between mt-4 gap-2" aria-label="{{ _("Page navigation") }}">

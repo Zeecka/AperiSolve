@@ -22,11 +22,6 @@ from werkzeug.wrappers.response import Response as WerkzeugResponse
 from .analyzers.registry import archive_tools, tool_order
 from .cheatsheet import cheatsheet_bp, cheatsheet_lastmod
 from .config import (
-    ADSENSE_CLIENT,
-    ADSENSE_SLOT_INDEX,
-    ADSENSE_SLOT_RESULT,
-    ADSENSE_SLOT_WIKI_ARTICLE,
-    ADSENSE_SLOT_WIKI_SIDEBAR,
     CLEANUP_INTERVAL_SECONDS,
     CUSTOM_EXTERNAL_SCRIPT,
     DB_URI,
@@ -77,11 +72,6 @@ def _configure_app(app: Flask) -> None:
     app.config["MAX_CONTENT_LENGTH"] = MAX_CONTENT_LENGTH
     app.config["REDIS_QUEUE"] = Queue(connection=Redis.from_url(REDIS_URL))
     app.config["TOOL_ORDER"] = tool_order()
-    app.config["ADSENSE_CLIENT"] = ADSENSE_CLIENT
-    app.config["ADSENSE_SLOT_WIKI_SIDEBAR"] = ADSENSE_SLOT_WIKI_SIDEBAR
-    app.config["ADSENSE_SLOT_WIKI_ARTICLE"] = ADSENSE_SLOT_WIKI_ARTICLE
-    app.config["ADSENSE_SLOT_INDEX"] = ADSENSE_SLOT_INDEX
-    app.config["ADSENSE_SLOT_RESULT"] = ADSENSE_SLOT_RESULT
     # Static asset URLs are cache-busted with ?v=<PROJECT_VERSION> in templates.
     app.config["SEND_FILE_MAX_AGE_DEFAULT"] = timedelta(days=7)
     Babel(app, locale_selector=select_locale)

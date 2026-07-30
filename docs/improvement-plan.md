@@ -17,11 +17,13 @@ next tagged release.
   values from the example file — self-hosters must opt in with their own IDs.
 - [x] **Set `SITE_BASE_URL`** in the prod environment so canonicals/sitemap
   don't depend on the request URL.
-- [ ] **AdSense units** *(owner action)*: create the ad units in the AdSense
-  console (result page first — highest dwell), then set `ADSENSE_SLOT_INDEX`,
-  `ADSENSE_SLOT_RESULT`, `ADSENSE_SLOT_WIKI`, `ADSENSE_SLOT_WIKI_SIDEBAR`,
-  `ADSENSE_SLOT_WIKI_ARTICLE` in the prod environment. The loader script and
-  ads.txt are already live; no units render until the slot IDs exist.
+- [x] **AdSense**: resolved as *not needed*. Auto ads are enabled in the
+  console, so the `CUSTOM_EXTERNAL_SCRIPT` loader (which predates this audit)
+  already serves ads and Google handles placement. The manual-unit layer
+  (`ADSENSE_SLOT_*`, the `ad_unit` macro and its four call sites) was dead
+  configuration and has been removed. Earlier notes in this file claimed the
+  site rendered no ads at all — that was wrong: it only ever meant no
+  *manual* units rendered.
 
 ## P1 — deploy pipeline & robustness
 

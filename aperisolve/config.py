@@ -3,7 +3,6 @@
 from importlib.metadata import PackageNotFoundError, version
 from os import getenv
 from pathlib import Path
-from urllib.parse import parse_qs, urlparse
 
 try:
     _package_version = version("aperisolve")
@@ -54,25 +53,6 @@ IMAGE_EXTENSIONS = [".png", ".jpg", ".jpeg", ".gif", ".bmp", ".webp", ".tiff"]
 GOOGLE_ADS_TXT = getenv("GOOGLE_ADS_TXT", "")
 CUSTOM_EXTERNAL_SCRIPT = getenv("CUSTOM_EXTERNAL_SCRIPT", "")
 
-
-def _client_from_script_url(url: str) -> str:
-    """AdSense client id embedded in the loader URL (?client=ca-pub-...)."""
-    client = parse_qs(urlparse(url).query).get("client", [""])[0]
-    return client if client.startswith("ca-pub-") else ""
-
-
-# Manual AdSense units. All default empty: self-hosted instances render no ads.
-# The client id falls back to the one already present in the
-# CUSTOM_EXTERNAL_SCRIPT loader URL, so one CI variable configures both;
-# individual units still render only when their slot id is set.
-ADSENSE_CLIENT = getenv("ADSENSE_CLIENT", "") or _client_from_script_url(CUSTOM_EXTERNAL_SCRIPT)
-ADSENSE_SLOT_WIKI = getenv("ADSENSE_SLOT_WIKI", "")
-ADSENSE_SLOT_INDEX = getenv("ADSENSE_SLOT_INDEX", "")
-ADSENSE_SLOT_RESULT = getenv("ADSENSE_SLOT_RESULT", "")
-# Distinct wiki slots keep sidebar vs in-article reporting separate in
-# AdSense; both fall back to the original single ADSENSE_SLOT_WIKI.
-ADSENSE_SLOT_WIKI_SIDEBAR = getenv("ADSENSE_SLOT_WIKI_SIDEBAR", "") or ADSENSE_SLOT_WIKI
-ADSENSE_SLOT_WIKI_ARTICLE = getenv("ADSENSE_SLOT_WIKI_ARTICLE", "") or ADSENSE_SLOT_WIKI
 
 # Public base URL (e.g. "https://www.aperisolve.com") used for canonical,
 # Open Graph and sitemap absolute links. Falls back to the request host.

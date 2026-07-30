@@ -36,8 +36,8 @@ localhost:9181 (reach it via SSH tunnelling).
 All runtime configuration is environment-driven; `.env.example` documents
 every variable. Deploy-time values come from GitHub Actions variables and
 secrets — to change a production setting (e.g. `MAX_CONTENT_LENGTH`,
-`ADSENSE_*`, `SITE_BASE_URL`), edit the repository's Actions configuration
-and re-deploy with a tag.
+`CUSTOM_EXTERNAL_SCRIPT`, `SITE_BASE_URL`), edit the repository's Actions
+configuration and re-deploy with a tag.
 
 ## Deployment-local site content
 
@@ -66,8 +66,8 @@ content sub-directory.
 
 `main` is the only long-lived branch. The historical `prod` branch is
 obsolete: its hardcoded AdSense snippet and `/ads.txt` route were replaced
-by the `GOOGLE_ADS_TXT`/`CUSTOM_EXTERNAL_SCRIPT`/`ADSENSE_*` environment
-variables, and its `:prod` image tags are no longer built. It can be
+by the `GOOGLE_ADS_TXT`/`CUSTOM_EXTERNAL_SCRIPT` environment variables, and
+its `:prod` image tags are no longer built. It can be
 deleted; nothing references it.
 
 The old `worker/*` feature branches (`worker/jphide`, `worker/jsteg`,
