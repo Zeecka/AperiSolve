@@ -116,7 +116,7 @@ Portuguese. Machine-translated drafts are welcome; native review even more so.
 
   ```console
   $ pybabel extract -F babel.cfg -o messages.pot .
-  $ pybabel update -i messages.pot -d aperisolve/translations
+  $ pybabel update --ignore-obsolete -i messages.pot -d aperisolve/translations
   $ pybabel compile -d aperisolve/translations
   ```
 
@@ -143,7 +143,13 @@ Contributions to the web interface are welcome:
 - Better error messages
 - Improved result presentation
 - Mobile responsiveness
-- Accessibility improvements
+- Accessibility improvements. One rule worth knowing up front: don't put an
+  `aria-label` on a control that already has visible text — the label replaces
+  that text as the accessible name, so voice-control users who say what they
+  see stop matching the control (WCAG 2.5.3, Label in Name). If a control
+  genuinely needs extra context, the label must *contain* the visible text in
+  every language, not just English. Icon-only controls have no visible text, so
+  they still need a label.
 
 ## Code Style & Quality
 

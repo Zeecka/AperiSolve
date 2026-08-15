@@ -51,6 +51,8 @@
     <div class="container mt-5">
       {% block site_header %}
       <header class="site-header mb-4 d-flex justify-content-between align-items-center flex-wrap gap-2">
+        {# aria-label kept: it contains the visible "Aperi'Solve" in every
+           language, so it adds context without breaking WCAG 2.5.3. #}
         <a class="title-link d-inline-flex align-items-center text-decoration-none" href="/" aria-label="{{ _("Aperi'Solve Home") }}">
           <img src="/static/img/logo.svg" alt="Aperi'Solve logo" class="logo-img me-3" width="80" height="80">
           <div class="d-flex flex-column">
