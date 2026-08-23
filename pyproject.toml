@@ -3,7 +3,7 @@
 
 [project]
 name = "aperisolve"
-version = "3.7.7"
+version = "3.7.8"
 description = "Open-source steganalysis web platform for automated image analysis and steganography detection"
 readme = "README.md"
 requires-python = ">=3.12"
