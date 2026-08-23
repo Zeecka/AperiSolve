@@ -31,6 +31,29 @@ The compose stack runs seven services: `web` (gunicorn), `worker` (RQ),
 (one-shot), `postgres`, `redis`, plus `rqdashboard` bound to
 localhost:9181 (reach it via SSH tunnelling).
 
+## Reverse proxy
+
+The production host runs nginx in front of the stack (it also serves unrelated
+vhosts, so port 80 is not the app's to take). `WEB_APP_PORT` is therefore set to
+`127.0.0.1:5000`, not a bare port: compose renders it as
+`"127.0.0.1:5000:5000"`, so the container is reachable only through nginx, never
+directly on the host's public address.
+
+`/etc/nginx/sites-available/aperisolve.conf` serves `aperisolve.com`,
+`aperisolve.fr` and both `www.` names from one block, proxying to
+`127.0.0.1:5000`. Two details there are load-bearing:
+
+- **`client_max_body_size` must stay above `MAX_CONTENT_LENGTH`.** nginx's 1 MiB
+  default would reject valid uploads with its own 413 before the app ever sees
+  them.
+- **`X-Forwarded-For` is passed through, not appended to.** `get_client_ip()`
+  reads the *rightmost* hop, so the usual `$proxy_add_x_forwarded_for` would make
+  that hop the Cloudflare edge IP and put every visitor in a single rate-limit
+  bucket. The vhost forwards `CF-Connecting-IP` instead, falling back to any
+  inbound `X-Forwarded-For`.
+
+TLS terminates at Cloudflare; the origin speaks plain HTTP on :80.
+
 ## Configuration
 
 All runtime configuration is environment-driven; `.env.example` documents

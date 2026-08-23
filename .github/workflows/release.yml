@@ -104,7 +104,7 @@ jobs:
           command_timeout: 30m
           script: |
             set -e
-            cd /root/AperiSolve
+            cd /home/user/Desktop/aperisolve
 
             # Deploy the tagged commit, not whatever main currently is:
             # compose files and site_content must match the image being run.
