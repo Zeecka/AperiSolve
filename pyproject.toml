@@ -56,17 +56,30 @@ target-version = "py312"
 # Vendored third-party files live in docker/ (Didier Stevens' pdfid.py, plus the
 # autotools config.guess/config.sub) and are copied verbatim into the image.
 # They are not our code to lint or reformat.
-extend-exclude = ["docker/"]
+#
+# Ruff 0.16 began formatting Python inside fenced blocks in Markdown, which
+# pulls the 46 wiki_content pages into its scope. Those snippets are teaching
+# material with deliberately aligned trailing comments, and reflowing them
+# rewrites the docs rather than the code. Keep Markdown out of ruff entirely.
+extend-exclude = ["docker/", "*.md"]
 
 [tool.ruff.lint]
 select = ["ALL"]
+# `select = ["ALL"]` opts in to rules that do not exist yet, so each ruff release
+# can turn a clean tree red. These three are policy, not defects:
+#   CPY001 wants a copyright header in every file; this project carries its terms
+#          once, in LICENSE, and has never used per-file notices.
+#   D203/D213 are each half of a mutually exclusive pair (with D211/D212). Ruff
+#          already resolves them the same way and warns; naming them here keeps
+#          the resolution explicit and silences the warning.
+ignore = ["CPY001", "D203", "D213"]
 
 [tool.ruff.lint.per-file-ignores]
 # Tests use asserts, magic values and env setup before imports by design.
 "tests/*" = ["S101", "INP001", "PLR2004", "E402"]
 # Dev-only generator scripts: print output, layout magic numbers, and lighter
 # annotation/docstring requirements are fine for standalone tooling.
-"scripts/*" = ["T201", "INP001", "PLR2004", "PLR0913", "ANN", "D", "COM812"]
+"scripts/*" = ["T201", "INP001", "PLR2004", "PLR0913", "PLR0917", "ANN", "D", "COM812"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]

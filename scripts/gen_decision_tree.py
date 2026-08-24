@@ -58,40 +58,50 @@ BRANCHES: list[Branch] = [
                 "zsteg -a",
                 "LSB text / files",
                 "zsteg -a file.png",
-                "Scan every common LSB channel/bit-order combo for hidden text "
-                "or files; extract a line with zsteg -E.",
+                (
+                    "Scan every common LSB channel/bit-order combo for hidden text "
+                    "or files; extract a line with zsteg -E."
+                ),
                 "/wiki/tools/zsteg",
             ),
             (
                 "pngcheck -vtp7f",
                 "CRC / IHDR size",
                 "pngcheck -vtp7f file.png",
-                "A CRC error in IHDR means an edited header; a shrunken "
-                "width/height hides pixels below the visible image.",
+                (
+                    "A CRC error in IHDR means an edited header; a shrunken "
+                    "width/height hides pixels below the visible image."
+                ),
                 "/wiki/tools/pngcheck",
             ),
             (
                 "bit planes",
                 "all channels + MSB",
                 "decomposer / Stegsolve",
-                "Browse every bit plane and every channel including alpha; try "
-                "MSB and column-major order, not just RGB LSB.",
+                (
+                    "Browse every bit plane and every channel including alpha; try "
+                    "MSB and column-major order, not just RGB LSB."
+                ),
                 "/wiki/tools/decomposer",
             ),
             (
                 "data after IEND",
                 "carve the trailer",
                 "binwalk -e file.png",
-                "Data appended after the IEND chunk — carve it with "
-                "binwalk/foremost or by byte offset.",
+                (
+                    "Data appended after the IEND chunk — carve it with "
+                    "binwalk/foremost or by byte offset."
+                ),
                 "/wiki/tools/foremost",
             ),
             (
                 "palette remap",
                 "indexed PNG",
                 "color remapping / randomize palette",
-                "Indexed PNGs can hide an image in the palette; randomize or "
-                "remap it to reveal the drawing.",
+                (
+                    "Indexed PNGs can hide an image in the palette; randomize or "
+                    "remap it to reveal the drawing."
+                ),
                 "/wiki/tools/color_remapping",
             ),
             (
@@ -111,8 +121,10 @@ BRANCHES: list[Branch] = [
                 "steghide -p ''",
                 "try empty pass",
                 "steghide extract -sf file.jpg -p ''",
-                "steghide is the most common JPEG tool; try the empty password "
-                "first, then the filename / challenge name.",
+                (
+                    "steghide is the most common JPEG tool; try the empty password "
+                    "first, then the filename / challenge name."
+                ),
                 "/wiki/tools/steghide",
             ),
             (
@@ -126,8 +138,10 @@ BRANCHES: list[Branch] = [
                 "outguess / jsteg",
                 "jphide",
                 "outguess -r file.jpg out.txt",
-                "If it isn't steghide, try OutGuess, jsteg, or JPHide (jpseek). "
-                "zsteg does NOT work on JPEG.",
+                (
+                    "If it isn't steghide, try OutGuess, jsteg, or JPHide (jpseek). "
+                    "zsteg does NOT work on JPEG."
+                ),
                 "/wiki/tools/outguess",
             ),
             (
@@ -147,8 +161,10 @@ BRANCHES: list[Branch] = [
                 "extract frames",
                 "ffmpeg -vsync 0",
                 "ffmpeg -i file.gif -vsync 0 out/f%d.png",
-                "Animations can carry zero-duration frames; extract every frame "
-                "then run the PNG checklist on them.",
+                (
+                    "Animations can carry zero-duration frames; extract every frame "
+                    "then run the PNG checklist on them."
+                ),
                 "/wiki/techniques/images",
             ),
             (
@@ -182,8 +198,10 @@ BRANCHES: list[Branch] = [
                 "spectrogram FIRST",
                 "Audacity / sox",
                 "sox file.wav -n spectrogram -o spec.png",
-                "View the frequency domain first — text and QR codes are often "
-                "drawn there; check above 20 kHz and below 20 Hz.",
+                (
+                    "View the frequency domain first — text and QR codes are often "
+                    "drawn there; check above 20 kHz and below 20 Hz."
+                ),
                 "/wiki/tools/spectrogram",
             ),
             (
@@ -204,8 +222,10 @@ BRANCHES: list[Branch] = [
                 "SSTV / DTMF / FSK",
                 "QSSTV / minimodem",
                 "minimodem --rx 1200",
-                "Decode images with QSSTV, phone tones with a DTMF decoder, "
-                "modem tones with minimodem / multimon-ng.",
+                (
+                    "Decode images with QSSTV, phone tones with a DTMF decoder, "
+                    "modem tones with minimodem / multimon-ng."
+                ),
                 "/wiki/techniques/audio",
             ),
             (
@@ -273,8 +293,10 @@ BRANCHES: list[Branch] = [
                 "zero-width",
                 "U+200B / C / D",
                 "compare wc -c to the visible length",
-                "Invisible zero-width characters; inspect code points with xxd "
-                "or a zero-width decoder.",
+                (
+                    "Invisible zero-width characters; inspect code points with xxd "
+                    "or a zero-width decoder."
+                ),
                 "/wiki/techniques/text",
             ),
             (
