@@ -81,6 +81,15 @@ ignore = ["CPY001", "D203", "D213"]
 # annotation/docstring requirements are fine for standalone tooling.
 "scripts/*" = ["T201", "INP001", "PLR2004", "PLR0913", "PLR0917", "ANN", "D", "COM812"]
 
+[tool.ty.rules]
+# `to_ihdr_bytes` casts three SmallInteger columns to int before handing them to
+# bytes(). Whether that cast is needed depends on the environment: drop it and ty
+# rejects the list as `list[Column | int]` under some interpreter/stub
+# combinations, keep it and newer ty calls it redundant under others. The cast is
+# the safe half of that trade (it is required where it is required), so the
+# false "redundant" report is downgraded rather than the cast removed.
+redundant-cast = "ignore"
+
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 
