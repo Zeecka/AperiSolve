@@ -50,6 +50,13 @@ services:
     # blast radius of a decompression bomb or runaway tool.
     mem_limit: 2g
     cpus: 2
+    # Analyzer tools spawn helpers of their own (jpseek runs under `expect`,
+    # carvers shell out to `file`). When the intermediate process exits first,
+    # those grandchildren reparent to PID 1 -- which is `rq`, and `rq` only
+    # reaps its own work horse. Without an init they accumulate as zombies
+    # until the host's process table starves dockerd's exec path, which breaks
+    # health checks and hangs `compose down` mid-deploy. tini reaps them.
+    init: true
     logging: *default-logging
     volumes:
       - apresults:/app/aperisolve/results
