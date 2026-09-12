@@ -1,5 +1,13 @@
 # Bounded logs everywhere: the default json-file driver grows without limit,
 # and web's access log is the highest-volume stream in the stack.
+#
+# Every service also carries a `cpus` ceiling. The long-running ones sum to
+# 5 cores, so the stack cannot take more than half of a 10-core host even
+# when web, worker and Postgres all peak at once -- analyzers are CPU-bound
+# and would otherwise starve everything else sharing the machine. These are
+# ceilings, not reservations: on a smaller host the services simply never
+# reach them. initdb is excluded from the sum -- it runs to completion before
+# web/worker/cron start (service_completed_successfully), so it never overlaps.
 x-logging: &default-logging
   driver: json-file
   options:
@@ -13,6 +21,7 @@ services:
     container_name: aperisolve-web
     restart: always
     mem_limit: 2g
+    cpus: 1.5
     logging: *default-logging
     ports:
       - "${WEB_APP_PORT:-5000}:5000"
@@ -75,6 +84,7 @@ services:
     #build: .
     container_name: aperisolve-cron
     restart: always
+    cpus: 0.25
     logging: *default-logging
     command: rq cron aperisolve.cron --url redis://redis:6379/0
     volumes:
@@ -93,6 +103,7 @@ services:
     image: ghcr.io/zeecka/aperisolve:latest
     #build: .
     container_name: aperisolve-initdb
+    cpus: 1
     logging: *default-logging
     command: python -m aperisolve.utils.init_db
     volumes:
@@ -109,6 +120,7 @@ services:
     container_name: postgres
     restart: always
     mem_limit: 1g
+    cpus: 0.5
     logging: *default-logging
     volumes:
       - pgdata:/var/lib/postgresql
@@ -125,6 +137,7 @@ services:
     container_name: redis
     restart: always
     mem_limit: 512m
+    cpus: 0.5
     logging: *default-logging
     healthcheck:
       test: ["CMD", "redis-cli", "ping"]
@@ -141,6 +154,7 @@ services:
     container_name: rq-dashboard
     restart: always
     mem_limit: 256m
+    cpus: 0.25
     logging: *default-logging
     ports:
       # Loopback only: RQ Dashboard has no auth and lets anyone requeue or
