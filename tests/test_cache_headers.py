@@ -1,4 +1,4 @@
-"""Tests for HTTP caching behavior of data routes."""
+"""Tests for HTTP caching behavior of data routes and static assets."""
 
 import json
 import time
@@ -97,3 +97,25 @@ def test_images_cache_forever(app: Flask, client: FlaskClient, tmp_path: Path) -
         assert response.headers["Cache-Control"] == "public, max-age=31536000, immutable"
     finally:
         _cleanup_results()
+
+
+def test_versioned_static_assets_cache_forever(client: FlaskClient) -> None:
+    """Templates stamp ?v=<version> onto CSS/JS, so those URLs never change."""
+    response = client.get("/static/css/aperisolve.css?v=3.7.11")
+    assert response.status_code == 200
+    assert response.headers["Cache-Control"] == "public, max-age=31536000, immutable"
+
+
+def test_unversioned_static_assets_keep_the_short_default(client: FlaskClient) -> None:
+    """A reused URL (import map, favicon) must not pin clients to stale bytes."""
+    response = client.get("/static/js/three.module.min.js")
+    assert response.status_code == 200
+    assert "immutable" not in response.headers["Cache-Control"]
+    assert "max-age=604800" in response.headers["Cache-Control"]
+
+
+def test_missing_versioned_static_asset_is_not_cached_forever(client: FlaskClient) -> None:
+    """A 404 must not be cached for a year just because the URL carried ?v=."""
+    response = client.get("/static/css/does-not-exist.css?v=3.7.11")
+    assert response.status_code == 404
+    assert "immutable" not in response.headers.get("Cache-Control", "")

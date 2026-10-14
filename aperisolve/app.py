@@ -6,6 +6,7 @@ import os
 import shutil
 import time
 from datetime import UTC, datetime, timedelta
+from http import HTTPStatus
 from pathlib import Path
 from typing import Any, cast
 
@@ -727,6 +728,24 @@ def create_app() -> Flask:
             "Permissions-Policy",
             "camera=(), microphone=(), geolocation=()",
         )
+        return response
+
+    @app.after_request
+    def set_static_cache_headers(response: Response) -> Response:
+        """Cache version-stamped static assets for a year instead of a week.
+
+        Templates request CSS/JS as ``?v=<PROJECT_VERSION>``, so those exact
+        URLs never change contents -- a new release means a new URL. Requests
+        without the parameter (logo.svg, the Three.js bundles reached through
+        the import map) keep the 7-day default, because their URL is reused
+        across releases and a year-long cache would pin clients to stale bytes.
+        """
+        if (
+            request.endpoint == "static"
+            and request.args.get("v")
+            and response.status_code == HTTPStatus.OK
+        ):
+            response.headers["Cache-Control"] = "public, max-age=31536000, immutable"
         return response
 
     return app
