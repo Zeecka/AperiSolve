@@ -71,6 +71,14 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     && gem install zsteg \
     && rm -rf /var/lib/apt/lists/*
 
+# StegoVeritas in an isolated venv so its pip-pulled `binwalk` dependency
+# never shadows the apt `binwalk` binary used by the binwalk analyzer.
+# The venv is intentionally NOT on PATH; the analyzer calls it by absolute
+# path (/opt/stegoveritas-venv/bin/stegoveritas).
+RUN python3 -m venv /opt/stegoveritas-venv \
+    && /opt/stegoveritas-venv/bin/pip install --no-cache-dir stegoveritas \
+    && /opt/stegoveritas-venv/bin/stegoveritas_install_deps
+
 # Install OpenStego
 COPY --from=builder /tmp/openstego.deb /tmp/openstego.deb
 RUN dpkg -i /tmp/openstego.deb || apt-get install -f -y --no-install-recommends \
