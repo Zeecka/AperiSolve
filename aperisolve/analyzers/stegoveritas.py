@@ -11,23 +11,41 @@ from aperisolve.config import IMAGE_EXTENSIONS
 
 from .base_analyzer import SubprocessAnalyzer
 
+# Absolute path to the isolated venv binary (see Dockerfile). Falls back to
+# PATH lookup for local development without Docker.
+_VENV_BIN = Path("/opt/stegoveritas-venv/bin/stegoveritas")
+STEGOVERITAS_BIN = str(_VENV_BIN) if _VENV_BIN.exists() else "stegoveritas"
+
 # Regex patterns for classifying stegoveritas output filenames.
-_BIT_PLANE_RE = re.compile(r"_(Red|Green|Blue|Alpha)_(\d+)\.\w+$")
 _FRAME_RE = re.compile(r"^frame_\d+\.\w+$")
 
+# Per-channel bit planes (e.g. ``…_Red_3.png``) are intentionally excluded:
+# Decomposer already renders Red/Green/Blue/Alpha planes, so StegoVeritas
+# only keeps the extra transforms plus extracted GIF frames (see #159).
+_CHANNEL_RE = re.compile(r"_(Red|Green|Blue|Alpha)_\d+\.\w+$")
+
 # Preferred display order for image groups.
-_GROUP_ORDER = ("Red", "Green", "Blue", "Alpha", "Transforms", "Frames")
+_GROUP_ORDER = ("Transforms", "Frames")
 
 
 class StegoveritasAnalyzer(SubprocessAnalyzer):
     """Analyzer for StegoVeritas."""
 
+    name = "stegoveritas"
+    has_archive = True
+    display_order = 115
+    accepts = frozenset({"image"})
+
     def __init__(self, input_img: Path, output_dir: Path) -> None:
         """Initialize the stegoveritas analyzer."""
-        super().__init__("stegoveritas", input_img, output_dir, has_archive=True)
+        super().__init__(input_img, output_dir)
         self._prepare_input()
-        self.cmd = ["stegoveritas", "-imageTransform", "-extract_frames", self.img]
         self.make_folder = False  # stegoveritas creates the output folder
+
+    def build_cmd(self, password: str | None = None) -> list[str]:
+        """Build the stegoveritas command (password is unused)."""
+        _ = password
+        return [STEGOVERITAS_BIN, "-imageTransform", "-extract_frames", self.img]
 
     def get_extracted_dir(self) -> Path:
         """Return the stegoveritas extraction directory."""
@@ -40,21 +58,19 @@ class StegoveritasAnalyzer(SubprocessAnalyzer):
 
     def get_results(self, password: str | None = None) -> dict[str, Any]:
         """Run stegoveritas and return grouped image results."""
-        extracted_dir = self.get_extracted_dir()
-        if password:
-            cmd = list(map(str, self.build_cmd(password)))
-        else:
-            cmd = list(map(str, self.build_cmd()))
+        _ = password
+        cmd = list(map(str, self.build_cmd()))
         data = self.run_command(cmd, cwd=self.output_dir)
 
         grouped_urls: dict[str, list[str]] = {}
+        extracted_dir = self.get_extracted_dir()
         if extracted_dir.exists():
             grouped = self._group_images(self._collect_images(extracted_dir))
             grouped_urls = self._copy_grouped_images(grouped)
 
         zip_exist = False
         if extracted_dir.exists() and any(extracted_dir.iterdir()):
-            self.generate_archive(self.output_dir, extracted_dir)
+            self.generate_archive(extracted_dir)
             zip_exist = True
 
         if self.is_error(data.returncode, data.stdout, data.stderr, zip_exist=zip_exist):
@@ -111,16 +127,15 @@ class StegoveritasAnalyzer(SubprocessAnalyzer):
         )
 
     @staticmethod
-    def _classify_image(filename: str) -> tuple[str, int]:
-        """Return ``(group_name, sort_key)`` for an image filename.
+    def _classify_image(filename: str) -> tuple[str, int] | None:
+        """Return ``(group_name, sort_key)`` or ``None`` to skip the file.
 
-        Bit-plane images (e.g. ``…_Red_3.png``) are grouped by channel.
+        Per-channel bit planes are skipped (Decomposer covers them).
         Extracted GIF frames (``frame_N.png``) go into *Frames*.
         Everything else lands in *Transforms*.
         """
-        match = _BIT_PLANE_RE.search(filename)
-        if match:
-            return match.group(1), int(match.group(2))
+        if _CHANNEL_RE.search(filename):
+            return None
 
         if _FRAME_RE.match(filename):
             num_match = re.search(r"(\d+)", filename)
@@ -132,7 +147,10 @@ class StegoveritasAnalyzer(SubprocessAnalyzer):
         """Categorise images into named groups ordered for display."""
         buckets: dict[str, list[tuple[int, Path]]] = {}
         for path in image_paths:
-            group, sort_key = self._classify_image(path.name)
+            classified = self._classify_image(path.name)
+            if classified is None:
+                continue
+            group, sort_key = classified
             buckets.setdefault(group, []).append((sort_key, path))
 
         # Sort items within each bucket, then honour _GROUP_ORDER.
@@ -178,9 +196,3 @@ class StegoveritasAnalyzer(SubprocessAnalyzer):
             dest_name = f"{self.name}_{image_path.stem}_{counter}{image_path.suffix}"
             counter += 1
         return dest_name
-
-
-def analyze_stegoveritas(input_img: Path, output_dir: Path) -> None:
-    """Analyze an image submission using stegoveritas."""
-    analyzer = StegoveritasAnalyzer(input_img, output_dir)
-    analyzer.analyze()
