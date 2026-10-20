@@ -1,7 +1,7 @@
 # ==========================
 # Stage 1 : Builder (download OpenStego)
 # ==========================
-FROM python:3.14-slim AS builder
+FROM python:3.15-slim AS builder
 
 # Install wget only to download OpenStego
 RUN apt-get update && apt-get install -y --no-install-recommends \
@@ -42,7 +42,7 @@ RUN rm -rf /tmp/jphs
 # ==========================
 # Stage 2 : Image runtime minimale
 # ==========================
-FROM python:3.14-slim
+FROM python:3.15-slim
 
 WORKDIR /app
 
