@@ -12,9 +12,9 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        # 3.14 matches the runtime image (Dockerfile python:3.14-slim);
-        # 3.12 guards the oldest supported interpreter.
-        python-version: ["3.12", "3.14"]
+        # 3.15 matches the runtime image (Dockerfile python:3.15-slim);
+        # 3.12 guards the oldest supported interpreter (requires-python >=3.12).
+        python-version: ["3.12", "3.15"]
 
     steps:
       - name: Check out Git repository
