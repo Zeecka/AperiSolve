@@ -64,7 +64,7 @@ def analyze_image(submission_hash: str) -> None:
                 try:
                     analyzer_cls.execute(img_path, result_path, password)
                 except (RuntimeError, ValueError, OSError, TypeError) as exc:
-                    with sentry_sdk.push_scope() as scope:
+                    with sentry_sdk.new_scope() as scope:
                         scope.set_tag("analyzer", analyzer_cls.name)
                         scope.set_tag("submission_hash", submission_hash)
                         # Attach the analyzed image so errors can be
