@@ -59,6 +59,8 @@ Each analyzer that runs on your upload has its own page:
 - [zsteg](/wiki/tools/zsteg) — LSB steganography detection for PNG and BMP.
 - [steghide](/wiki/tools/steghide) — extract data hidden in JPEG/BMP with a
   passphrase.
+- [stegoveritas](/wiki/tools/stegoveritas) — image transforms and GIF frame
+  extraction.
 - [stegseek](/wiki/tools/stegseek) — crack a steghide passphrase in seconds.
 - [binwalk](/wiki/tools/binwalk) — find and extract files embedded inside the
   image.
