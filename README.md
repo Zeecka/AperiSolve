@@ -51,6 +51,7 @@ Aperi'Solve is an open-source steganalysis web platform that performs automated 
   - [pcrt](https://github.com/sherlly/PCRT) (PNG check & repair)
   - [pngcheck](https://www.libpng.org/pub/png/apps/pngcheck.html)
   - [steghide](https://steghide.sourceforge.net/) (extraction with password)
+  - [stegoveritas](https://github.com/bannsec/stegoVeritas) (image transformation and GIF frames extraction)
   - [strings](https://pubs.opengroup.org/onlinepubs/9799919799/utilities/strings.html)
   - [zsteg](https://github.com/zed-0xff/zsteg) (LSB text/data extraction)
 - **In-app wiki** ([`/wiki`](https://www.aperisolve.com/wiki/)): a HackTricks-style

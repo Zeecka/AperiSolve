@@ -15,6 +15,7 @@ const TOOL_ORDER = window.TOOL_ORDER || [
   "pcrt",
   "identify",
   "steghide",
+  "stegoveritas",
   "jpseek",
   "jsteg",
   "openstego",
