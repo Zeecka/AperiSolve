@@ -18,16 +18,24 @@ class JpseekAnalyzer(SubprocessAnalyzer):
         out = str(extracted_dir / "jpseek.out")
         if password is None:
             password = ""
-        # File paths are quoted with Tcl braces to prevent interpretation of
-        # special characters. The password is passed via an environment variable
-        # (JPSEEK_PASS) to avoid any command injection through string interpolation.
+        # Paths and password reach the Tcl script only through environment
+        # variables: interpolating them, even inside Tcl braces, lets a crafted
+        # upload filename inject commands (GHSA-8r22-62p7-9jrp, GHSA-m5f8-qc9j-mc55).
         expect_script = (
-            f"spawn jpseek {{{self.img}}} {{{out}}}; "
+            "spawn jpseek $env(JPSEEK_IMG) $env(JPSEEK_OUT); "
             'expect "Passphrase:"; '
             'send "$env(JPSEEK_PASS)\\r"; '
             "expect eof"
         )
-        return ["env", f"JPSEEK_PASS={password}", "expect", "-c", expect_script]
+        return [
+            "env",
+            f"JPSEEK_IMG={self.img}",
+            f"JPSEEK_OUT={out}",
+            f"JPSEEK_PASS={password}",
+            "expect",
+            "-c",
+            expect_script,
+        ]
 
     def _remove_output_artifacts(self, output: str) -> str:
         extracted_dir = self.get_extracted_dir()
