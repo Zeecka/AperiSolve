@@ -23,6 +23,7 @@ EXPECTED_TOOL_ORDER = [
     "pcrt",
     "identify",
     "steghide",
+    "stegoveritas",
     "jpseek",
     "jsteg",
     "openstego",
@@ -34,6 +35,7 @@ EXPECTED_ARCHIVE_TOOLS = {
     "binwalk",
     "foremost",
     "steghide",
+    "stegoveritas",
     "openstego",
     "pcrt",
     "jpseek",
@@ -46,7 +48,7 @@ EXPECTED_DEEP_ONLY_TOOLS = {"outguess"}
 
 # Analyzers grouped by their ``accepts`` gate (see aperisolve.filetype tags).
 AGNOSTIC_TOOLS = {"file", "exiftool", "binwalk", "foremost", "strings"}
-IMAGE_ONLY_TOOLS = {"decomposer", "color_remapping", "identify", "openstego"}
+IMAGE_ONLY_TOOLS = {"decomposer", "color_remapping", "identify", "openstego", "stegoveritas"}
 PNG_ONLY_TOOLS = {"pngcheck", "pcrt", "zsteg"}
 JPEG_ONLY_TOOLS = {"jsteg", "jpseek", "outguess"}
 AUDIO_ONLY_TOOLS = {"spectrogram"}
