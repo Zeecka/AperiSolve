@@ -112,17 +112,19 @@ That directory is:
 - **bind-mounted read-only on production** via `compose.prod.yml`, which the
   deploy step layers on top of `compose.yml`.
 
-It is committed to git, so the content reaches the server through the deploy
-step's `git pull` and stays version-controlled. Self-hosted instances have no
-such directory, and every loader in `aperisolve/site_content.py` returns
-`None`, so their templates render nothing.
+Content committed there reaches the server through the deploy step's
+`git checkout` and stays version-controlled. Self-hosted instances have no such
+directory, and every loader in `aperisolve/site_content.py` returns `None`, so
+their templates render nothing.
 
-Today it backs a small promo banner on the home and result pages:
-`site_content/promo/<lang>.md` (Markdown, English `en.md` fallback). The
-rendered HTML is cached per language and re-rendered when the file's mtime
-changes, so editing it on the server takes effect on the next request. To add
-a prod-only wiki page, standalone route, etc., add a loader here and a matching
-content sub-directory.
+**No content is committed today** — the directory does not exist in git, the
+bind mount resolves to an empty directory and nothing extra renders on
+aperisolve.com either. What the loader supports is a promo banner on the home
+and result pages: drop `site_content/promo/<lang>.md` (Markdown, English
+`en.md` fallback) and it appears. The rendered HTML is cached per language and
+re-rendered when the file's mtime changes, so editing it on the server takes
+effect on the next request. To add a prod-only wiki page, standalone route,
+etc., add a loader here and a matching content sub-directory.
 
 ## Branches
 

@@ -1907,7 +1907,7 @@ footer::before {
 .promo-banner a::before {
     font-family: "Font Awesome 7 Free";
     font-weight: 900;
-    content: "\f120"; /* terminal — on-brand for the Linux tooling promoted */
+    content: "\f120"; /* terminal — on-brand for the tooling this promotes */
     font-size: 0.85em;
     opacity: 0.85;
 }

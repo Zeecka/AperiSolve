@@ -1,11 +1,12 @@
-"""Tests for deployment-local site content (the promo banner).
+"""Tests for deployment-local site content (the promo banner loader).
 
-The ``site_content/`` directory is committed but excluded from the Docker image;
-on a self-hosted image the directory is absent and every helper returns ``None``
-so the templates render nothing. These tests cover both states by pointing the
-loader at a temporary directory. The render cache is keyed by source mtime, so a
-change of file (real -> temp dir and back) is picked up without shared state
-leaking between tests.
+No promo content is committed today, so the repository state is the "nothing
+deployed" one: every helper returns ``None`` and the templates render nothing.
+That is also what a self-hosted image sees, since ``site_content/`` is excluded
+from the Docker build context. The loader itself is exercised by pointing it at
+a temporary directory, as the hosted deployment's bind mount would. The render
+cache is keyed by source mtime, so a change of file (one temp dir to the next)
+is picked up without shared state leaking between tests.
 """
 
 import os
@@ -15,26 +16,27 @@ import pytest
 from flask.testing import FlaskClient
 
 from aperisolve import site_content
-from aperisolve.i18n import SUPPORTED_LANGS
 from aperisolve.site_content import promo_html
 
 
-def test_promo_html_reads_committed_content() -> None:
-    """The committed English promo renders to HTML."""
-    html = promo_html("en")
+def test_no_promo_content_is_committed() -> None:
+    """The repository ships no promo content, so nothing renders by default."""
+    assert not site_content.PROMO_DIR.exists()
+    assert promo_html("en") is None
+
+
+def test_promo_html_reads_deployed_content(
+    monkeypatch: pytest.MonkeyPatch,
+    tmp_path: Path,
+) -> None:
+    """Markdown dropped in the mounted directory renders to HTML."""
+    promo_dir = tmp_path / "promo"
+    promo_dir.mkdir()
+    (promo_dir / "fr.md").write_text("Un [lien](https://example.com)", encoding="utf-8")
+    monkeypatch.setattr(site_content, "PROMO_DIR", promo_dir)
+    html = promo_html("fr")
     assert html is not None
-    assert "VimLegends" in html
     assert "<a " in html
-
-
-def test_promo_html_translated_for_every_language() -> None:
-    """Every supported language ships its own committed promo (no fallback)."""
-    for lang in SUPPORTED_LANGS:
-        assert (site_content.PROMO_DIR / f"{lang}.md").is_file(), lang
-        html = promo_html(lang)
-        assert html is not None
-        assert "VimLegends" in html
-        assert "TmuxLegends" in html
 
 
 def test_promo_html_falls_back_to_english(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
@@ -69,11 +71,19 @@ def test_promo_html_reflects_edits(monkeypatch: pytest.MonkeyPatch, tmp_path: Pa
     assert promo_html("en") == "<p>Second</p>"
 
 
-def test_home_page_renders_promo(client: FlaskClient) -> None:
+def test_home_page_renders_promo(
+    client: FlaskClient,
+    monkeypatch: pytest.MonkeyPatch,
+    tmp_path: Path,
+) -> None:
     """The home page includes the promo banner when content is deployed."""
+    promo_dir = tmp_path / "promo"
+    promo_dir.mkdir()
+    (promo_dir / "en.md").write_text("Deployed promo", encoding="utf-8")
+    monkeypatch.setattr(site_content, "PROMO_DIR", promo_dir)
     html = client.get("/").get_data(as_text=True)
     assert "promo-banner" in html
-    assert "VimLegends" in html
+    assert "Deployed promo" in html
 
 
 def test_home_page_omits_promo_when_absent(

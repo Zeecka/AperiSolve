@@ -10,6 +10,9 @@ pages. Content is authored as Markdown in ``site_content/promo/<lang>.md`` with
 an English fallback; the rendered HTML is cached per language and re-rendered
 automatically when the source file's mtime changes, so editing the file on the
 server takes effect on the next request without a restart.
+
+**No promo content is committed today**, so the banner renders nowhere until a
+``promo/<lang>.md`` is added back to the mounted directory.
 """
 
 from pathlib import Path
