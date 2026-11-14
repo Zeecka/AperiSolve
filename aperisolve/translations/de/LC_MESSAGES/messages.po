@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2026-07-30 12:19+0000\n"
+"POT-Creation-Date: 2026-11-14 14:49+0100\n"
 "PO-Revision-Date: 2026-07-05 13:23+0000\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language: de\n"
@@ -18,59 +18,59 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Generated-By: Babel 2.18.0\n"
 
-#: aperisolve/app.py:184
+#: aperisolve/app.py:187
 msgid "Image size exceeded"
 msgstr "Bildgröße überschritten"
 
-#: aperisolve/app.py:189
+#: aperisolve/app.py:192
 msgid "Resource not found"
 msgstr "Ressource nicht gefunden"
 
-#: aperisolve/app.py:194
+#: aperisolve/app.py:197
 msgid "Too many requests, please slow down."
 msgstr "Zu viele Anfragen, bitte langsamer."
 
-#: aperisolve/app.py:367 aperisolve/app.py:374
+#: aperisolve/app.py:370 aperisolve/app.py:377
 msgid "No image provided"
 msgstr "Kein Bild übermittelt"
 
-#: aperisolve/app.py:379
+#: aperisolve/app.py:382
 msgid "Unsupported file type"
 msgstr "Nicht unterstützter Dateityp"
 
-#: aperisolve/app.py:482 aperisolve/app.py:490
+#: aperisolve/app.py:485 aperisolve/app.py:493
 msgid "Results not ready yet..."
 msgstr "Ergebnisse noch nicht bereit..."
 
-#: aperisolve/app.py:612
+#: aperisolve/app.py:615
 #, python-format
 msgid "Image must be at least %(min)d seconds old. Current age: %(age)ds"
 msgstr ""
 "Das Bild muss mindestens %(min)d Sekunden alt sein. Aktuelles Alter: "
 "%(age)ds"
 
-#: aperisolve/app.py:628
+#: aperisolve/app.py:631
 msgid "Image uploaded from multiple IP addresses. Removal is not allowed."
 msgstr ""
 "Bild wurde von mehreren IP-Adressen hochgeladen. Entfernen ist nicht "
 "erlaubt."
 
-#: aperisolve/app.py:644
+#: aperisolve/app.py:647
 msgid "Failed to remove image"
 msgstr "Bild konnte nicht entfernt werden"
 
-#: aperisolve/app.py:655
+#: aperisolve/app.py:658
 msgid "No password to remove"
 msgstr "Kein Passwort zu entfernen"
 
-#: aperisolve/app.py:663
+#: aperisolve/app.py:666
 #, python-format
 msgid "Submission must be at least %(min)d seconds old. Current age: %(age)ds"
 msgstr ""
 "Die Einreichung muss mindestens %(min)d Sekunden alt sein. Aktuelles "
 "Alter: %(age)ds"
 
-#: aperisolve/app.py:680
+#: aperisolve/app.py:683
 msgid ""
 "Submission uploaded from multiple IP addresses. Password removal is not "
 "allowed."
@@ -78,7 +78,7 @@ msgstr ""
 "Einreichung wurde von mehreren IP-Adressen hochgeladen. Passwort-"
 "Entfernung ist nicht erlaubt."
 
-#: aperisolve/app.py:695
+#: aperisolve/app.py:698
 msgid "Failed to remove password"
 msgstr "Passwort konnte nicht entfernt werden"
 
@@ -225,12 +225,105 @@ msgstr ""
 msgid "Analyzed file"
 msgstr "Analysierte Datei"
 
-#: aperisolve/templates/base.html:62 aperisolve/templates/footer.html:39
+#: aperisolve/i18n.py:115
+msgid "Ask AI"
+msgstr "KI fragen"
+
+#: aperisolve/i18n.py:118
+msgid ""
+"Analyzer outputs (which may include content extracted from your file) are"
+" sent to the provider you selected."
+msgstr ""
+"Die Analyseausgaben (die aus deiner Datei extrahierte Inhalte enthalten "
+"können) werden an den von dir gewählten Anbieter gesendet."
+
+#: aperisolve/i18n.py:123
+msgid ""
+"Answers are advisory. Tool output comes from a file an attacker may have "
+"crafted: read any command it suggests before you run it."
+msgstr ""
+"Die Antworten sind nur Hinweise. Die Werkzeugausgabe stammt aus einer "
+"Datei, die ein Angreifer erstellt haben kann: Lies jeden vorgeschlagenen "
+"Befehl, bevor du ihn ausführst."
+
+#: aperisolve/i18n.py:126
+msgid "Provider"
+msgstr "Anbieter"
+
+#: aperisolve/i18n.py:127
+msgid "Model"
+msgstr "Modell"
+
+#: aperisolve/i18n.py:128
+msgid "Base URL"
+msgstr "Basis-URL"
+
+#: aperisolve/i18n.py:129
+msgid "API key"
+msgstr "API-Schlüssel"
+
+#: aperisolve/i18n.py:130
+msgid "Remember this key on this device"
+msgstr "Diesen Schlüssel auf diesem Gerät speichern"
+
+#: aperisolve/i18n.py:134
+msgid ""
+"A stored key can be read by any script running on this page, including "
+"the ads script, and a strict CSP is not in place yet. Prefer a key with a"
+" spend cap."
+msgstr ""
+"Ein gespeicherter Schlüssel kann von jedem Skript auf dieser Seite "
+"gelesen werden, auch vom Werbeskript, und eine strikte CSP ist noch nicht"
+" vorhanden. Verwende besser einen Schlüssel mit Ausgabenlimit."
+
+#: aperisolve/i18n.py:141
+msgid ""
+"Anthropic only accepts a browser request carrying the anthropic-"
+"dangerous-direct-browser-access header, which this panel sends. Your key "
+"still goes to Anthropic and nowhere else."
+msgstr ""
+"Anthropic akzeptiert eine Anfrage aus dem Browser nur mit dem Header "
+"anthropic-dangerous-direct-browser-access, den dieses Panel sendet. Dein "
+"Schlüssel geht ausschließlich an Anthropic."
+
+#: aperisolve/i18n.py:145
+msgid "Your question (optional)"
+msgstr "Deine Frage (optional)"
+
+#: aperisolve/i18n.py:146
+msgid "Ask"
+msgstr "Fragen"
+
+#: aperisolve/i18n.py:147
+msgid "Reset conversation"
+msgstr "Unterhaltung zurücksetzen"
+
+#: aperisolve/i18n.py:148
+msgid "Enter your API key."
+msgstr "Gib deinen API-Schlüssel ein."
+
+#: aperisolve/i18n.py:150
+msgid "Enter the base URL of your OpenAI-compatible endpoint."
+msgstr "Gib die Basis-URL deines OpenAI-kompatiblen Endpunkts ein."
+
+#: aperisolve/i18n.py:153
+msgid "Analyzer results are not available yet."
+msgstr "Die Analyseergebnisse sind noch nicht verfügbar."
+
+#: aperisolve/i18n.py:155
+msgid "Ask a follow-up question."
+msgstr "Stelle eine Anschlussfrage."
+
+#: aperisolve/i18n.py:156
+msgid "Waiting for the model…"
+msgstr "Warten auf das Modell…"
+
+#: aperisolve/templates/base.html:64 aperisolve/templates/footer.html:39
 #: aperisolve/templates/wiki.html:65 aperisolve/wiki.py:239
 msgid "Wiki"
 msgstr "Wiki"
 
-#: aperisolve/templates/base.html:63 aperisolve/templates/cheatsheet.html:42
+#: aperisolve/templates/base.html:65 aperisolve/templates/cheatsheet.html:42
 #: aperisolve/templates/footer.html:42 aperisolve/templates/map.html:16
 #: aperisolve/wiki.py:240
 msgid "Cheatsheet"
@@ -244,15 +337,15 @@ msgstr "Techniken"
 msgid "Tools"
 msgstr "Werkzeuge"
 
-#: aperisolve/templates/base.html:54
+#: aperisolve/templates/base.html:56
 msgid "Aperi'Solve Home"
 msgstr "Aperi'Solve Startseite"
 
-#: aperisolve/templates/base.html:61
+#: aperisolve/templates/base.html:63
 msgid "Main navigation"
 msgstr "Hauptnavigation"
 
-#: aperisolve/templates/base.html:78
+#: aperisolve/templates/base.html:80
 msgid "Image preview"
 msgstr "Bildvorschau"
 
