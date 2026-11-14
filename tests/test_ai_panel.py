@@ -399,3 +399,10 @@ def test_an_empty_follow_up_is_refused(dom_facts: dict) -> None:
     """A second ask with no question must not resend the digest."""
     assert dom_facts["statusOnEmptyFollowUp"] == "Ask a follow-up question."
     assert dom_facts["emptyFollowUpSentNothing"]
+
+
+def test_the_panel_script_is_not_shipped_to_other_pages(client: FlaskClient) -> None:
+    """Only /<hash> can use the panel, so only /<hash> downloads its script."""
+    for path in ("/", "/wiki/", "/cheatsheet"):
+        html = client.get(path).get_data(as_text=True)
+        assert "ai_panel.js" not in html, path
