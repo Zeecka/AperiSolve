@@ -21,13 +21,13 @@ from __future__ import annotations
 
 import asyncio
 import base64
-import io
 import logging
 import os
 import subprocess
 import sys
-import time
+import tempfile
 import textwrap
+import time
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
@@ -38,7 +38,7 @@ from PIL import Image as PILImage
 from aperisolve.config import MAX_CONTENT_LENGTH
 from aperisolve_mcp.client import AperiSolveClient
 from aperisolve_mcp.limits import ANALYZE, READ, ToolLimiter
-from aperisolve_mcp.server import UNTRUSTED, build_server
+from aperisolve_mcp.server import MAX_WAIT_S, POLL_INTERVAL_S, UNTRUSTED, build_server
 from tests.test_mcp import HASH, Recorder, ctx
 
 # The probes deliberately break things; the server-side logging that results
@@ -75,9 +75,9 @@ def png_file(size: tuple[int, int], mode: str = "RGB") -> Path:
     child would start with it and report nonsense. So the fixtures are built
     out-of-process and this one stays lean.
     """
-    path = Path(os.environ.get("TMPDIR", "/tmp")) / f"zel457-{size[0]}x{size[1]}-{mode}.png"
+    path = Path(tempfile.gettempdir()) / f"zel457-{size[0]}x{size[1]}-{mode}.png"
     if not path.exists():
-        subprocess.run(  # noqa: S603
+        subprocess.run(
             [sys.executable, "-c", _MAKE_PNG, str(size[0]), str(size[1]), mode, str(path)],
             check=True,
             capture_output=True,
@@ -103,7 +103,7 @@ def outcome(server: object, tool: str, args: dict, context: object) -> str:
     """Dispatch one tool call and describe how it ended, in one line."""
     try:
         result = call(server, tool, args, context)
-    except BaseException as exc:  # noqa: BLE001 -- the point is what escapes
+    except BaseException as exc:
         return f"{type(exc).__module__}.{type(exc).__name__}: {str(exc)[:150]}"
     is_error = getattr(result, "is_error", None)
     return f"returned (is_error={is_error})"
@@ -121,10 +121,18 @@ def probe_path_traversal() -> None:
 
     cases = [
         ("get_layer_image", {"hash": HASH, "name": "Red_bit_0.png"}, "honest call"),
-        ("get_layer_image", {"hash": HASH, "name": "../deadbeefcafe.png"}, "escape to /image/<name>"),
+        (
+            "get_layer_image",
+            {"hash": HASH, "name": "../deadbeefcafe.png"},
+            "escape to /image/<name>",
+        ),
         ("get_layer_image", {"hash": HASH, "name": "../../upload"}, "escape to /upload"),
         ("get_status", {"hash": "../../infos/" + HASH}, "get_status reaches /infos"),
-        ("download_extracted", {"hash": "..", "tool": "../../result/" + HASH}, "download reaches /result"),
+        (
+            "download_extracted",
+            {"hash": "..", "tool": "../../result/" + HASH},
+            "download reaches /result",
+        ),
     ]
     for tool, args, label in cases:
         before = len(recorder.requests)
@@ -155,9 +163,11 @@ def probe_bomb_exception() -> None:
         "     aperisolve/filetype.py:230-232 and analyzers/pil_utils.py:54 name it.",
     )
     bomb = png(BOMB_PIXELS, mode="L")
-    print(f"\n  payload: {len(bomb)} bytes of PNG declaring {BOMB_PIXELS[0]}x{BOMB_PIXELS[1]} "
-          f"= {BOMB_PIXELS[0] * BOMB_PIXELS[1] // 1_000_000} MP "
-          f"(MAX_CONTENT_LENGTH is {MAX_CONTENT_LENGTH} bytes, so /upload accepts it)")
+    print(
+        f"\n  payload: {len(bomb)} bytes of PNG declaring {BOMB_PIXELS[0]}x{BOMB_PIXELS[1]} "
+        f"= {BOMB_PIXELS[0] * BOMB_PIXELS[1] // 1_000_000} MP "
+        f"(MAX_CONTENT_LENGTH is {MAX_CONTENT_LENGTH} bytes, so /upload accepts it)"
+    )
 
     for label, image in (
         ("8x8 derived image", png((8, 8))),
@@ -167,7 +177,9 @@ def probe_bomb_exception() -> None:
         recorder = Recorder(image=image)
         client = AperiSolveClient("http://web:5000", transport=recorder.transport())
         server = build_server(client=client, limiter=ToolLimiter("memory://"))
-        ended = outcome(server, "get_layer_image", {"hash": HASH, "name": "x.png"}, ctx(peer="203.0.113.9"))
+        ended = outcome(
+            server, "get_layer_image", {"hash": HASH, "name": "x.png"}, ctx(peer="203.0.113.9")
+        )
         # GREEN = handled: either a normal result or the tool's own ToolError
         # with its actionable message. RED = UnexpectedToolError, the SDK's
         # wrapper for an exception the handler never anticipated.
@@ -211,12 +223,16 @@ def probe_bomb_memory() -> None:
     # every row below inherits (this probe's own interpreter), NOT decode cost.
     # In the real container the floor is ~14 MiB (python + Pillow only), so the
     # marginal cost per row is what transfers, and it is the dominant term.
-    floor = subprocess.run(  # noqa: S603
-        [sys.executable, "-c", script, str(png_file((8, 8)))],
-        capture_output=True,
-        text=True,
-        check=False,
-    ).stdout.strip().split("|")
+    floor = (
+        subprocess.run(
+            [sys.executable, "-c", script, str(png_file((8, 8)))],
+            capture_output=True,
+            text=True,
+            check=False,
+        )
+        .stdout.strip()
+        .split("|")
+    )
     print(
         f"  Peak RSS of the decode, against the {CONTAINER_MEM_LIMIT_MIB} MiB the container gets.\n"
         f"  ru_maxrss is a high-water MARK, not a sum: this harness's floor is\n"
@@ -235,7 +251,7 @@ def probe_bomb_memory() -> None:
         path = png_file(size)
         measured = []
         for _ in range(runs):
-            proc = subprocess.run(  # noqa: S603
+            proc = subprocess.run(
                 [sys.executable, "-c", script, str(path)],
                 capture_output=True,
                 text=True,
@@ -272,7 +288,10 @@ def probe_xff_forgery() -> None:
     quota = "MCP_LIMIT_ANALYZE"
     print(f"  {quota}={os.environ.get(quota) or '5 per minute; 30 per hour (default)'}")
 
-    for label, rotate in (("honest client, one IP", False), ("same client, rotating forged XFF", True)):
+    for label, rotate in (
+        ("honest client, one IP", False),
+        ("same client, rotating forged XFF", True),
+    ):
         recorder = Recorder()
         client = AperiSolveClient("http://web:5000", transport=recorder.transport())
         server = build_server(client=client, limiter=ToolLimiter("memory://"))
@@ -359,8 +378,6 @@ def probe_wait_amplification() -> None:
     header("F6", "wait_until_done: upstream requests per quota unit")
     # Measured in real time at a small budget, then scaled: patching
     # asyncio.sleep would make the loop spin and inflate the count by 1000x.
-    from aperisolve_mcp.server import MAX_WAIT_S, POLL_INTERVAL_S
-
     budget_s = 4
     recorder = Recorder()
     recorder.status = "running"  # never terminal: hold for the whole budget
@@ -368,7 +385,9 @@ def probe_wait_amplification() -> None:
     server = build_server(client=client, limiter=ToolLimiter("memory://"))
 
     started = time.monotonic()
-    result = call(server, "wait_until_done", {"hash": HASH, "timeout_s": budget_s}, ctx(peer="203.0.113.9"))
+    result = call(
+        server, "wait_until_done", {"hash": HASH, "timeout_s": budget_s}, ctx(peer="203.0.113.9")
+    )
     held = time.monotonic() - started
     polls = len([path for path in recorder.paths if path.startswith("/status/")])
     quota_units = 1  # one quota.check(READ, ip) for the whole call
@@ -405,7 +424,7 @@ def probe_fail_closed() -> None:
             try:
                 await dead.check(bucket, "10.0.0.1")
                 closed = False
-            except BaseException as exc:  # noqa: BLE001 -- classify whatever comes out
+            except BaseException as exc:
                 closed = "rate_limited" in str(getattr(exc, "data", "")) or "Rate limit" in str(exc)
                 if not closed:
                     print(f"  RED  {bucket}: leaked {type(exc).__name__}: {str(exc)[:90]}")
@@ -470,7 +489,9 @@ def probe_green_controls() -> None:
     # list_results carries no analyzer payload.
     result = call(server, "list_results", {"hash": HASH}, context)
     body = str(getattr(result, "structured_content", ""))
-    keys = {key for row in getattr(result, "structured_content", {}).get("tools", []) for key in row}
+    keys = {
+        key for row in getattr(result, "structured_content", {}).get("tools", []) for key in row
+    }
     payload_leak = "output" in keys
     print(
         f"  {'RED' if payload_leak else 'GREEN'}  list_results row keys {sorted(keys)} "
