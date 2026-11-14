@@ -86,6 +86,25 @@ next tagged release.
 - [ ] Non-root container user (binwalk currently runs as root, bounded).
 - [ ] Remove the dead `SKIP_IHDR_FILL` knob or implement it.
 
+## Post-audit feature work
+
+- [x] **"Ask AI" BYOK panel** on the result page (`AI_PANEL_ENABLED`, default
+  on). The browser digests the analyzer output it already holds and calls the
+  visitor's own LLM provider directly: OpenRouter (default), OpenAI, Anthropic,
+  or any OpenAI-compatible base URL. No new route, no proxy, no key transit —
+  the server attack surface and the hosting bill are both unchanged. Google
+  Gemini is out of v1: its CORS preflight answered 403 from the aperisolve.com
+  origin (measured 2026-11-14).
+- [ ] **Raise the priority of the strict CSP** (deferred above) now that the
+  panel can keep an API key in `localStorage`: any script on the page can read
+  it, including the AdSense loader (`base.html:41`). The panel defaults to
+  in-memory storage and says so in plain words next to the checkbox, but the
+  CSP is the actual fix.
+- [ ] Panel follow-ups, only if asked: Gemini once its preflight allows it,
+  markdown rendering of the answer (skipped in v1 — XSS surface on a streamed,
+  attacker-influenceable string), and sending bit-layer images once a vision
+  path exists.
+
 ## Verification protocol (against production)
 
 1. Before the release: record baseline — response headers, `ads.txt`,

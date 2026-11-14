@@ -39,9 +39,8 @@ PROVIDER_HOSTS = [
 ]
 
 
-@pytest.fixture
-def seeded(app: Flask, tmp_path: Path) -> None:
-    """Minimal Image + Submission pair so /<hash> renders."""
+def _seed(app: Flask, tmp_path: Path) -> None:
+    """Insert the minimal Image + Submission pair that lets /<hash> render."""
     stored = tmp_path / f"{IMG_HASH}.png"
     stored.write_bytes(b"\x89PNG\r\n\x1a\n")
     with app.app_context():
@@ -68,9 +67,10 @@ def _result_html(app: Flask, client: FlaskClient, *, enabled: int) -> str:
 def test_panel_is_absent_when_the_flag_is_off(
     app: Flask,
     client: FlaskClient,
-    seeded: None,
+    tmp_path: Path,
 ) -> None:
     """AI_PANEL_ENABLED=0 must leave no trace of the feature on the page."""
+    _seed(app, tmp_path)
     html = _result_html(app, client, enabled=0)
     assert "ai_panel.js" not in html
     assert 'id="result-ai"' not in html
@@ -80,9 +80,10 @@ def test_panel_is_absent_when_the_flag_is_off(
 def test_panel_is_present_when_the_flag_is_on(
     app: Flask,
     client: FlaskClient,
-    seeded: None,
+    tmp_path: Path,
 ) -> None:
     """With the flag on, both the container and the versioned script render."""
+    _seed(app, tmp_path)
     html = _result_html(app, client, enabled=1)
     assert 'id="result-ai"' in html
     assert "/static/js/ai_panel.js?v=" in html
@@ -99,9 +100,10 @@ def test_panel_script_is_served_and_cacheable(client: FlaskClient) -> None:
 def test_rendered_page_names_no_provider_and_carries_no_key(
     app: Flask,
     client: FlaskClient,
-    seeded: None,
+    tmp_path: Path,
 ) -> None:
     """The server neither names a provider nor touches a key."""
+    _seed(app, tmp_path)
     html = _result_html(app, client, enabled=1)
     for host in PROVIDER_HOSTS:
         assert host not in html, host
@@ -117,9 +119,10 @@ def test_no_new_route_was_added(app: Flask) -> None:
 def test_security_headers_are_untouched(
     app: Flask,
     client: FlaskClient,
-    seeded: None,
+    tmp_path: Path,
 ) -> None:
     """The panel must not relax the existing baseline hardening."""
+    _seed(app, tmp_path)
     app.config["AI_PANEL_ENABLED"] = 1
     response = client.get(f"/{SUB_HASH}")
     assert response.headers["Referrer-Policy"] == "strict-origin-when-cross-origin"
@@ -128,7 +131,7 @@ def test_security_headers_are_untouched(
 
 
 def test_key_is_only_persisted_behind_the_remember_checkbox() -> None:
-    """localStorage writes exist, and every one of them is gated on the box."""
+    """Writes to localStorage exist, and every one is gated on the checkbox."""
     source = PANEL_JS.read_text(encoding="utf-8")
     assert source.count("localStorage.setItem") == 1
     assert source.count("localStorage.removeItem") == 1
