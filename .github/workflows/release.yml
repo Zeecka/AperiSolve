@@ -7,6 +7,14 @@ on:
     tags:
       - '*'
 
+# Repo default is write (ZEL-443, F4): this workflow runs third-party code
+# (uv sync, pytest), pushes images to ghcr and SSHes to prod, so it is the
+# one that most needs GITHUB_TOKEN tightened, not left at the default.
+# docker-releases re-grants packages: write for its own ghcr login; deploy
+# never touches GITHUB_TOKEN, only secrets.*.
+permissions:
+  contents: read
+
 jobs:
   # Deploy gate: a tag must never ship code that fails lint/type/tests. Kept
   # to one Python version for speed; the full matrix (and pip-audit, which can
@@ -39,6 +47,10 @@ jobs:
   docker-releases:
     runs-on: ubuntu-latest
     needs: tests
+
+    permissions:
+      contents: read
+      packages: write
 
     env:
       RELEASE_VERSION: ${{ github.ref_name }}

@@ -6,10 +6,10 @@
 # and only to the Sentry ingest host parsed from SENTRY_DSN at startup
 # (entrypoint.sh). A popped analyzer tool in worker therefore has no route to
 # the internet at all, even through this proxy.
-FROM alpine:3.21
+FROM alpine:3.21@sha256:bc21487101ae47172509130ee1092cc273a831968d64b617776d1f69c81e42ab
 
 ## The tinyproxy package provisions its own "tinyproxy" user/group.
-RUN apk add --no-cache tinyproxy
+RUN apk add --no-cache tinyproxy=1.11.2-r0
 
 COPY tinyproxy.conf /etc/tinyproxy/tinyproxy.conf
 COPY entrypoint.sh /entrypoint.sh

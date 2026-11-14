@@ -24,8 +24,9 @@ x-hardening: &default-hardening
   security_opt:
     - no-new-privileges:true
   read_only: true
+  # size= caps the attacker's own writable landing zone (ZEL-443, F7).
   tmpfs:
-    - /tmp
+    - /tmp:noexec,nosuid,size=512m
 
 # worker and cron both construct the full Flask app (DB session, limiter,
 # Sentry) via aperisolve.app.create_app(), so both need this same set --
@@ -50,6 +51,10 @@ x-worker-env: &worker-env
   SENTRY_ENVIRONMENT: ${SENTRY_ENVIRONMENT}
   https_proxy: http://sentryproxy:8888
   http_proxy: http://sentryproxy:8888
+  # rq's --url option reads this envvar (rq/cli/helpers.py shared_options),
+  # keeping the Redis password out of worker/cron's argv and `docker inspect`
+  # (ZEL-443, F6).
+  RQ_REDIS_URL: redis://:${REDIS_PASSWORD}@redis:6379/0
 
 services:
   web:
@@ -103,7 +108,8 @@ services:
     restart: always
     # No --serializer: see the comment on Queue() in aperisolve/app.py --
     # cron's enqueue does not honor it, so this queue must stay on pickle.
-    command: rq worker default --url redis://:${REDIS_PASSWORD}@redis:6379/0
+    # No --url either: RQ_REDIS_URL (x-worker-env) covers it.
+    command: rq worker default
     # Analyzers (binwalk, foremost, ...) process untrusted input; cap the
     # blast radius of a decompression bomb or runaway tool.
     mem_limit: 2g
@@ -144,7 +150,8 @@ services:
     <<: *default-hardening
     pids_limit: 128
     logging: *default-logging
-    command: rq cron aperisolve.cron --url redis://:${REDIS_PASSWORD}@redis:6379/0
+    # No --url: RQ_REDIS_URL (x-worker-env) covers it, see worker above.
+    command: rq cron aperisolve.cron
     volumes:
       - apresults:/app/aperisolve/results
     networks:
@@ -223,9 +230,21 @@ services:
     # requirepass: a popped worker process that somehow still reached redis
     # (or any other container on `backend`) gets NOAUTH, not a free command
     # channel into the job queue and rate-limit store.
+    #
+    # Still argv (ZEL-443, F6): --requirepass bakes the password into this
+    # process's argv (`ps`, `/proc/*/cmdline`, `docker inspect` Config.Cmd).
+    # Moving it off argv means not using the official entrypoint's
+    # `redis-server ...` passthrough (the only argv-free path is piping a
+    # config to `redis-server -` via a custom entrypoint/image), which would
+    # also skip docker-entrypoint.sh's root-to-`redis`-user privilege drop --
+    # a bigger regression than the argv leak it fixes. Left as-is; tracked
+    # on the Tier 3 task.
     command: redis-server --requirepass ${REDIS_PASSWORD}
+    environment:
+      # redis-cli prefers this over -a and does not put it in argv (F6).
+      REDISCLI_AUTH: ${REDIS_PASSWORD}
     healthcheck:
-      test: ["CMD", "redis-cli", "-a", "${REDIS_PASSWORD}", "--no-auth-warning", "ping"]
+      test: ["CMD", "redis-cli", "--no-auth-warning", "ping"]
       interval: 5s
       timeout: 3s
       retries: 5
@@ -240,6 +259,13 @@ services:
     cpus: 0.25
     logging: *default-logging
     networks:
+      # Also on frontend: a container reachable only on an internal network
+      # cannot have its published port routed from the host at all (ZEL-443,
+      # F3) -- the published port below needs a path out to the host, not to
+      # the internet. rqdashboard itself gets no hardening block and has no
+      # egress-sensitive code path, so this does not reopen anything for
+      # worker/cron, which stay backend-only.
+      - frontend
       - backend
     ports:
       # Loopback only: RQ Dashboard has no auth and lets anyone requeue or
@@ -272,7 +298,8 @@ services:
 networks:
   frontend:
   # No external connectivity for anything that lives only here: worker, cron,
-  # postgres, redis, rq-dashboard. web and sentryproxy bridge frontend+backend.
+  # postgres, redis. web, sentryproxy and rqdashboard bridge frontend+backend
+  # (rqdashboard only for its published loopback port, see F3 above).
   backend:
     internal: true
 
