@@ -1,0 +1,57 @@
+{
+  "file": {
+    "status": "ok",
+    "output": "example2.jpg: JPEG image data, JFIF standard 1.01\nresolution (DPI), density 72x72\ncomment: \"created with GIMP\""
+  },
+  "exiftool": {
+    "status": "ok",
+    "output": {
+      "File Type": "JPEG",
+      "Image Width": "640",
+      "Image Height": "480",
+      "Encoding Process": "Baseline DCT",
+      "Comment": "created with GIMP"
+    }
+  },
+  "strings": {
+    "status": "ok",
+    "output": [
+      "line-00",
+      "line-01",
+      "line-02",
+      "line-03",
+      "line-04",
+      "line-05",
+      "line-06"
+    ],
+    "note": "truncated at 1000000 bytes",
+    "download": "/download/dddddddddddddddddddddddddddddddd/strings"
+  },
+  "steghide": {
+    "status": "ok",
+    "output": ["wrote extracted data to \"steghide/secret.txt\"."],
+    "download": "/download/dddddddddddddddddddddddddddddddd/steghide"
+  },
+  "binwalk": {
+    "status": "error",
+    "error": "binwalk: command timed out after 300s"
+  },
+  "decomposer": {
+    "status": "ok",
+    "images": {
+      "Red": [
+        "/image/dddddddddddddddddddddddddddddddd/Red_bit_0.png",
+        "/image/dddddddddddddddddddddddddddddddd/Red_bit_1.png"
+      ],
+      "Green": [
+        "/image/dddddddddddddddddddddddddddddddd/Green_bit_0.png"
+      ]
+    },
+    "note": "Palette image converted to RGB"
+  },
+  "pcrt": {
+    "status": "ok",
+    "output": ["PNG appears valid, no repairs needed"],
+    "png_images": ["/image/dddddddddddddddddddddddddddddddd/pcrt_repaired.png"]
+  }
+}
