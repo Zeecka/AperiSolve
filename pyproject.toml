@@ -28,6 +28,14 @@ dependencies = [
 ]
 
 [project.optional-dependencies]
+# Optional: the `mcp` compose service only. The web app, worker and cron never
+# import aperisolve_mcp, so a self-host that does not want the MCP endpoint can
+# keep installing without these.
+mcp = [
+    "mcp>=2.3,<3",
+    "httpx",
+    "limits[redis]"
+]
 dev = [
     "ruff",
     "ty",
@@ -48,7 +56,7 @@ build-backend = "setuptools.build_meta"
 # Only package the application; other top-level dirs (docker/, tests/) must
 # not confuse setuptools' flat-layout auto-discovery.
 [tool.setuptools.packages.find]
-include = ["aperisolve*"]
+include = ["aperisolve*", "aperisolve_mcp*"]
 
 [tool.ruff]
 line-length = 100
