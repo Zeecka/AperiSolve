@@ -84,9 +84,14 @@ RUN dpkg -i /tmp/openstego.deb || apt-get install -f -y --no-install-recommends 
 # Copy Python package metadata and app
 COPY pyproject.toml uv.lock ./
 COPY aperisolve/ ./aperisolve/
+COPY aperisolve_mcp/ ./aperisolve_mcp/
 
-# Install Python dependencies from pyproject.toml
-RUN uv sync --frozen --no-dev
+# Install Python dependencies from pyproject.toml. The `mcp` extra is part of
+# the image because one image serves every compose service, including `mcp`
+# (python -m aperisolve_mcp). The web app, worker and cron never import
+# aperisolve_mcp, so this only adds packages to the image, never to their
+# process.
+RUN uv sync --frozen --no-dev --extra mcp
 ENV PATH="/app/.venv/bin:$PATH"
 
 # Compile gettext catalogs (source .po files are committed; .mo are built)

@@ -79,6 +79,27 @@ services:
       - .env.example
     restart: "no"
 
+  mcp:
+    #image: ghcr.io/zeecka/aperisolve:latest
+    build: .
+    container_name: aperisolve-mcp
+    restart: always
+    command: python -m aperisolve_mcp
+    ports:
+      - "127.0.0.1:5001:5001"
+    depends_on:
+      web:
+        condition: service_started
+      redis:
+        condition: service_healthy
+    environment:
+      APERISOLVE_API_URL: http://web:5000
+      # Dev redis runs without requirepass (see the redis service below), so no
+      # password in this URL. Production builds it from REDIS_PASSWORD.
+      MCP_REDIS_URL: redis://redis:6379/1
+    env_file:
+      - .env.example
+
   redis:
     image: redis:7
     container_name: redis

@@ -102,4 +102,4 @@ redundant-cast = "ignore"
 testpaths = ["tests"]
 
 [tool.coverage.run]
-source = ["aperisolve"]
+source = ["aperisolve", "aperisolve_mcp"]

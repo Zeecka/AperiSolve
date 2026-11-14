@@ -26,3 +26,6 @@ services:
 
   initdb:
     image: ghcr.io/zeecka/aperisolve:${PROJECT_VERSION:-latest}
+
+  mcp:
+    image: ghcr.io/zeecka/aperisolve:${PROJECT_VERSION:-latest}

@@ -31,6 +31,7 @@ from mcp.types import ImageContent
 from PIL import Image as PILImage
 
 from aperisolve.config import MAX_CONTENT_LENGTH
+from aperisolve_mcp.__main__ import _parse_args, max_request_body_size
 from aperisolve_mcp.client import AperiSolveClient
 from aperisolve_mcp.limits import RATE_LIMITED_CODE, ToolLimiter, client_ip
 from aperisolve_mcp.server import UNTRUSTED, build_server, public_base_url
@@ -894,3 +895,33 @@ def test_an_unreachable_api_is_reported_as_unreachable() -> None:
             await client.aclose()
 
     assert "cannot reach" in failure(go).lower()
+
+
+# --------------------------------------------------------------------------- #
+# Entry point
+# --------------------------------------------------------------------------- #
+
+
+def test_default_transport_is_streamable_http_on_5001_at_mcp() -> None:
+    """The hosted shape nginx proxies to, per docs/deploy.md."""
+    args = _parse_args([])
+    assert args.stdio is False
+    # The in-container bind; compose publishes 127.0.0.1:5001 only.
+    assert (args.host, args.port, args.path) == ("0.0.0.0", 5001, "/mcp")  # noqa: S104
+
+
+def test_stdio_flag_selects_the_self_host_transport() -> None:
+    """Same server, no port: `python -m aperisolve_mcp --stdio`."""
+    assert _parse_args(["--stdio"]).stdio is True
+
+
+def test_http_body_cap_admits_the_base64_of_a_max_size_upload() -> None:
+    """The SDK's own 4 MiB default would reject a legal upload at 3 MiB.
+
+    base64 inflates a file by 4/3, so an instance configured with the
+    .env.example value (MAX_CONTENT_LENGTH=3145728) needs more than 4 MiB of
+    request body for an `analyze` call that the web app would accept.
+    """
+    encoded = len(base64.b64encode(b"\x00" * MAX_CONTENT_LENGTH))
+    assert max_request_body_size() > encoded
+    assert max_request_body_size() >= 4 * 1024 * 1024

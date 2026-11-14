@@ -276,6 +276,63 @@ services:
     environment:
       RQ_DASHBOARD_REDIS_URL: redis://:${REDIS_PASSWORD}@redis:6379/0
 
+  mcp:
+    # Public MCP endpoint (docs/mcp.md), proxied by nginx under /mcp/ (see
+    # docs/deploy.md). Same image as web: `python -m aperisolve_mcp` serves the
+    # Streamable HTTP transport on 0.0.0.0:5001.
+    #
+    # It is a *client* of web's HTTP API and nothing else -- no DB_URI, no
+    # POSTGRES_PASSWORD, no results volume (secrets diet, ZEL-442). Everything
+    # it can do, an anonymous HTTP caller can already do.
+    #
+    # Every MCP_* variable below is optional: unset means the default compiled
+    # into aperisolve_mcp, so a stock `docker compose up` with the shipped
+    # .env.example works unchanged.
+    image: ghcr.io/zeecka/aperisolve:latest
+    #build: .
+    container_name: aperisolve-mcp
+    restart: always
+    mem_limit: 256m
+    cpus: 0.5
+    <<: *default-hardening
+    pids_limit: 128
+    logging: *default-logging
+    command: python -m aperisolve_mcp
+    ports:
+      # Loopback only: nginx terminates TLS and proxies to this port. Nothing
+      # on the public internet reaches the container directly.
+      - "127.0.0.1:5001:5001"
+    networks:
+      # Same shape as rqdashboard: frontend so the published loopback port has
+      # a route from the host (ZEL-443, F3), backend so it can reach `web` and
+      # `redis`.
+      - frontend
+      - backend
+    depends_on:
+      # Not service_healthy on web: a tool call against a restarting web
+      # container returns "cannot reach the AperiSolve API", which is a better
+      # failure than the endpoint being absent. Redis is service_healthy
+      # because `analyze` fails closed without its quota store.
+      web:
+        condition: service_started
+      redis:
+        condition: service_healthy
+    environment:
+      APERISOLVE_API_URL: ${APERISOLVE_API_URL:-http://web:5000}
+      # Same store and same password as the web app's RATELIMIT_STORAGE_URI
+      # (Redis DB 1), built from REDIS_PASSWORD so there is one source of truth.
+      MCP_REDIS_URL: redis://:${REDIS_PASSWORD}@redis:6379/1
+      # The upload cap the tools enforce before attempting /upload.
+      MAX_CONTENT_LENGTH: ${MAX_CONTENT_LENGTH:-}
+      # Used in the error that replaces an oversize inline archive.
+      SITE_BASE_URL: ${SITE_BASE_URL:-}
+      MCP_PUBLIC_BASE_URL: ${MCP_PUBLIC_BASE_URL:-}
+      MCP_LIMIT_ANALYZE: ${MCP_LIMIT_ANALYZE:-}
+      MCP_LIMIT_ANALYZE_GLOBAL: ${MCP_LIMIT_ANALYZE_GLOBAL:-}
+      MCP_LIMIT_HEAVY: ${MCP_LIMIT_HEAVY:-}
+      MCP_LIMIT_READ: ${MCP_LIMIT_READ:-}
+      MCP_MAX_DOWNLOAD_BYTES: ${MCP_MAX_DOWNLOAD_BYTES:-}
+
   sentryproxy:
     # D1: the only service allowed to reach the internet, and only the
     # Sentry ingest host parsed from SENTRY_DSN (docker/tinyproxy/entrypoint.sh).

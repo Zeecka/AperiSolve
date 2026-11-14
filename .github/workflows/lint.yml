@@ -32,7 +32,9 @@ jobs:
         uses: astral-sh/setup-uv@37802adc94f370d6bfd71619e3f0bf239e1f3b78 # v7
 
       - name: Sync Python dependencies
-        run: uv sync --frozen --extra dev
+        # --extra mcp as well: tests/test_mcp.py imports the mcp SDK, and
+        # without it the whole module would error at collection.
+        run: uv sync --frozen --extra mcp --extra dev
 
       - name: Run Ruff
         run: |
@@ -40,7 +42,7 @@ jobs:
           uv run ruff format . --check
 
       - name: Run ty
-        run: uv run ty check aperisolve
+        run: uv run ty check aperisolve aperisolve_mcp
 
       - name: Install jsdom for the AI panel DOM tests
         # tests/test_ai_panel.py's six dom_facts tests (key handling,
