@@ -34,7 +34,11 @@ dependencies = [
 mcp = [
     "mcp>=2.3,<3",
     "httpx",
-    "limits[redis]",
+    # async-redis, not redis: the tools are async, so the limiter uses
+    # limits.aio, whose Redis backend is coredis. `limits[redis]` installs the
+    # synchronous redis-py the web app's Flask-Limiter uses, and the service
+    # crashes at startup with "'coredis' prerequisite not available".
+    "limits[async-redis]",
     # Not a feature floor: pydantic-core only began publishing CPython 3.15
     # wheels at 2.48.0, and the runtime image is python:3.15-slim. Resolving
     # any lower pydantic (mcp 2.3's own floor allows 2.13, whose core is
