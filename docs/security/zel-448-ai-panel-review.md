@@ -98,7 +98,7 @@ limit. Self-inflicted — the visitor chose the endpoint and pays for it.
 
 ### F5 — informational — the result globals are published even when the panel is off
 
-`aperisolve.js:261` (`window.APERISOLVE_INFO`) and `:548`
+`aperisolve.js:261` (`window.APERISOLVE_INFO`) and `:550`
 (`window.APERISOLVE_RESULTS`) are set unconditionally, with no
 `AI_PANEL_ENABLED` check. No new disclosure — the same data is already rendered
 into the DOM, which the third-party script can read either way — but it hands
@@ -114,7 +114,7 @@ that script a parsed object instead of making it scrape. Gate both on
 | Key never in a URL / a log / an aperisolve.com request | pass | `urlContainsKey: false`, `bodyContainsKey: false`, no `console.*` in the file, `noAperisolveRequest: true` — only counter-example is F2 |
 | Model output not rendered as markup | pass, stronger than specified | `textContent` at `:529`, not `escapeHtml`; `<img src=x onerror>` + `<script>` payload gave `childElementCount: 0`, `scriptExecuted: false`; no markdown renderer |
 | Prompt injection advisory only | pass | system prompt frames tool output as hostile data (`:28-32`); injection string travels as data (`injectionTravelsAsData: true`); no `eval`, no `Function`, nothing executed |
-| CSP exposure documented and tied to the CSP task | pass | `docs/improvement-plan.md:97-101`, naming `base.html:41`; verified that `CUSTOM_EXTERNAL_SCRIPT` is the **only** third-party script on the result page (three.js is self-hosted, the CDN references are CSS), and that it reads the stored key (`readableByAnyPageScript: true`) |
+| CSP exposure documented and tied to the CSP task | pass | `docs/improvement-plan.md:98-102`, naming `base.html:41`; verified that `CUSTOM_EXTERNAL_SCRIPT` is the **only** third-party script on the result page (three.js is self-hosted, the CDN references are CSS), and that it reads the stored key (`readableByAnyPageScript: true`) |
 | Zero new route / proxy / key transit | pass | `git diff main...b77ffce \| grep -E 'route\(\|add_url_rule'` → empty; only a config flag |
 | Security headers unchanged | pass | `app.py:722-733` untouched; A1's `test_security_headers_are_untouched` passes |
 
