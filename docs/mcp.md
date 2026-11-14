@@ -239,6 +239,12 @@ base64, for the analyzers whose `list_results` row has `has_download: true`.
 Archives above `MCP_MAX_DOWNLOAD_BYTES` (2 MB by default) are refused with an
 error carrying the public URL to fetch instead.
 
+Self-hosters: that URL is built from `MCP_PUBLIC_BASE_URL`, then
+`SITE_BASE_URL`, then `APERISOLVE_API_URL` (`aperisolve_mcp/server.py:82`).
+`SITE_BASE_URL` is blank in the shipped `.env.example`, so with neither set the
+hint hands the agent `http://web:5000/...` — an internal compose address it
+cannot open. Set one of the two to your site's public base URL.
+
 ## Quotas
 
 The endpoint is public and anonymous, so quotas are the only thing between one
@@ -262,6 +268,13 @@ job every 30 s at peak. The web app's own `/upload` limits (10/min, 100/hour,
 `aperisolve/app.py:494`) still apply on top, per end user rather than per MCP
 container, because the service forwards your IP onward.
 
+One read unit is one *call*, not one upstream request: a full-length
+`wait_until_done` polls `/status` about once a second for up to 120 s, so it
+costs one read unit here and ~120 requests against the web app, where
+`/status` carries its own `240 per minute` per-IP limit
+(`aperisolve/app.py:499`). That limit is what bounds concurrent waits, at
+roughly two full-length ones per IP.
+
 Over quota, a tool call returns a JSON-RPC error with code `-32010` and
 structured data a client can act on instead of retrying blind:
 
@@ -271,8 +284,38 @@ structured data a client can act on instead of retrying blind:
 
 If the quota store is unreachable, `analyze` fails **closed** — an unmetered
 public analyze endpoint is worse than a temporarily unavailable one — and the
-read tools fail **open**, since they cost one proxied HTTP call and the web app
-rate-limits them per IP on its own.
+read tools fail **open**, since they cost one proxied HTTP call each and
+refusing them would take the endpoint down for everyone over a store that is
+not on the request's critical path.
+
+Worth knowing if you operate an instance: the web app's limiter runs
+`swallow_errors=True` on the *same* Redis (`aperisolve/limits.py:21`), so a
+store outage makes layers 2 and 3 fail open at the same moment, and nginx
+`limit_req` is the only limit left on the read tools until Redis is back.
+Both decisions are deliberate; they compose into something neither comment
+mentions.
+
+### The per-IP key is only as good as the proxy in front
+
+The per-IP buckets key on the **rightmost** `X-Forwarded-For` hop
+(`aperisolve_mcp/limits.py:103`), the same rule as the website's own limiter
+(`aperisolve/utils/utils.py:12`). That hop resists forgery only when a proxy
+you trust appended it. On the hosted endpoint one does: nginx *overwrites* the
+header with Cloudflare's client IP (`docs/deploy.md:133`) and the service port
+is published on loopback only.
+
+A caller that reaches the port directly sends its own `X-Forwarded-For`, which
+is then the rightmost hop — and the socket address is consulted only when no
+such header is present at all. Measured against the shipped limiter at the
+default `5 per minute; 30 per hour`: an honest client gets 5 of 12 `analyze`
+calls through, the same client rotating a forged header gets 12 of 12. **If
+you publish `:5001` beyond loopback without a header-normalising proxy, treat
+the per-IP quotas as advisory.**
+
+The global ceiling is unaffected, because it is one shared counter rather than
+one per key: with `MCP_LIMIT_ANALYZE_GLOBAL='7 per hour'`, 7 of those same 12
+rotated-IP calls start. That is why the ceiling, not the per-IP quota, is the
+compute circuit breaker.
 
 ## Limits and errors
 
@@ -305,7 +348,7 @@ Every variable is optional; the value shown is the built-in default, so a stock
 | `MCP_LIMIT_HEAVY` | `30 per minute` | `download_extracted`, `get_layer_image` |
 | `MCP_LIMIT_READ` | `120 per minute` | the five read tools |
 | `MCP_MAX_DOWNLOAD_BYTES` | `2097152` | largest archive inlined as base64 |
-| `MCP_PUBLIC_BASE_URL` | `SITE_BASE_URL`, else `APERISOLVE_API_URL` | browser-openable base for the oversize-archive URL |
+| `MCP_PUBLIC_BASE_URL` | `SITE_BASE_URL`, else `APERISOLVE_API_URL` | browser-openable base for the oversize-archive URL — set it, or the hint carries an internal address ([Downloads](#downloads)) |
 | `MCP_API_TIMEOUT_S` | `30` | per-request timeout against the instance |
 | `MCP_HOST` / `MCP_PORT` / `MCP_PATH` | `0.0.0.0` / `5001` / `/mcp` | Streamable HTTP bind; also `--host`/`--port`/`--path` |
 | `MCP_LOG_LEVEL` | `INFO` | logs go to stderr, so stdio stays clean |

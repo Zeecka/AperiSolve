@@ -155,6 +155,16 @@ global quotas inside the service, and the web app's own `@limiter.limit`
 decorators, which still apply because the MCP service forwards the end client's
 IP onward to `web`. See `aperisolve_mcp/limits.py` for the split.
 
+Two lines above are load-bearing for the quotas, not just for the logs. The
+`proxy_set_header X-Forwarded-For $http_cf_connecting_ip` **overwrite** is what
+makes the per-IP buckets real: the service keys on the rightmost hop, so a
+client that reaches the port directly supplies its own key. Measured against
+the shipped limiter, a caller rotating a forged header gets 12 of 12 `analyze`
+calls through where an honest one gets 5 of 12. Keep the service published on
+`127.0.0.1:5001` (`compose.yml`) so that caller cannot exist, and do not relax
+the overwrite to `$proxy_add_x_forwarded_for`, which appends rather than
+replaces. The global `analyze` ceiling holds either way and is the backstop.
+
 ## Configuration
 
 All runtime configuration is environment-driven; `.env.example` documents
