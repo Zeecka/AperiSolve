@@ -552,6 +552,7 @@ const AperiSolveAI = (function buildAiPanel() {
     buildDigest,
     buildRequest,
     endpointFor,
+    readAnswer,
     truncateOutput,
     init,
   };
