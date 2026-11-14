@@ -9,3 +9,4 @@ removed_images/
 .pytest_cache/
 .coverage
 messages.pot
+.claude/settings.local.json

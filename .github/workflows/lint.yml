@@ -42,8 +42,16 @@ jobs:
       - name: Run ty
         run: uv run ty check aperisolve
 
+      - name: Install jsdom for the AI panel DOM tests
+        # tests/test_ai_panel.py's six dom_facts tests (key handling,
+        # textContent-only rendering) skip silently without this: no jsdom on
+        # NODE_PATH, no failure, no coverage signal either.
+        run: npm install --no-save jsdom --prefix "${{ runner.temp }}/jsdomroot"
+
       - name: Run pytest
         # Floor set just under the current ~60% so coverage can only ratchet up.
+        env:
+          NODE_PATH: ${{ runner.temp }}/jsdomroot/node_modules
         run: uv run pytest -q --cov=aperisolve --cov-fail-under=55
 
       - name: Audit dependencies for known vulnerabilities

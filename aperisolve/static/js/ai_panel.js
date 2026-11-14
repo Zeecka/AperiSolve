@@ -201,11 +201,27 @@ const AperiSolveAI = (function buildAiPanel() {
 
   /* --------------------------------------------------------------- provider */
 
+  const LOOPBACK_HOSTNAMES = ["localhost", "127.0.0.1", "[::1]"];
+
+  // A base URL with no scheme and no host (e.g. "/v1") resolves against the
+  // current page, which would send the visitor's key AND cookies to
+  // aperisolve.com — exactly what invariant #1 above forbids. Only an https
+  // origin, or a loopback one for a local model, is accepted.
   function endpointFor(providerId, baseUrl) {
     const provider = PROVIDERS[providerId];
     if (!provider.needsBaseUrl) return provider.endpoint;
     const base = String(baseUrl || "").trim().replace(/\/+$/, "");
     if (!base) return "";
+    let url;
+    try {
+      url = new URL(base);
+    } catch (error) {
+      return "";
+    }
+    const isLoopback = LOOPBACK_HOSTNAMES.includes(url.hostname);
+    if (url.protocol !== "https:" && !(url.protocol === "http:" && isLoopback)) {
+      return "";
+    }
     return /\/chat\/completions$/.test(base) ? base : `${base}/chat/completions`;
   }
 
@@ -353,7 +369,7 @@ const AperiSolveAI = (function buildAiPanel() {
       `<span class="analyzer-badge badge-empty">BYOK</span>` +
       `</div>` +
       `<p class="ai-note">${tr(
-        "Analyzer outputs (which may include content extracted from your file) are sent to the provider you selected.",
+        "Analyzer outputs and any passwords already tried (which may include content extracted from your file) are sent to the provider you selected.",
       )}</p>` +
       `<p class="ai-note">${tr(
         "Answers are advisory. Tool output comes from a file an attacker may have crafted: read any command it suggests before you run it.",
@@ -514,6 +530,9 @@ const AperiSolveAI = (function buildAiPanel() {
           method: "POST",
           headers: request.headers,
           body: request.body,
+          // Never send this origin's cookies to the provider, same-origin or
+          // not: the key already travels in the Authorization header.
+          credentials: "omit",
         });
         if (!response.ok) {
           const detail = (await response.text()).slice(0, 300);

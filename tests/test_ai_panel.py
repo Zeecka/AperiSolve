@@ -172,6 +172,15 @@ def test_model_output_is_never_written_as_markup() -> None:
     ]
 
 
+def test_consent_note_names_the_passwords_the_digest_sends() -> None:
+    """F3: fileHeader() ships tried passwords, so the consent note must name them."""
+    source = PANEL_JS.read_text(encoding="utf-8")
+    assert "passwords already tried" in source  # still sent, per fileHeader()
+    note = re.search(r'<p class="ai-note">\$\{tr\(\s*\n\s*"([^"]*)"', source)
+    assert note, "could not find the first ai-note string"
+    assert "password" in note.group(1).lower()
+
+
 def test_every_panel_string_is_in_the_js_catalog(app: Flask) -> None:
     """A tr() key missing from js_catalog() would silently ship untranslated."""
     source = PANEL_JS.read_text(encoding="utf-8")
@@ -241,8 +250,14 @@ def test_provider_requests_match_each_api(probe_facts: dict) -> None:
     assert facts["openaiStreams"]
     assert facts["openaiSystemFirst"]
     assert facts["customEndpointFromBase"] == "http://localhost:11434/v1/chat/completions"
-    assert facts["customEndpointNotDoubled"] == "http://x/v1/chat/completions"
+    assert facts["customEndpointNotDoubled"] == "https://x/v1/chat/completions"
     assert facts["customEndpointEmptyWithoutBase"] == ""
+    # A base URL with no https scheme and no loopback host must be refused,
+    # not silently resolved against the page's own origin (ZEL-455 / A2 F2).
+    assert facts["customEndpointRejectsRelativePath"] == ""
+    assert facts["customEndpointRejectsNonLoopbackHttp"] == ""
+    assert facts["customEndpointRejectsOtherScheme"] == ""
+    assert facts["customEndpointAllowsLoopbackIp"] == "http://127.0.0.1:11434/v1/chat/completions"
     assert facts["promptVersion"] >= 1
     assert facts["promptForbidsFollowingData"]
 
@@ -371,6 +386,7 @@ def test_the_only_request_goes_to_the_provider_with_the_key_in_a_header(
     assert request["method"] == "POST"
     assert request["authHeader"] == "Bearer <KEY>"
     assert request["keyIsHeaderOnly"]
+    assert request["credentialsOmitted"]
     assert request["systemPromptFirst"]
     assert request["digestSaysUntrusted"]
     # The crafted EXIF comment travels as data inside the digest, which the

@@ -109,6 +109,7 @@ facts.noRequestWithoutKey = sent === null;
     method: sent.options.method,
     authHeader: sent.options.headers.Authorization.replace(KEY, "<KEY>"),
     keyIsHeaderOnly: !sent.options.body.includes(KEY) && !String(sent.url).includes(KEY),
+    credentialsOmitted: sent.options.credentials === "omit",
     systemPromptFirst: body.messages[0].role === "system",
     digestSaysUntrusted: body.messages[1].content.includes("UNTRUSTED"),
     digestCarriesInjectionAttemptAsData:

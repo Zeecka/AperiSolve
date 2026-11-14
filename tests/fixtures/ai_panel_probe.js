@@ -12,7 +12,7 @@ const path = require("path");
 const vm = require("vm");
 
 const panelPath = path.join(__dirname, "..", "..", "aperisolve", "static", "js", "ai_panel.js");
-const sandbox = { window: {}, TextDecoder };
+const sandbox = { window: {}, TextDecoder, URL };
 vm.createContext(sandbox);
 vm.runInContext(fs.readFileSync(panelPath, "utf8"), sandbox);
 const AI = sandbox.window.AperiSolveAI;
@@ -110,8 +110,14 @@ async function main() {
     openaiStreams: JSON.parse(openai.body).stream === true,
     openaiSystemFirst: JSON.parse(openai.body).messages[0].content === AI.SYSTEM_PROMPT,
     customEndpointFromBase: AI.endpointFor("custom", "http://localhost:11434/v1/"),
-    customEndpointNotDoubled: AI.endpointFor("custom", "http://x/v1/chat/completions"),
+    customEndpointNotDoubled: AI.endpointFor("custom", "https://x/v1/chat/completions"),
     customEndpointEmptyWithoutBase: AI.endpointFor("custom", "   "),
+    // A relative/no-origin base would resolve against the page itself —
+    // exactly what sent the key and the visitor's cookies to aperisolve.com.
+    customEndpointRejectsRelativePath: AI.endpointFor("custom", "/v1"),
+    customEndpointRejectsNonLoopbackHttp: AI.endpointFor("custom", "http://x/v1"),
+    customEndpointRejectsOtherScheme: AI.endpointFor("custom", "javascript:alert(1)"),
+    customEndpointAllowsLoopbackIp: AI.endpointFor("custom", "http://127.0.0.1:11434/v1"),
     providers: Object.keys(AI.PROVIDERS),
     noGemini: !JSON.stringify(AI.PROVIDERS).includes("generativelanguage"),
     promptVersion: AI.SYSTEM_PROMPT_VERSION,
