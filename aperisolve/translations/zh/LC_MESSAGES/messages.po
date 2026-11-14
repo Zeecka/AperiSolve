@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2026-07-30 12:19+0000\n"
+"POT-Creation-Date: 2026-11-14 14:49+0100\n"
 "PO-Revision-Date: 2026-07-05 13:23+0000\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language: zh\n"
@@ -18,59 +18,59 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Generated-By: Babel 2.18.0\n"
 
-#: aperisolve/app.py:184
+#: aperisolve/app.py:187
 msgid "Image size exceeded"
 msgstr "图片大小超出限制"
 
-#: aperisolve/app.py:189
+#: aperisolve/app.py:192
 msgid "Resource not found"
 msgstr "未找到资源"
 
-#: aperisolve/app.py:194
+#: aperisolve/app.py:197
 msgid "Too many requests, please slow down."
 msgstr "请求过多，请放慢速度。"
 
-#: aperisolve/app.py:367 aperisolve/app.py:374
+#: aperisolve/app.py:370 aperisolve/app.py:377
 msgid "No image provided"
 msgstr "未提供图片"
 
-#: aperisolve/app.py:379
+#: aperisolve/app.py:382
 msgid "Unsupported file type"
 msgstr "不支持的文件类型"
 
-#: aperisolve/app.py:482 aperisolve/app.py:490
+#: aperisolve/app.py:485 aperisolve/app.py:493
 msgid "Results not ready yet..."
 msgstr "结果尚未就绪..."
 
-#: aperisolve/app.py:612
+#: aperisolve/app.py:615
 #, python-format
 msgid "Image must be at least %(min)d seconds old. Current age: %(age)ds"
 msgstr "图片上传时间必须至少满 %(min)d 秒。当前时长：%(age)d 秒"
 
-#: aperisolve/app.py:628
+#: aperisolve/app.py:631
 msgid "Image uploaded from multiple IP addresses. Removal is not allowed."
 msgstr "图片由多个 IP 地址上传，不允许删除。"
 
-#: aperisolve/app.py:644
+#: aperisolve/app.py:647
 msgid "Failed to remove image"
 msgstr "删除图片失败"
 
-#: aperisolve/app.py:655
+#: aperisolve/app.py:658
 msgid "No password to remove"
 msgstr "没有可删除的密码"
 
-#: aperisolve/app.py:663
+#: aperisolve/app.py:666
 #, python-format
 msgid "Submission must be at least %(min)d seconds old. Current age: %(age)ds"
 msgstr "提交时间必须至少满 %(min)d 秒。当前时长：%(age)d 秒"
 
-#: aperisolve/app.py:680
+#: aperisolve/app.py:683
 msgid ""
 "Submission uploaded from multiple IP addresses. Password removal is not "
 "allowed."
 msgstr "提交由多个 IP 地址上传，不允许删除密码。"
 
-#: aperisolve/app.py:695
+#: aperisolve/app.py:698
 msgid "Failed to remove password"
 msgstr "删除密码失败"
 
@@ -215,12 +215,96 @@ msgstr "❌ 分析耗时过长。请重新加载页面再次查看。"
 msgid "Analyzed file"
 msgstr "已分析的文件"
 
-#: aperisolve/templates/base.html:62 aperisolve/templates/footer.html:39
+#: aperisolve/i18n.py:115
+msgid "Ask AI"
+msgstr "询问 AI"
+
+#: aperisolve/i18n.py:118
+msgid ""
+"Analyzer outputs (which may include content extracted from your file) are"
+" sent to the provider you selected."
+msgstr "分析器输出（可能包含从您的文件中提取的内容）将发送到您选择的服务商。"
+
+#: aperisolve/i18n.py:123
+msgid ""
+"Answers are advisory. Tool output comes from a file an attacker may have "
+"crafted: read any command it suggests before you run it."
+msgstr "回答仅供参考。工具输出来自攻击者可能精心构造的文件：执行任何建议的命令前请先阅读。"
+
+#: aperisolve/i18n.py:126
+msgid "Provider"
+msgstr "服务商"
+
+#: aperisolve/i18n.py:127
+msgid "Model"
+msgstr "模型"
+
+#: aperisolve/i18n.py:128
+msgid "Base URL"
+msgstr "基础 URL"
+
+#: aperisolve/i18n.py:129
+msgid "API key"
+msgstr "API 密钥"
+
+#: aperisolve/i18n.py:130
+msgid "Remember this key on this device"
+msgstr "在此设备上记住该密钥"
+
+#: aperisolve/i18n.py:134
+msgid ""
+"A stored key can be read by any script running on this page, including "
+"the ads script, and a strict CSP is not in place yet. Prefer a key with a"
+" spend cap."
+msgstr "已保存的密钥可被本页面上的任何脚本读取，包括广告脚本，而严格的 CSP 尚未启用。建议使用设有消费上限的密钥。"
+
+#: aperisolve/i18n.py:141
+msgid ""
+"Anthropic only accepts a browser request carrying the anthropic-"
+"dangerous-direct-browser-access header, which this panel sends. Your key "
+"still goes to Anthropic and nowhere else."
+msgstr ""
+"Anthropic 仅接受带有 anthropic-dangerous-direct-browser-access "
+"请求头的浏览器请求，本面板会发送该请求头。您的密钥只会发送给 Anthropic。"
+
+#: aperisolve/i18n.py:145
+msgid "Your question (optional)"
+msgstr "您的问题（可选）"
+
+#: aperisolve/i18n.py:146
+msgid "Ask"
+msgstr "询问"
+
+#: aperisolve/i18n.py:147
+msgid "Reset conversation"
+msgstr "重置对话"
+
+#: aperisolve/i18n.py:148
+msgid "Enter your API key."
+msgstr "请输入您的 API 密钥。"
+
+#: aperisolve/i18n.py:150
+msgid "Enter the base URL of your OpenAI-compatible endpoint."
+msgstr "请输入兼容 OpenAI 的接口的基础 URL。"
+
+#: aperisolve/i18n.py:153
+msgid "Analyzer results are not available yet."
+msgstr "分析器结果尚不可用。"
+
+#: aperisolve/i18n.py:155
+msgid "Ask a follow-up question."
+msgstr "请提出后续问题。"
+
+#: aperisolve/i18n.py:156
+msgid "Waiting for the model…"
+msgstr "正在等待模型…"
+
+#: aperisolve/templates/base.html:64 aperisolve/templates/footer.html:39
 #: aperisolve/templates/wiki.html:65 aperisolve/wiki.py:239
 msgid "Wiki"
 msgstr "维基"
 
-#: aperisolve/templates/base.html:63 aperisolve/templates/cheatsheet.html:42
+#: aperisolve/templates/base.html:65 aperisolve/templates/cheatsheet.html:42
 #: aperisolve/templates/footer.html:42 aperisolve/templates/map.html:16
 #: aperisolve/wiki.py:240
 msgid "Cheatsheet"
@@ -234,15 +318,15 @@ msgstr "技术"
 msgid "Tools"
 msgstr "工具"
 
-#: aperisolve/templates/base.html:54
+#: aperisolve/templates/base.html:56
 msgid "Aperi'Solve Home"
 msgstr "Aperi'Solve 首页"
 
-#: aperisolve/templates/base.html:61
+#: aperisolve/templates/base.html:63
 msgid "Main navigation"
 msgstr "主导航"
 
-#: aperisolve/templates/base.html:78
+#: aperisolve/templates/base.html:80
 msgid "Image preview"
 msgstr "图片预览"
 

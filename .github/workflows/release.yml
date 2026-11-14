@@ -37,7 +37,14 @@ jobs:
       - name: Sync Python dependencies
         run: uv sync --frozen --extra dev
 
+      - name: Install jsdom for the AI panel DOM tests
+        # Same gap as lint.yml: without jsdom on NODE_PATH the six dom_facts
+        # tests in tests/test_ai_panel.py skip instead of running.
+        run: npm install --no-save jsdom --prefix "${{ runner.temp }}/jsdomroot"
+
       - name: Lint, type-check and test
+        env:
+          NODE_PATH: ${{ runner.temp }}/jsdomroot/node_modules
         run: |
           uv run ruff check .
           uv run ruff format . --check

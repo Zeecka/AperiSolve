@@ -109,4 +109,51 @@ def js_catalog() -> dict[str, str]:
             "❌ The analysis is taking too long. Please reload the page to check again.",
         ),
         "Analyzed file": _("Analyzed file"),
+        # "Ask AI" BYOK panel (ai_panel.js). The prompt sent to the provider is
+        # deliberately English-only and lives in the JS; only the UI around it
+        # is translated.
+        "Ask AI": _("Ask AI"),
+        "Analyzer outputs and any passwords already tried (which may include "
+        "content extracted from your file) are sent to the provider you "
+        "selected.": _(
+            "Analyzer outputs and any passwords already tried (which may include "
+            "content extracted from your file) are sent to the provider you "
+            "selected.",
+        ),
+        "Answers are advisory. Tool output comes from a file an attacker may have "
+        "crafted: read any command it suggests before you run it.": _(
+            "Answers are advisory. Tool output comes from a file an attacker may have "
+            "crafted: read any command it suggests before you run it.",
+        ),
+        "Provider": _("Provider"),
+        "Model": _("Model"),
+        "Base URL": _("Base URL"),
+        "API key": _("API key"),
+        "Remember this key on this device": _("Remember this key on this device"),
+        "A stored key can be read by any script running on this page, including "
+        "the ads script, and a strict CSP is not in place yet. Prefer a key with "
+        "a spend cap.": _(
+            "A stored key can be read by any script running on this page, including "
+            "the ads script, and a strict CSP is not in place yet. Prefer a key with "
+            "a spend cap.",
+        ),
+        "Anthropic only accepts a browser request carrying the "
+        "anthropic-dangerous-direct-browser-access header, which this panel "
+        "sends. Your key still goes to Anthropic and nowhere else.": _(
+            "Anthropic only accepts a browser request carrying the "
+            "anthropic-dangerous-direct-browser-access header, which this panel "
+            "sends. Your key still goes to Anthropic and nowhere else.",
+        ),
+        "Your question (optional)": _("Your question (optional)"),
+        "Ask": _("Ask"),
+        "Reset conversation": _("Reset conversation"),
+        "Enter your API key.": _("Enter your API key."),
+        "Enter the base URL of your OpenAI-compatible endpoint.": _(
+            "Enter the base URL of your OpenAI-compatible endpoint.",
+        ),
+        "Analyzer results are not available yet.": _(
+            "Analyzer results are not available yet.",
+        ),
+        "Ask a follow-up question.": _("Ask a follow-up question."),
+        "Waiting for the model…": _("Waiting for the model…"),
     }
