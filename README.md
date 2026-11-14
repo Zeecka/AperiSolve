@@ -73,8 +73,10 @@ Aperi'Solve is an open-source steganalysis web platform that performs automated 
   wait for the analysis, and read the analyzer output page by page — eight
   tools over the same public routes the website uses, with an index tool so a
   result set that runs to hundreds of kilobytes does not have to enter a
-  context window whole. Public and anonymous like the site, rate-limited per
-  IP instead; again nothing LLM-related runs on the server, so the endpoint
+  context window whole. Public and anonymous like the site, with quotas instead
+  of accounts: per IP, plus a ceiling on new analyses shared by every client,
+  since starting an analysis is the one thing that costs the instance CPU.
+  Again nothing LLM-related runs on the server, so the endpoint
   costs a self-hosted instance nothing. Self-hosters get it from the `mcp`
   compose service, or over stdio with `python -m aperisolve_mcp --stdio`.
 - Worker queue architecture for offloading heavy/slow analyzers (Redis + background workers).
