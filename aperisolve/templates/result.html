@@ -6,6 +6,9 @@
 <section id="result" class="results-section">
   <div id="result-infos" class="mb-4"></div>
   <div id="result-analyzers" class="mb-4" aria-live="polite"></div>
+  {% if config["AI_PANEL_ENABLED"] | int > 0 %}
+  <div id="result-ai" class="mb-4"></div>
+  {% endif %}
   {% include 'partials/promo.html' %}
   <div id="result-removal" class="mb-4"></div>
 </section>

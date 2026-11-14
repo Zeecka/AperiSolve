@@ -23,6 +23,7 @@ from werkzeug.wrappers.response import Response as WerkzeugResponse
 from .analyzers.registry import archive_tools, tool_order
 from .cheatsheet import cheatsheet_bp, cheatsheet_lastmod
 from .config import (
+    AI_PANEL_ENABLED,
     CLEANUP_INTERVAL_SECONDS,
     CUSTOM_EXTERNAL_SCRIPT,
     DB_URI,
@@ -68,6 +69,7 @@ def _configure_app(app: Flask) -> None:
     app.config["JSON_SORT_KEYS"] = False
     app.config["PROJECT_VERSION"] = PROJECT_VERSION
     app.config["CUSTOM_EXTERNAL_SCRIPT"] = CUSTOM_EXTERNAL_SCRIPT
+    app.config["AI_PANEL_ENABLED"] = AI_PANEL_ENABLED
     app.config["SQLALCHEMY_DATABASE_URI"] = DB_URI
     app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
     app.config["MAX_CONTENT_LENGTH"] = MAX_CONTENT_LENGTH

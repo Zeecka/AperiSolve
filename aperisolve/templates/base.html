@@ -87,8 +87,13 @@
     window.I18N = {{ js_i18n | tojson }};
     window.WIKI_TOOLS = {{ wiki_tools | tojson }};
     window.LANG_PREFIX = {{ lang_prefix | tojson }};
+    window.AI_PANEL_ENABLED = {{ (config["AI_PANEL_ENABLED"] | int > 0) | tojson }};
   </script>
   <script src="/static/js/aperisolve.js?v={{ config["PROJECT_VERSION"] }}"></script>
+  {% if config["AI_PANEL_ENABLED"] | int > 0 %}
+  {# Bring-your-own-key "Ask AI" panel. Needs escapeHtml()/t() from above. #}
+  <script src="/static/js/ai_panel.js?v={{ config["PROJECT_VERSION"] }}"></script>
+  {% endif %}
   {% block background_scripts %}
   <script type="importmap">
 		{

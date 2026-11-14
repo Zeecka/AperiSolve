@@ -2057,3 +2057,84 @@ footer::before {
     color: var(--theme-green);
     font-weight: 500;
 }
+
+/* ======== "Ask AI" panel (BYOK) ======== */
+
+/* Sits on .analyzer, so the panel reads as one more result block. */
+.ai-panel .ai-note,
+.ai-panel .ai-warning {
+    font-size: 0.85rem;
+    margin-bottom: var(--spacing-sm);
+}
+
+.ai-panel .ai-note {
+    color: var(--text-dim);
+}
+
+.ai-panel .ai-warning {
+    color: #ffd24d;
+}
+
+.ai-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(14rem, 1fr));
+    gap: var(--spacing-md);
+    margin: var(--spacing-md) 0;
+}
+
+.ai-panel label {
+    display: block;
+    font-size: 0.85rem;
+    color: var(--text-dim);
+}
+
+.ai-panel .ai-input {
+    display: block;
+    width: 100%;
+    margin-top: var(--spacing-xs);
+    padding: var(--spacing-sm);
+    font-family: var(--font-base);
+}
+
+.ai-remember {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-sm);
+    margin-bottom: var(--spacing-sm);
+}
+
+.ai-remember input {
+    width: 1rem;
+    height: 1rem;
+    accent-color: var(--theme-green);
+}
+
+.ai-remember label {
+    margin: 0;
+    color: var(--text);
+}
+
+.ai-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--spacing-sm);
+    margin-top: var(--spacing-md);
+}
+
+.ai-status {
+    margin-top: var(--spacing-sm);
+    margin-bottom: 0;
+    min-height: 1.2rem;
+    font-size: 0.9rem;
+    color: var(--theme-green);
+}
+
+/* The answer streams in as plain text, so keep the wrapping readable. */
+#ai-answer-box pre {
+    max-height: 30rem;
+}
+
+#ai-answer {
+    white-space: pre-wrap;
+    word-break: break-word;
+}
