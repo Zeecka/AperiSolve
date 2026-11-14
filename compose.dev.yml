@@ -4,6 +4,12 @@ services:
     build: .
     container_name: aperisolve-web
     restart: always
+    # The image now runs as non-root `aperisolve` by default (ZEL-442), but
+    # dev bind-mounts ./aperisolve from the host and needs to write
+    # aperisolve/results/ inside it; root is the simplest way to keep that
+    # working without chowning the host tree to uid 10001. The production
+    # stack (compose.yml) does not run as root and uses named volumes instead.
+    user: root
     command: ["flask", "--app", "aperisolve.app", "run", "--host=0.0.0.0", "--port=5000"]
     ports:
       - "${WEB_APP_PORT:-5000}:5000"
@@ -26,6 +32,7 @@ services:
     build: .
     container_name: aperisolve-worker
     restart: always
+    user: root
     command: rq worker default --url redis://redis:6379/0
     volumes:
       - ./aperisolve:/app/aperisolve
@@ -44,6 +51,7 @@ services:
     build: .
     container_name: aperisolve-cron
     restart: always
+    user: root
     command: rq cron aperisolve.cron --url redis://redis:6379/0
     volumes:
       - ./aperisolve:/app/aperisolve
@@ -60,6 +68,7 @@ services:
   initdb:
     build: .
     container_name: aperisolve-initdb
+    user: root
     command: python -m aperisolve.utils.init_db
     volumes:
       - ./aperisolve:/app/aperisolve

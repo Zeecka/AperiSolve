@@ -133,15 +133,23 @@ def test_duplicate_upload_returns_same_hash_without_second_enqueue(
         assert UploadLog.query.count() == 2
 
 
-def test_upload_without_extension_is_rejected(
+def test_upload_without_extension_stores_as_bin(
+    app: Flask,
     client: FlaskClient,
     enqueue_calls: list[EnqueueCall],
 ) -> None:
-    """Filenames without a supported extension get a 400."""
+    """A filename with no extension is accepted; detection is content-based."""
     response = _post_image(client, b"not an image", "noextension")
-    assert response.status_code == 400
-    assert response.get_json()["error"] == "Unsupported file type"
-    assert not enqueue_calls
+    assert response.status_code == 200
+    sub_hash = response.get_json()["submission_hash"]
+
+    with app.app_context():
+        submission = db.session.get(Submission, sub_hash)
+        assert submission is not None
+        image = db.session.get(Image, submission.image_hash)
+        assert image is not None
+        assert Path(image.file).name == f"{image.hash}.bin"
+    assert len(enqueue_calls) == 1
 
 
 def test_upload_with_empty_filename_is_rejected(
@@ -153,3 +161,51 @@ def test_upload_with_empty_filename_is_rejected(
     assert response.status_code == 400
     assert "error" in response.get_json()
     assert not enqueue_calls
+
+
+def test_upload_with_hostile_extension_stores_as_bin(
+    app: Flask,
+    client: FlaskClient,
+    enqueue_calls: list[EnqueueCall],  # noqa: ARG001 -- redirects RESULT_FOLDER to tmp_path
+) -> None:
+    """GHSA-m5f8-qc9j-mc55: a Tcl/shell-metacharacter extension never reaches disk.
+
+    Detection is content-based, so collapsing the stored extension to "bin"
+    does not affect analyzer gating; it only keeps the hostile characters out
+    of every analyzer's argv/path.
+    """
+    hostile_name = "abc.jpg}; exec sh -c {id>p}; #"
+    response = _post_image(client, _png_bytes(), hostile_name)
+    assert response.status_code == 200
+    sub_hash = response.get_json()["submission_hash"]
+
+    with app.app_context():
+        submission = db.session.get(Submission, sub_hash)
+        assert submission is not None
+        assert submission.filename == hostile_name
+        image = db.session.get(Image, submission.image_hash)
+        assert image is not None
+        assert Path(image.file).name == f"{image.hash}.bin"
+
+
+def test_upload_with_200_char_filename_returns_200_not_500(
+    app: Flask,
+    client: FlaskClient,
+    enqueue_calls: list[EnqueueCall],  # noqa: ARG001 -- redirects RESULT_FOLDER to tmp_path
+) -> None:
+    """A filename past the 128-char DB column is truncated, not a 500.
+
+    SQLite (used in tests) does not enforce VARCHAR length, unlike production
+    Postgres, so the regression this guards against (a DataError at commit)
+    only reproduces against Postgres; assert the truncation directly instead.
+    """
+    long_name = ("a" * 196) + ".png"  # 200 chars total
+    assert len(long_name) == 200
+    response = _post_image(client, _png_bytes(), long_name)
+    assert response.status_code == 200
+    sub_hash = response.get_json()["submission_hash"]
+
+    with app.app_context():
+        submission = db.session.get(Submission, sub_hash)
+        assert submission is not None
+        assert len(str(submission.filename)) <= 128

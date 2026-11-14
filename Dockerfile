@@ -8,9 +8,13 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     wget git build-essential golang-go \
     && rm -rf /var/lib/apt/lists/*
 
-# Download OpenStego
+# Download OpenStego, verified against its known-good checksum (the release
+# carries no published digest upstream; this pins to the artifact fetched and
+# measured at ZEL-442) so a compromised release/CDN swap is caught at build
+# time rather than silently shipped.
 RUN wget https://github.com/syvaidya/openstego/releases/download/openstego-0.8.6/openstego_0.8.6-1_all.deb \
-    -O /tmp/openstego.deb
+    -O /tmp/openstego.deb \
+    && echo "821c4a1e190e994659b05a6c8142d14568204675b431c9e7278b379934a1d34a  /tmp/openstego.deb" | sha256sum -c -
 
 # Clone and build jsteg from source (pinned commit: reproducible builds)
 RUN git clone https://github.com/lukechampine/jsteg.git /tmp/jsteg \
@@ -68,7 +72,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     poppler-utils \
     graphicsmagick \
     graphicsmagick-imagemagick-compat \
-    && gem install zsteg \
+    && gem install zsteg -v 0.2.14 \
     && rm -rf /var/lib/apt/lists/*
 
 # Install OpenStego
@@ -100,6 +104,22 @@ COPY --from=builder /usr/local/bin/jsteg /usr/local/bin/jsteg
 # `python`).
 COPY docker/pdfid.py /usr/local/bin/pdfid
 RUN chmod +x /usr/local/bin/pdfid
+
+# Run as a fixed-uid non-root user: a popped analyzer tool (binwalk, jpseek,
+# ...) then has no path to root even inside its own container. The `initdb`
+# service runs as root once (compose.yml) to chown the two named volumes
+# (apresults, apremoved) before web/worker/cron start as this user.
+#
+# Home directory is /tmp, not /nonexistent: several analyzer tools (notably
+# OpenStego, a JVM app) resolve their home directory via getpwuid() -- the
+# /etc/passwd entry -- rather than the HOME env var SUBPROCESS_ENV sets
+# (base_analyzer.py), so the two must agree. /tmp is the tmpfs mount every
+# hardened service already carries (compose.yml), so it is always writable.
+RUN groupadd --gid 10001 aperisolve \
+    && useradd --uid 10001 --gid aperisolve --home-dir /tmp --no-create-home \
+       --shell /usr/sbin/nologin aperisolve \
+    && chown -R aperisolve:aperisolve /app
+USER aperisolve
 
 # Command to start. `exec` makes gunicorn PID 1 so it receives SIGTERM and
 # drains in-flight requests on `docker stop` instead of being SIGKILLed
