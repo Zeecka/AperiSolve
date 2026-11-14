@@ -59,6 +59,15 @@ Aperi'Solve is an open-source steganalysis web platform that performs automated 
   analyzer, all authored as Markdown.
 - **Internationalization**: UI available in English, French, Spanish, German,
   Russian, Chinese and Portuguese under language-prefixed URLs (`/fr/`, `/es/`, …).
+- **"Ask AI" panel** on the result page, bring-your-own-key: the browser builds
+  a compact digest of the analyzer output it already holds and calls your own
+  LLM provider directly — OpenRouter, OpenAI, Anthropic, or any
+  OpenAI-compatible base URL (Ollama, LM Studio, Mistral, Groq…). The answer
+  names the likely hiding technique, its evidence per tool, and what to try
+  next. Nothing LLM-related runs on the server: your key and the analyzer
+  output never pass through it, so the feature costs a self-hosted instance
+  nothing. Keys stay in memory unless you tick "remember on this device", and
+  the whole panel disappears with `AI_PANEL_ENABLED=0`.
 - Worker queue architecture for offloading heavy/slow analyzers (Redis + background workers).
 - Content-addressed result cache, HTTP caching, and per-endpoint rate limiting.
 - Results stored temporarily for later browsing and download, then cleaned up

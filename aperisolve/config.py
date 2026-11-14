@@ -53,6 +53,12 @@ IMAGE_EXTENSIONS = [".png", ".jpg", ".jpeg", ".gif", ".bmp", ".webp", ".tiff"]
 GOOGLE_ADS_TXT = getenv("GOOGLE_ADS_TXT", "")
 CUSTOM_EXTERNAL_SCRIPT = getenv("CUSTOM_EXTERNAL_SCRIPT", "")
 
+# "Ask AI" panel on the result page. Bring-your-own-key: the browser talks to
+# the LLM provider directly, so neither the key nor the analyzer output ever
+# transits this server and the feature costs a self-hosted instance nothing.
+# Set to 0 to drop the panel and its script from the rendered page entirely.
+AI_PANEL_ENABLED = _int_env("AI_PANEL_ENABLED", 1)
+
 
 # Public base URL (e.g. "https://www.aperisolve.com") used for canonical,
 # Open Graph and sitemap absolute links. Falls back to the request host.

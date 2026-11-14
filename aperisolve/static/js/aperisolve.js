@@ -258,6 +258,8 @@ async function fetchImageInfo(submission_hash) {
     return;
   }
 
+  window.APERISOLVE_INFO = infoData; // digest header for ai_panel.js
+
   const resultInfosDiv = document.getElementById("result-infos");
   resultInfosDiv.innerHTML = ""; // Clear previous info
 
@@ -543,6 +545,9 @@ function renderAnalyzing() {
 }
 
 function parseResult(result) {
+  // Published for the BYOK AI panel (ai_panel.js), which digests these same
+  // in-memory records instead of re-fetching /result/<hash>.
+  window.APERISOLVE_RESULTS = result;
   const resultDiv = document.getElementById("result-analyzers");
   resultDiv.innerHTML = "";
 

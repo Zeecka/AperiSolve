@@ -87,6 +87,7 @@
     window.I18N = {{ js_i18n | tojson }};
     window.WIKI_TOOLS = {{ wiki_tools | tojson }};
     window.LANG_PREFIX = {{ lang_prefix | tojson }};
+    window.AI_PANEL_ENABLED = {{ (config["AI_PANEL_ENABLED"] | int > 0) | tojson }};
   </script>
   <script src="/static/js/aperisolve.js?v={{ config["PROJECT_VERSION"] }}"></script>
   {% block background_scripts %}

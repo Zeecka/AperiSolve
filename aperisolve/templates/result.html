@@ -6,11 +6,21 @@
 <section id="result" class="results-section">
   <div id="result-infos" class="mb-4"></div>
   <div id="result-analyzers" class="mb-4" aria-live="polite"></div>
+  {% if config["AI_PANEL_ENABLED"] | int > 0 %}
+  <div id="result-ai" class="mb-4"></div>
+  {% endif %}
   {% include 'partials/promo.html' %}
   <div id="result-removal" class="mb-4"></div>
 </section>
 {% endblock %}
 {% block footer_content %}
+{% if config["AI_PANEL_ENABLED"] | int > 0 %}
+{# Bring-your-own-key "Ask AI" panel. Loaded here rather than from base.html
+   because #result-ai only exists on this page, and it needs escapeHtml()/t()
+   from aperisolve.js. The ?v= stamp keeps the year-long cache rule
+   (app.py set_static_cache_headers). #}
+<script src="/static/js/ai_panel.js?v={{ config["PROJECT_VERSION"] }}"></script>
+{% endif %}
 <script>
   pollStatus("{{ hash_val }}");
 </script>
