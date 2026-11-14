@@ -34,7 +34,16 @@ dependencies = [
 mcp = [
     "mcp>=2.3,<3",
     "httpx",
-    "limits[redis]"
+    "limits[redis]",
+    # Not a feature floor: pydantic-core only began publishing CPython 3.15
+    # wheels at 2.48.0, and the runtime image is python:3.15-slim. Resolving
+    # any lower pydantic (mcp 2.3's own floor allows 2.13, whose core is
+    # 2.46.5) makes `uv sync` build pydantic-core from source, which needs a
+    # Rust toolchain and a C linker the image deliberately does not ship —
+    # the Docker build fails with `linker cc not found`. pydantic 2.14 pins
+    # pydantic-core 2.50.x, which has cp315 manylinux wheels for x86_64 and
+    # aarch64. Drop this once mcp's own floor is past it.
+    "pydantic>=2.14"
 ]
 dev = [
     "ruff",
