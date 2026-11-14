@@ -14,6 +14,43 @@ x-logging: &default-logging
     max-size: "10m"
     max-file: "3"
 
+# RCE-containment hardening (ZEL-442) applied to every service that either
+# runs an analyzer tool against untrusted input (worker) or is otherwise on
+# the request path (web, cron): no Linux capabilities, no privilege
+# escalation, an immutable root filesystem (state lives in the named volumes
+# or the /tmp tmpfs below), and a cap on forkbomb-style PID exhaustion.
+x-hardening: &default-hardening
+  cap_drop: [ALL]
+  security_opt:
+    - no-new-privileges:true
+  read_only: true
+  tmpfs:
+    - /tmp
+
+# worker and cron both construct the full Flask app (DB session, limiter,
+# Sentry) via aperisolve.app.create_app(), so both need this same set --
+# trimmed from the full .env (no POSTGRES_PASSWORD, no ads/site-content
+# config web alone renders) per the ZEL-442 secrets diet. REDIS_URL and
+# RATELIMIT_STORAGE_URI embed the Redis password (REDIS_PASSWORD, below)
+# rather than reading a pre-built URL out of .env, so the password has one
+# source of truth. https_proxy/http_proxy route the Sentry SDK's own traffic
+# through sentryproxy, the only egress worker/cron have left (D1).
+x-worker-env: &worker-env
+  DB_URI: ${DB_URI}
+  REDIS_URL: redis://:${REDIS_PASSWORD}@redis:6379/0
+  RATELIMIT_STORAGE_URI: redis://:${REDIS_PASSWORD}@redis:6379/1
+  MAX_PENDING_TIME: ${MAX_PENDING_TIME}
+  SUBPROCESS_TIMEOUT: ${SUBPROCESS_TIMEOUT}
+  MAX_STORE_TIME: ${MAX_STORE_TIME}
+  CLEANUP_INTERVAL_SECONDS: ${CLEANUP_INTERVAL_SECONDS}
+  SENTRY_DSN: ${SENTRY_DSN}
+  SENTRY_TRACES_SAMPLE_RATE: ${SENTRY_TRACES_SAMPLE_RATE}
+  SENTRY_PROFILES_SAMPLE_RATE: ${SENTRY_PROFILES_SAMPLE_RATE}
+  SENTRY_RELEASE: ${SENTRY_RELEASE}
+  SENTRY_ENVIRONMENT: ${SENTRY_ENVIRONMENT}
+  https_proxy: http://sentryproxy:8888
+  http_proxy: http://sentryproxy:8888
+
 services:
   web:
     image: ghcr.io/zeecka/aperisolve:latest
@@ -22,6 +59,8 @@ services:
     restart: always
     mem_limit: 2g
     cpus: 1.5
+    <<: *default-hardening
+    pids_limit: 128
     logging: *default-logging
     ports:
       - "${WEB_APP_PORT:-5000}:5000"
@@ -29,6 +68,9 @@ services:
       - apresults:/app/aperisolve/results
       # Images archived by the removal flow must survive redeploys.
       - apremoved:/app/aperisolve/removed_images
+    networks:
+      - frontend
+      - backend
     depends_on:
       postgres:
         condition: service_healthy
@@ -40,6 +82,11 @@ services:
         condition: service_started
     env_file:
       - .env
+    environment:
+      # Overrides env_file: .env's unauthenticated default -- the single
+      # source of truth for the password is REDIS_PASSWORD (see x-worker-env).
+      REDIS_URL: redis://:${REDIS_PASSWORD}@redis:6379/0
+      RATELIMIT_STORAGE_URI: redis://:${REDIS_PASSWORD}@redis:6379/1
     healthcheck:
       # Read-only probe: urlopen raises (non-zero exit) on connection failure
       # or HTTP >= 400. curl is not installed in the image.
@@ -54,11 +101,15 @@ services:
     #build: .
     container_name: aperisolve-worker
     restart: always
-    command: rq worker default --url redis://redis:6379/0
+    # No --serializer: see the comment on Queue() in aperisolve/app.py --
+    # cron's enqueue does not honor it, so this queue must stay on pickle.
+    command: rq worker default --url redis://:${REDIS_PASSWORD}@redis:6379/0
     # Analyzers (binwalk, foremost, ...) process untrusted input; cap the
     # blast radius of a decompression bomb or runaway tool.
     mem_limit: 2g
     cpus: 2
+    <<: *default-hardening
+    pids_limit: 256
     # Analyzer tools spawn helpers of their own (jpseek runs under `expect`,
     # carvers shell out to `file`). When the intermediate process exits first,
     # those grandchildren reparent to PID 1 -- which is `rq`, and `rq` only
@@ -69,6 +120,10 @@ services:
     logging: *default-logging
     volumes:
       - apresults:/app/aperisolve/results
+    # backend is `internal: true` (see the networks block below): worker has
+    # no route to the internet at all except through sentryproxy.
+    networks:
+      - backend
     depends_on:
       postgres:
         condition: service_healthy
@@ -76,8 +131,9 @@ services:
         condition: service_completed_successfully
       redis:
         condition: service_healthy
-    env_file:
-      - .env
+      sentryproxy:
+        condition: service_started
+    environment: *worker-env
 
   cron:
     image: ghcr.io/zeecka/aperisolve:latest
@@ -85,10 +141,14 @@ services:
     container_name: aperisolve-cron
     restart: always
     cpus: 0.25
+    <<: *default-hardening
+    pids_limit: 128
     logging: *default-logging
-    command: rq cron aperisolve.cron --url redis://redis:6379/0
+    command: rq cron aperisolve.cron --url redis://:${REDIS_PASSWORD}@redis:6379/0
     volumes:
       - apresults:/app/aperisolve/results
+    networks:
+      - backend
     depends_on:
       postgres:
         condition: service_healthy
@@ -96,8 +156,9 @@ services:
         condition: service_completed_successfully
       redis:
         condition: service_healthy
-    env_file:
-      - .env
+      sentryproxy:
+        condition: service_started
+    environment: *worker-env
 
   initdb:
     image: ghcr.io/zeecka/aperisolve:latest
@@ -105,9 +166,20 @@ services:
     container_name: aperisolve-initdb
     cpus: 1
     logging: *default-logging
-    command: python -m aperisolve.utils.init_db
+    # Runs once, as root, before web/worker/cron (which run as the image's
+    # non-root `aperisolve`, uid 10001): chowns /app and the two named volumes
+    # so that user can actually write to them, then hands off to the normal
+    # one-shot init. On an existing prod volume this is a no-op after the
+    # first run (see docs/deploy.md for the one-time manual step on upgrade).
+    user: root
+    command: >
+      sh -c "chown -R 10001:10001 /app /app/aperisolve/results /app/aperisolve/removed_images
+      && python -m aperisolve.utils.init_db"
     volumes:
       - apresults:/app/aperisolve/results
+      - apremoved:/app/aperisolve/removed_images
+    networks:
+      - backend
     depends_on:
       postgres:
         condition: service_healthy
@@ -124,13 +196,20 @@ services:
     logging: *default-logging
     volumes:
       - pgdata:/var/lib/postgresql
+    networks:
+      - backend
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U aperiuser -d aperisolve"]
       interval: 5s
       timeout: 5s
       retries: 5
-    env_file:
-      - .env
+    # Secrets diet: postgres gets only the three variables its own image
+    # reads, never the full .env (DB_URI, SENTRY_DSN, ... stay out of its
+    # process environment).
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
 
   redis:
     image: redis:7
@@ -139,13 +218,17 @@ services:
     mem_limit: 512m
     cpus: 0.5
     logging: *default-logging
+    networks:
+      - backend
+    # requirepass: a popped worker process that somehow still reached redis
+    # (or any other container on `backend`) gets NOAUTH, not a free command
+    # channel into the job queue and rate-limit store.
+    command: redis-server --requirepass ${REDIS_PASSWORD}
     healthcheck:
-      test: ["CMD", "redis-cli", "ping"]
+      test: ["CMD", "redis-cli", "-a", "${REDIS_PASSWORD}", "--no-auth-warning", "ping"]
       interval: 5s
       timeout: 3s
       retries: 5
-    env_file:
-      - .env
 
   rqdashboard:
     # Third-party image: pinned, and given only the one variable it needs —
@@ -156,6 +239,8 @@ services:
     mem_limit: 256m
     cpus: 0.25
     logging: *default-logging
+    networks:
+      - backend
     ports:
       # Loopback only: RQ Dashboard has no auth and lets anyone requeue or
       # delete jobs. Reach it over SSH tunnelling.
@@ -163,7 +248,33 @@ services:
     depends_on:
       - redis
     environment:
-      RQ_DASHBOARD_REDIS_URL: ${RQ_DASHBOARD_REDIS_URL:-redis://redis:6379/0}
+      RQ_DASHBOARD_REDIS_URL: redis://:${REDIS_PASSWORD}@redis:6379/0
+
+  sentryproxy:
+    # D1: the only service allowed to reach the internet, and only the
+    # Sentry ingest host parsed from SENTRY_DSN (docker/tinyproxy/entrypoint.sh).
+    # Straddles both networks so worker/cron (backend only) can reach it, and
+    # it can actually dial out (frontend).
+    build: docker/tinyproxy
+    container_name: aperisolve-sentryproxy
+    restart: always
+    mem_limit: 64m
+    cpus: 0.1
+    <<: *default-hardening
+    pids_limit: 32
+    logging: *default-logging
+    networks:
+      - frontend
+      - backend
+    environment:
+      SENTRY_DSN: ${SENTRY_DSN}
+
+networks:
+  frontend:
+  # No external connectivity for anything that lives only here: worker, cron,
+  # postgres, redis, rq-dashboard. web and sentryproxy bridge frontend+backend.
+  backend:
+    internal: true
 
 volumes:
   apresults:

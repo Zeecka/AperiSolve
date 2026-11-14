@@ -26,10 +26,49 @@ Production deployment is **tag-driven**. Nothing deploys on a push to
      deployment-local site content (see below); self-hosters run the stock
      `compose.yml` alone.
 
-The compose stack runs seven services: `web` (gunicorn), `worker` (RQ),
+The compose stack runs eight services: `web` (gunicorn), `worker` (RQ),
 `cron` (RQ cron scheduler driving the retention cleanup), `initdb`
-(one-shot), `postgres`, `redis`, plus `rqdashboard` bound to
-localhost:9181 (reach it via SSH tunnelling).
+(one-shot), `postgres`, `redis`, `rqdashboard` bound to
+localhost:9181 (reach it via SSH tunnelling), and `sentryproxy` (a tinyproxy
+forward proxy allow-listed to the Sentry ingest host only -- see
+"RCE containment" below).
+
+### RCE containment (ZEL-442, 3.8.0)
+
+`web`, `worker` and `cron` run as a fixed non-root user (`aperisolve`, uid
+10001), with every Linux capability dropped, `no-new-privileges`, an
+immutable root filesystem (a `/tmp` tmpfs covers anything that needs to
+write), and a `pids_limit`. `worker` and `cron` additionally sit on a
+Docker network (`backend`) with `internal: true`: they have no route to the
+internet at all except through `sentryproxy`, which is allow-listed to the
+Sentry ingest host parsed from `SENTRY_DSN` and nothing else. A popped
+analyzer tool (binwalk, jpseek, ...) therefore has no path to root, no other
+container's secrets (see the secrets diet below), and no internet egress.
+
+**New required secret**: `REDIS_PASSWORD` -- Redis now runs with
+`--requirepass`, and `REDIS_URL`/`RATELIMIT_STORAGE_URI`/
+`RQ_DASHBOARD_REDIS_URL` are built from it in `compose.yml` rather than read
+from `.env` directly. Add a `REDIS_PASSWORD` repository secret (any
+sufficiently random value) before the first deploy of 3.8.0 -- never paste
+the value anywhere, including into this file or a task/issue.
+
+**One-time manual step on upgrade** (do NOT run this automatically; it is
+for the operator doing the 3.8.0 deploy, once): the `initdb` service now
+`chown -R 10001:10001` the `apresults`/`apremoved` volumes and `/app` on
+every start (it runs as root briefly, before web/worker/cron start as the
+non-root user). On a fresh volume this is instant. On the existing
+production `apresults` volume -- which can hold a large number of stored
+submissions -- the first `chown -R` after upgrading may take noticeably
+longer than `initdb`'s usual sub-second run, which delays `web`/`worker`
+coming up (they wait on `initdb`'s `service_completed_successfully`). This
+is expected on that first deploy only; it is not a hang.
+
+Known limitation: RQ's cron scheduler (rq 3.0.0) does not honor `rq cron
+--serializer` for the jobs it enqueues (confirmed from `rq.cron.CronJob.enqueue`,
+which builds its own `Queue()` with no serializer argument), so the shared
+`default` queue stays on RQ's default pickle serializer rather than moving to
+`JSONSerializer` -- `requirepass` above is the mitigating control for that
+queue instead.
 
 ## Reverse proxy
 

@@ -16,9 +16,9 @@ class BinwalkAnalyzer(SubprocessAnalyzer):
         """Initialize the binwalk analyzer."""
         super().__init__(input_img, output_dir)
         # Bounded extraction: untrusted input can be a decompression bomb, so
-        # cap recursion depth, file count and per-file size. --run-as=root is
-        # required because the container runs as root (binwalk refuses to
-        # extract otherwise); the container itself is the sandbox.
+        # cap recursion depth, file count and per-file size. The container
+        # runs as a non-root user (aperisolve, uid 10001), so binwalk no
+        # longer needs --run-as=root to extract.
         self.cmd = [
             "binwalk",
             "--matryoshka",
@@ -27,7 +27,6 @@ class BinwalkAnalyzer(SubprocessAnalyzer):
             "--size=10485760",
             "-e",
             self.img,
-            "--run-as=root",
         ]
         self.make_folder = False  # Binwalk already create its own folder
 

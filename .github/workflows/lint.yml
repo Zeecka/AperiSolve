@@ -2,9 +2,12 @@ name: Linters
 
 on: [push, pull_request]
 
+# Read-only: nothing in this workflow pushes to the repo or writes checks:
+# lint/type/test/audit all just run and report their own exit code. A
+# compromised step (e.g. a malicious dependency in `uv sync`) therefore
+# cannot use the job's GITHUB_TOKEN to push code or otherwise escalate.
 permissions:
-  checks: write
-  contents: write
+  contents: read
 
 jobs:
   run-linters:
@@ -18,15 +21,15 @@ jobs:
 
     steps:
       - name: Check out Git repository
-        uses: actions/checkout@v7
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
 
       - name: Set up Python
-        uses: actions/setup-python@v7
+        uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7
         with:
           python-version: ${{ matrix.python-version }}
 
       - name: Set up uv
-        uses: astral-sh/setup-uv@v7
+        uses: astral-sh/setup-uv@37802adc94f370d6bfd71619e3f0bf239e1f3b78 # v7
 
       - name: Sync Python dependencies
         run: uv sync --frozen --extra dev
@@ -55,13 +58,13 @@ jobs:
 
     steps:
       - name: Check out Git repository
-        uses: actions/checkout@v7
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
 
       - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v4
+        uses: docker/setup-buildx-action@f87e5991a6d7451dcb8d9637bfbc97413f497069 # v4
 
       - name: Build image (no push)
-        uses: docker/build-push-action@v7.4.0
+        uses: docker/build-push-action@c3c9e263c25d99ce0380d002d59b67737d91b0dc # v7.4.0
         with:
           context: .
           push: false
