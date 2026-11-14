@@ -3,6 +3,7 @@
 import hashlib
 import json
 import os
+import re
 import shutil
 import time
 from datetime import UTC, datetime, timedelta
@@ -60,7 +61,27 @@ from .wiki import page_lastmod, translated_langs, wiki_bp, wiki_pages, wiki_tool
 
 CLEANUP_LOCK_KEY = "aperisolve:cleanup-lock"
 
+# Stored filenames (Submission.filename, UploadLog.filename) are DB-column
+# bounded; truncate rather than let a long upload name hit a DataError (500)
+# at commit time.
+MAX_STORED_FILENAME = 128
+
+_SAFE_EXTENSION_RE = re.compile(r"[a-z0-9]{1,8}")
+
 _is_local_request = is_local_request
+
+
+def _normalize_extension(filename: str) -> str:
+    """Return the stored extension: lowercase ``[a-z0-9]{1,8}``, else ``bin``.
+
+    Detection (aperisolve.filetype) is content-based (file(1), then Pillow,
+    with the extension only a last-resort fallback), so collapsing a hostile
+    extension to "bin" cannot change analyzer gating -- it only keeps a
+    crafted filename (GHSA-m5f8-qc9j-mc55: shell/Tcl metacharacters) out of
+    the stored path every analyzer builds its argv from.
+    """
+    suffix = Path(filename).suffix.removeprefix(".").lower()
+    return suffix if _SAFE_EXTENSION_RE.fullmatch(suffix) else "bin"
 
 
 def _configure_app(app: Flask) -> None:
@@ -71,6 +92,15 @@ def _configure_app(app: Flask) -> None:
     app.config["SQLALCHEMY_DATABASE_URI"] = DB_URI
     app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
     app.config["MAX_CONTENT_LENGTH"] = MAX_CONTENT_LENGTH
+    # Stays on RQ's default pickle serializer, not JSONSerializer: rq 3.0.0's
+    # `rq cron` accepts a --serializer flag but does not apply it to the jobs
+    # it enqueues (CronJob.enqueue builds its own Queue() with no serializer
+    # kwarg, confirmed from rq.cron source and reproduced live -- a JSON
+    # worker crashes with DeserializationError on cron's pickled cleanup job,
+    # since both land on this same "default" queue). Until that is fixed
+    # upstream or cron moves to a queue of its own, every producer/consumer of
+    # this queue must agree on pickle; requirepass (compose.yml) is the
+    # mitigating control instead (ZEL-442).
     app.config["REDIS_QUEUE"] = Queue(connection=Redis.from_url(REDIS_URL))
     app.config["TOOL_ORDER"] = tool_order()
     # Static asset URLs are cache-busted with ?v=<PROJECT_VERSION> in templates.
@@ -374,14 +404,14 @@ def _upload_image(app: Flask) -> tuple[Response, int]:
     if image.filename is None or image.filename == "":
         return jsonify({"error": _("No image provided")}), 400
 
-    # Any file type is accepted; only require a usable extension because storage
-    # and get_image split the stored name on ".".
-    if "." not in image.filename or not Path(image.filename).suffix:
-        return jsonify({"error": _("Unsupported file type")}), 400
+    # Any file type and any filename is accepted: detection is content-based
+    # (aperisolve.filetype), and the stored extension is always normalized
+    # below, so neither depends on the raw name being well-formed.
+    stored_filename = image.filename[:MAX_STORED_FILENAME]
 
     image_data = image.read()
     img_hash = hashlib.md5(image_data, usedforsecurity=False).hexdigest()
-    image_name = img_hash + "." + image.filename.rsplit(".", maxsplit=1)[-1].lower()
+    image_name = f"{img_hash}.{_normalize_extension(image.filename)}"
 
     submission_data = (
         image_data
@@ -400,7 +430,7 @@ def _upload_image(app: Flask) -> tuple[Response, int]:
         user_agent=user_agent,
         image_hash=img_hash,
         submission_hash=submission_hash,
-        filename=image.filename,
+        filename=stored_filename,
     )
     db.session.add(upload_log)
     db.session.commit()
@@ -424,7 +454,7 @@ def _upload_image(app: Flask) -> tuple[Response, int]:
     submission_path.mkdir(parents=True, exist_ok=True)
     if not submission:
         submission = Submission(
-            filename=image.filename,
+            filename=stored_filename,
             password=password,
             deep_analysis=deep_analysis,
             hash=submission_hash,

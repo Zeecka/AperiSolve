@@ -13,15 +13,20 @@ carries a time (s) X axis and a normalised amplitude Y axis with a zero
 baseline. All axis text is rasterised into the PNG, so nothing here needs
 translating.
 
-Like the other NumPy analyzers there is no wall-clock guard, so run time is
-bounded solely by the ``MAX_CONTENT_LENGTH`` upload cap (1 MB by default).
+Like the other NumPy analyzers, the decode/DSP/render work itself runs via
+``python -m aperisolve.analyzers.spectrogram <img> <out>``, a subprocess
+``get_results`` shells out to -- it shares ``SUBPROCESS_TIMEOUT`` and the
+scrubbed subprocess env with every C-tool analyzer (ZEL-442), rather than
+running unbounded inside the worker process.
 """
 
+import json
 import math
 import struct
+import sys
 import wave
 from pathlib import Path
-from typing import Any, NamedTuple
+from typing import Any, NamedTuple, cast
 
 import numpy as np
 from PIL import Image, ImageDraw, ImageFont
@@ -620,8 +625,25 @@ class SpectrogramAnalyzer(SubprocessAnalyzer):
         canvas.save(self.output_dir / "waveform.png")
 
     def get_results(self, password: str | None = None) -> dict[str, Any]:
-        """Decode the audio upload and render per-channel spectrograms + waveform."""
+        """Run the decode/render in a subprocess: same timeout + env scrub as the C tools."""
         _ = password
+        cmd = [
+            sys.executable,
+            "-m",
+            "aperisolve.analyzers.spectrogram",
+            str(self.input_img),
+            str(self.output_dir),
+        ]
+        data = self.run_command(cmd, cwd=self.output_dir)
+        if data.returncode != 0:
+            return {"status": "error", "error": data.stderr.strip() or "spectrogram failed"}
+        try:
+            return cast("dict[str, Any]", json.loads(data.stdout))
+        except json.JSONDecodeError:
+            return {"status": "error", "error": "spectrogram produced invalid output"}
+
+    def _render(self) -> dict[str, Any]:
+        """Decode/DSP/render logic; invoked in-process by the subprocess entry point below."""
         decoded = self._decode()
         channels = decoded.channels
         if decoded.error is not None or channels is None:
@@ -656,3 +678,17 @@ class SpectrogramAnalyzer(SubprocessAnalyzer):
         if notes:
             result["note"] = " ".join(notes)
         return result
+
+
+def _main() -> None:
+    """Entry point: ``python -m aperisolve.analyzers.spectrogram <img> <out>``.
+
+    Prints the render result as JSON on stdout for the parent ``get_results``
+    to parse; writes the spectrogram/waveform PNGs into ``<out>``.
+    """
+    analyzer = SpectrogramAnalyzer(Path(sys.argv[1]), Path(sys.argv[2]))
+    print(json.dumps(analyzer._render()))  # noqa: SLF001, T201
+
+
+if __name__ == "__main__":
+    _main()

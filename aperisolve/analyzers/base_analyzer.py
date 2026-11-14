@@ -3,6 +3,7 @@
 import asyncio
 import fcntl
 import json
+import os
 import threading
 from abc import ABC
 from pathlib import Path
@@ -13,6 +14,21 @@ from typing import Any, ClassVar, overload
 from aperisolve.config import SUBPROCESS_TIMEOUT
 
 _thread_lock = threading.Lock()
+
+# Every analyzer subprocess gets this environment, not the worker's own:
+# a popped C tool (binwalk, jpseek, ...) must not inherit DB_URI, REDIS_URL,
+# SENTRY_DSN or anything else the worker process holds. PATH is carried over
+# (it is not a secret, and analyzers resolve it to find their binaries);
+# HOME/LANG are fixed rather than inherited so tools behave the same
+# regardless of what the worker's own environment happens to contain.
+SUBPROCESS_ENV = {
+    "PATH": os.environ.get(
+        "PATH",
+        "/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin",
+    ),
+    "HOME": "/tmp",  # noqa: S108 -- deliberate fixed sandbox HOME, not an insecure tempfile use
+    "LANG": "C.UTF-8",
+}
 
 # Bytes kept from each of a subprocess's stdout/stderr. Output beyond this is
 # drained (so the child never blocks on a full pipe) but discarded, keeping
@@ -108,6 +124,7 @@ class SubprocessAnalyzer(ABC):
             process = await asyncio.create_subprocess_exec(
                 *cmd,
                 cwd=str(cwd) if cwd is not None else None,
+                env=SUBPROCESS_ENV,
                 stdin=asyncio.subprocess.DEVNULL,
                 stdout=asyncio.subprocess.PIPE,
                 stderr=asyncio.subprocess.PIPE,

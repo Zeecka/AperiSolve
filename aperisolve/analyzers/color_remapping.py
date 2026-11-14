@@ -1,7 +1,9 @@
 """Color Remapping Analyzer for Image Submissions."""
 
+import json
+import sys
 from pathlib import Path
-from typing import Any
+from typing import Any, cast
 
 import numpy as np
 from PIL import Image
@@ -65,8 +67,25 @@ class ColorRemappingAnalyzer(SubprocessAnalyzer):
         return remapped_img
 
     def get_results(self, password: str | None = None) -> dict[str, Any]:
-        """Analyze an image submission using color remapping."""
+        """Run the color remapping in a subprocess: same timeout + env scrub as the C tools."""
         _ = password
+        cmd = [
+            sys.executable,
+            "-m",
+            "aperisolve.analyzers.color_remapping",
+            str(self.input_img),
+            str(self.output_dir),
+        ]
+        data = self.run_command(cmd, cwd=self.output_dir)
+        if data.returncode != 0:
+            return {"status": "error", "error": data.stderr.strip() or "color_remapping failed"}
+        try:
+            return cast("dict[str, Any]", json.loads(data.stdout))
+        except json.JSONDecodeError:
+            return {"status": "error", "error": "color_remapping produced invalid output"}
+
+    def _remap(self) -> dict[str, Any]:
+        """Color-remapping logic; invoked in-process by the subprocess entry point below."""
         loaded = load_image_array(self.input_img)
         if loaded.error is not None or loaded.array is None:
             return loaded.error or {"status": "error", "error": "Image could not be loaded."}
@@ -99,3 +118,17 @@ class ColorRemappingAnalyzer(SubprocessAnalyzer):
             output["note"] = PALETTE_NOTE
 
         return output
+
+
+def _main() -> None:
+    """Entry point: ``python -m aperisolve.analyzers.color_remapping <img> <out>``.
+
+    Prints the remapping result as JSON on stdout for the parent
+    ``get_results`` to parse; writes the remapped PNGs into ``<out>``.
+    """
+    analyzer = ColorRemappingAnalyzer(Path(sys.argv[1]), Path(sys.argv[2]))
+    print(json.dumps(analyzer._remap()))  # noqa: SLF001, T201
+
+
+if __name__ == "__main__":
+    _main()
