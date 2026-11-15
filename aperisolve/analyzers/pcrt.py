@@ -7,7 +7,7 @@ from typing import Any, cast
 
 from aperisolve.utils.png import PNG
 
-from .base_analyzer import SubprocessAnalyzer
+from .base_analyzer import SubprocessAnalyzer, python_subprocess_error
 
 
 class PCRTAnalyzer(SubprocessAnalyzer):
@@ -30,7 +30,7 @@ class PCRTAnalyzer(SubprocessAnalyzer):
         ]
         data = self.run_command(cmd, cwd=self.output_dir)
         if data.returncode != 0:
-            return {"status": "error", "error": data.stderr.strip() or "pcrt failed"}
+            return {"status": "error", "error": python_subprocess_error(data.stderr, "pcrt failed")}
         try:
             return cast("dict[str, Any]", json.loads(data.stdout))
         except json.JSONDecodeError:

@@ -4,12 +4,14 @@ import json
 import os
 import shutil
 import wave
+import zlib
 from pathlib import Path
 
 import numpy as np
 import pytest
 from PIL import Image
 
+from aperisolve.analyzers.base_analyzer import SubprocessAnalyzer, python_subprocess_error
 from aperisolve.analyzers.color_remapping import RANDOM_REMAPPING_COUNT, ColorRemappingAnalyzer
 from aperisolve.analyzers.decomposer import DecomposerAnalyzer
 from aperisolve.analyzers.file import FileAnalyzer
@@ -331,3 +333,52 @@ def test_color_remapping_errors_on_undecodable_input(tmp_path: Path) -> None:
 
     entry = _read_results(tmp_path)["color_remapping"]
     assert entry["status"] == "error", entry
+
+
+def _broken_idat_png(path: Path, mode: str) -> None:
+    """Write a PNG with valid header and chunk CRCs but a broken IDAT zlib stream.
+
+    Shape of the upload behind result 2ba684954de99adf8885a3fbb596f46e:
+    ``Image.open`` succeeds, and Pillow only fails once it decodes the pixels
+    (``OSError: broken data stream when reading image file``).
+    """
+    _synthetic_image(path, mode)
+    data = bytearray(path.read_bytes())
+    tag = data.index(b"IDAT")
+    length = int.from_bytes(data[tag - 4 : tag], "big")
+    data[tag + 4 : tag + 6] = b"\x00\x00"  # zlib header -> "incorrect header check"
+    crc = zlib.crc32(bytes(data[tag : tag + 4 + length]))
+    data[tag + 4 + length : tag + 8 + length] = crc.to_bytes(4, "big")
+    path.write_bytes(data)
+
+
+@pytest.mark.parametrize("analyzer", [DecomposerAnalyzer, ColorRemappingAnalyzer])
+@pytest.mark.parametrize("mode", ["P", "RGB"])
+def test_broken_pixel_stream_is_a_clean_error(
+    tmp_path: Path,
+    analyzer: type[SubprocessAnalyzer],
+    mode: str,
+) -> None:
+    """A decode failure is reported in one line, never as a Python traceback."""
+    src = tmp_path / "broken.png"
+    _broken_idat_png(src, mode)
+    analyzer.execute(src, tmp_path)
+
+    entry = _read_results(tmp_path)[analyzer.name]
+    assert entry["status"] == "error", entry
+    assert entry["error"].startswith("Pillow cannot decode the image data:"), entry
+    assert "Traceback" not in entry["error"]
+
+
+def test_python_subprocess_error_keeps_only_the_exception_line() -> None:
+    """A crashed analyzer child leaks no source paths, only ``Type: message``."""
+    stderr = (
+        "Traceback (most recent call last):\n"
+        '  File "/app/aperisolve/analyzers/decomposer.py", line 111, in <module>\n'
+        "    _main()\n"
+        "OSError: broken data stream when reading image file\n"
+    )
+    assert python_subprocess_error(stderr, "decomposer failed") == (
+        "OSError: broken data stream when reading image file"
+    )
+    assert python_subprocess_error("  \n", "decomposer failed") == "decomposer failed"

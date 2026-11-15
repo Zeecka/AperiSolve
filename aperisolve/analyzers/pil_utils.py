@@ -33,8 +33,11 @@ def load_image_array(path: Path) -> LoadedImage:
 
     Corrupt/polyglot uploads are expected input, not an exception worth a
     Sentry report (issue #192), so decode failures come back as an error
-    result the analyzer can store as-is. Decompression bombs likewise: they
-    are rejected on declared dimensions, not decoded.
+    result the analyzer can store as-is. That includes files whose header
+    parses but whose pixel stream is broken (bad zlib data in IDAT, truncated
+    file): Pillow only notices those when it decodes, as an ``OSError``.
+    Decompression bombs likewise: they are rejected on declared dimensions,
+    not decoded.
     """
     try:
         with Image.open(path) as img:
@@ -53,4 +56,6 @@ def load_image_array(path: Path) -> LoadedImage:
         return _error("Pillow cannot decode this file as an image.")
     except Image.DecompressionBombError:
         return _error("Image rejected: decoded size would be a decompression bomb.")
+    except (OSError, SyntaxError, ValueError) as exc:
+        return _error(f"Pillow cannot decode the image data: {exc}")
     return LoadedImage(array=array, converted=converted, error=None)
