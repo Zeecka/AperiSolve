@@ -35,7 +35,10 @@ jobs:
         uses: astral-sh/setup-uv@37802adc94f370d6bfd71619e3f0bf239e1f3b78 # v7
 
       - name: Sync Python dependencies
-        run: uv sync --frozen --extra dev
+        # --extra mcp as well, same reason as lint.yml: tests/test_mcp.py
+        # imports the mcp SDK and httpx, and without them the module errors at
+        # collection, which fails this job and blocks the deploy.
+        run: uv sync --frozen --extra mcp --extra dev
 
       - name: Install jsdom for the AI panel DOM tests
         # Same gap as lint.yml: without jsdom on NODE_PATH the six dom_facts
@@ -48,7 +51,7 @@ jobs:
         run: |
           uv run ruff check .
           uv run ruff format . --check
-          uv run ty check aperisolve
+          uv run ty check aperisolve aperisolve_mcp
           uv run pytest -q --cov=aperisolve --cov-fail-under=55
 
   docker-releases:
