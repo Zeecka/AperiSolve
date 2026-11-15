@@ -28,6 +28,27 @@ dependencies = [
 ]
 
 [project.optional-dependencies]
+# Optional: the `mcp` compose service only. The web app, worker and cron never
+# import aperisolve_mcp, so a self-host that does not want the MCP endpoint can
+# keep installing without these.
+mcp = [
+    "mcp>=2.3,<3",
+    "httpx",
+    # async-redis, not redis: the tools are async, so the limiter uses
+    # limits.aio, whose Redis backend is coredis. `limits[redis]` installs the
+    # synchronous redis-py the web app's Flask-Limiter uses, and the service
+    # crashes at startup with "'coredis' prerequisite not available".
+    "limits[async-redis]",
+    # Not a feature floor: pydantic-core only began publishing CPython 3.15
+    # wheels at 2.48.0, and the runtime image is python:3.15-slim. Resolving
+    # any lower pydantic (mcp 2.3's own floor allows 2.13, whose core is
+    # 2.46.5) makes `uv sync` build pydantic-core from source, which needs a
+    # Rust toolchain and a C linker the image deliberately does not ship —
+    # the Docker build fails with `linker cc not found`. pydantic 2.14 pins
+    # pydantic-core 2.50.x, which has cp315 manylinux wheels for x86_64 and
+    # aarch64. Drop this once mcp's own floor is past it.
+    "pydantic>=2.14"
+]
 dev = [
     "ruff",
     "ty",
@@ -48,7 +69,7 @@ build-backend = "setuptools.build_meta"
 # Only package the application; other top-level dirs (docker/, tests/) must
 # not confuse setuptools' flat-layout auto-discovery.
 [tool.setuptools.packages.find]
-include = ["aperisolve*"]
+include = ["aperisolve*", "aperisolve_mcp*"]
 
 [tool.ruff]
 line-length = 100
@@ -80,6 +101,15 @@ ignore = ["CPY001", "D203", "D213"]
 # Dev-only generator scripts: print output, layout magic numbers, and lighter
 # annotation/docstring requirements are fine for standalone tooling.
 "scripts/*" = ["T201", "INP001", "PLR2004", "PLR0913", "PLR0917", "ANN", "D", "COM812"]
+# Security-review probes (docs/security/*-probe.py): standalone attack scripts
+# kept next to the review that cites their output. Same shape as scripts/, plus
+# the rules a probe exists to break -- it prints findings, subprocesses itself to
+# measure memory, catches bare Exception to report whatever escapes a handler,
+# and builds deliberately hostile inputs.
+"docs/security/*" = [
+    "T201", "INP001", "PLR2004", "PLR0913", "PLR0917", "ANN", "D", "COM812",
+    "S101", "S603", "BLE001", "E501", "E402", "PLR0915", "C901", "PERF203",
+]
 
 [tool.ty.rules]
 # `to_ihdr_bytes` casts three SmallInteger columns to int before handing them to
@@ -94,4 +124,4 @@ redundant-cast = "ignore"
 testpaths = ["tests"]
 
 [tool.coverage.run]
-source = ["aperisolve"]
+source = ["aperisolve", "aperisolve_mcp"]

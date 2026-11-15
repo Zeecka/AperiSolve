@@ -93,6 +93,78 @@ directly on the host's public address.
 
 TLS terminates at Cloudflare; the origin speaks plain HTTP on :80.
 
+### The `/mcp/` location (MCP endpoint)
+
+The `mcp` compose service publishes `127.0.0.1:5001` and serves the Streamable
+HTTP transport at `/mcp` (see `docs/mcp.md` for the tools themselves). It needs
+its own `location`, because three of its requirements differ from the app's:
+responses stream, one tool blocks for up to two minutes, and the per-IP quota
+inside the service reads the same rightmost `X-Forwarded-For` hop the app does.
+
+Declare the shared zone once, in the `http {}` context (`nginx.conf`):
+
+```nginx
+# 30 requests/minute per client IP, matching MCP_LIMIT_HEAVY. The MCP server
+# enforces per-tool quotas of its own; this only absorbs floods before Python
+# sees them.
+limit_req_zone $http_cf_connecting_ip zone=mcp:10m rate=30r/m;
+```
+
+Then, inside the `aperisolve.conf` server block:
+
+```nginx
+location /mcp {
+    # No trailing slash on either side, so the URI is passed through
+    # unchanged. The server answers only /mcp (measured: POST /mcp is handled,
+    # POST /mcp/ 307s to /mcp, POST / is 404), so a `proxy_pass .../;` that
+    # rewrote the path to `/` would 404 every request.
+    proxy_pass http://127.0.0.1:5001;
+    proxy_http_version 1.1;
+
+    # The one redirect the server issues (/mcp/ -> /mcp) is built from the
+    # Host header and the origin's plain-HTTP scheme; rewrite it so a client
+    # that added the slash is not bounced to http://.
+    proxy_redirect http://$host/ https://$host/;
+
+    # Same rule as the main vhost: get_client_ip() and the MCP limiter both
+    # read the RIGHTMOST hop, so forward Cloudflare's client IP as that hop
+    # rather than using $proxy_add_x_forwarded_for, which would append the
+    # edge IP and put every agent in one bucket.
+    proxy_set_header X-Forwarded-For $http_cf_connecting_ip;
+    proxy_set_header Host $host;
+
+    # Streamable HTTP sends SSE; buffering would hold the stream until it ends.
+    proxy_buffering off;
+    proxy_cache off;
+
+    # wait_until_done polls for up to 120s (MAX_WAIT_S), so the read timeout
+    # must clear it or nginx 504s a tool call that was working correctly.
+    proxy_read_timeout 130s;
+    proxy_send_timeout 130s;
+
+    # analyze carries the file base64-encoded: 4/3 of MAX_CONTENT_LENGTH plus
+    # the JSON-RPC envelope. Keep this above that, as for the main location.
+    client_max_body_size 8m;
+
+    limit_req zone=mcp burst=20 nodelay;
+}
+```
+
+`limit_req` is the outermost of three layers; the other two are the per-IP and
+global quotas inside the service, and the web app's own `@limiter.limit`
+decorators, which still apply because the MCP service forwards the end client's
+IP onward to `web`. See `aperisolve_mcp/limits.py` for the split.
+
+Two lines above are load-bearing for the quotas, not just for the logs. The
+`proxy_set_header X-Forwarded-For $http_cf_connecting_ip` **overwrite** is what
+makes the per-IP buckets real: the service keys on the rightmost hop, so a
+client that reaches the port directly supplies its own key. Measured against
+the shipped limiter, a caller rotating a forged header gets 12 of 12 `analyze`
+calls through where an honest one gets 5 of 12. Keep the service published on
+`127.0.0.1:5001` (`compose.yml`) so that caller cannot exist, and do not relax
+the overwrite to `$proxy_add_x_forwarded_for`, which appends rather than
+replaces. The global `analyze` ceiling holds either way and is the backstop.
+
 ## Configuration
 
 All runtime configuration is environment-driven; `.env.example` documents

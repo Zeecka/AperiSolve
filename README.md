@@ -68,6 +68,17 @@ Aperi'Solve is an open-source steganalysis web platform that performs automated 
   output never pass through it, so the feature costs a self-hosted instance
   nothing. Keys stay in memory unless you tick "remember on this device", and
   the whole panel disappears with `AI_PANEL_ENABLED=0`.
+- **MCP server** at `https://www.aperisolve.com/mcp` ([docs/mcp.md](docs/mcp.md)):
+  point Claude, Cursor or any MCP client at it and an agent can upload a file,
+  wait for the analysis, and read the analyzer output page by page — eight
+  tools over the same public routes the website uses, with an index tool so a
+  result set that runs to hundreds of kilobytes does not have to enter a
+  context window whole. Public and anonymous like the site, with quotas instead
+  of accounts: per IP, plus a ceiling on new analyses shared by every client,
+  since starting an analysis is the one thing that costs the instance CPU.
+  Again nothing LLM-related runs on the server, so the endpoint
+  costs a self-hosted instance nothing. Self-hosters get it from the `mcp`
+  compose service, or over stdio with `python -m aperisolve_mcp --stdio`.
 - Worker queue architecture for offloading heavy/slow analyzers (Redis + background workers).
 - Content-addressed result cache, HTTP caching, and per-endpoint rate limiting.
 - Results stored temporarily for later browsing and download, then cleaned up
@@ -126,6 +137,7 @@ headers, so repeat traffic is cheap.
 
 - [docs/adding-analyzer.md](docs/adding-analyzer.md) — add a new analyzer.
 - [docs/deploy.md](docs/deploy.md) — the tag-driven production deploy flow.
+- [docs/mcp.md](docs/mcp.md) — the MCP endpoint: client setup, tool reference, quotas.
 - [CONTRIBUTING.md](CONTRIBUTING.md) — dev setup, tests, wiki pages, and translations.
 
 ## Testing
