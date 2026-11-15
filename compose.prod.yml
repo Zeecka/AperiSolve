@@ -20,6 +20,13 @@ services:
 
   worker:
     image: ghcr.io/zeecka/aperisolve:${PROJECT_VERSION:-latest}
+    # ZEL-446: one RQ worker per container is the serializer -- one analysis at
+    # a time, capped at the 2 cores of its cgroup, on a 10-core host. Three
+    # single-process replicas, each under the per-container cpus/mem_limit
+    # from compose.yml (2 cores / 2 GiB), give the tier 6 cores / 6 GiB.
+    # Multiple workers on one RQ queue need no other change: dequeue is atomic.
+    deploy:
+      replicas: 3
 
   cron:
     image: ghcr.io/zeecka/aperisolve:${PROJECT_VERSION:-latest}
