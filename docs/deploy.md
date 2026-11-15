@@ -26,12 +26,14 @@ Production deployment is **tag-driven**. Nothing deploys on a push to
      deployment-local site content (see below); self-hosters run the stock
      `compose.yml` alone.
 
-The compose stack runs eight services: `web` (gunicorn), `worker` (RQ),
+The compose stack runs nine services: `web` (gunicorn), `worker` (RQ; one
+container by default, three replicas on prod via `compose.prod.yml` --
+`aperisolve-worker-1..3`, each capped at 2 cores / 2 GiB, see ZEL-446),
 `cron` (RQ cron scheduler driving the retention cleanup), `initdb`
 (one-shot), `postgres`, `redis`, `rqdashboard` bound to
-localhost:9181 (reach it via SSH tunnelling), and `sentryproxy` (a tinyproxy
-forward proxy allow-listed to the Sentry ingest host only -- see
-"RCE containment" below).
+localhost:9181 (reach it via SSH tunnelling), `mcp` (see `docs/mcp.md`), and
+`sentryproxy` (a tinyproxy forward proxy allow-listed to the Sentry ingest
+host only -- see "RCE containment" below).
 
 ### RCE containment (ZEL-442, 3.8.0)
 

@@ -2,12 +2,15 @@
 # and web's access log is the highest-volume stream in the stack.
 #
 # Every service also carries a `cpus` ceiling. The long-running ones sum to
-# 5 cores, so the stack cannot take more than half of a 10-core host even
-# when web, worker and Postgres all peak at once -- analyzers are CPU-bound
-# and would otherwise starve everything else sharing the machine. These are
-# ceilings, not reservations: on a smaller host the services simply never
-# reach them. initdb is excluded from the sum -- it runs to completion before
-# web/worker/cron start (service_completed_successfully), so it never overlaps.
+# web 1.5 + worker 2 x N + postgres 0.5 + redis 0.5 + mcp 0.5 + cron 0.25 +
+# rqdashboard 0.25 + sentryproxy 0.1 = 5.6 cores with the single worker this
+# file defines, 9.6 cores on prod where compose.prod.yml runs N=3 worker
+# replicas (ZEL-446) -- analyzers are CPU-bound and would otherwise starve
+# everything else sharing the 10-core machine. These are ceilings, not
+# reservations, reached only if every service peaks at once: on a smaller
+# host the services simply never reach them. initdb is excluded from the
+# sum -- it runs to completion before web/worker/cron start
+# (service_completed_successfully), so it never overlaps.
 x-logging: &default-logging
   driver: json-file
   options:
@@ -104,8 +107,15 @@ services:
   worker:
     image: ghcr.io/zeecka/aperisolve:latest
     #build: .
-    container_name: aperisolve-worker
+    # No container_name: prod runs this service as several replicas
+    # (compose.prod.yml, ZEL-446) and Compose refuses a fixed name with
+    # replicas > 1. Containers are named aperisolve-worker-1..N.
     restart: always
+    # A release's `compose down` SIGTERMs the worker; rq's warm shutdown waits
+    # for the running job, but Docker's default 10 s SIGKILL cut it short and
+    # left the submission `running` until cron's stale sweep. 60 s lets short
+    # jobs finish; `down` only takes longer while a job is live (ZEL-446).
+    stop_grace_period: 60s
     # No --serializer: see the comment on Queue() in aperisolve/app.py --
     # cron's enqueue does not honor it, so this queue must stay on pickle.
     # No --url either: RQ_REDIS_URL (x-worker-env) covers it.
