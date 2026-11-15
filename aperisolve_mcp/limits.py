@@ -91,14 +91,19 @@ def client_ip(headers: Mapping[str, str] | None, peer: str | None = None) -> str
 
     Same rule and same reasoning as ``get_client_ip()`` in
     ``aperisolve/utils/utils.py:12``: the rightmost hop is the one appended by
-    the closest reverse proxy and is the only value the client cannot forge by
-    sending a crafted header. Taking the leftmost would let one client rotate
-    spoofed IPs past every quota below.
+    the closest reverse proxy. Taking the leftmost would let one client
+    rotate spoofed IPs past every quota below.
 
-    ``docs/deploy.md`` configures nginx to append ``CF-Connecting-IP`` as that
-    rightmost hop. ``peer`` (the socket address) is the fallback for a direct
-    caller, and both are empty on stdio — where the single local user is the
-    only client and quotas are a formality.
+    That rightmost hop is unforgeable only behind a trusted proxy that
+    overwrites whatever the client sent — this deployment relies on the
+    nginx ``location /mcp/`` block to do that (``docs/deploy.md``, which
+    configures it to append ``CF-Connecting-IP``). A caller that reaches this
+    service directly controls the rightmost hop itself, same as any other
+    header (ZEL-457 F5): rotating ``X-Forwarded-For`` then defeats the per-IP
+    quota, bounded only by the global ``analyze`` ceiling. ``peer`` (the
+    socket address) is the fallback when no such header is present at all,
+    and both are empty on stdio — where the single local user is the only
+    client and quotas are a formality.
     """
     forwarded = (headers or {}).get("X-Forwarded-For") or (headers or {}).get("x-forwarded-for")
     if forwarded:

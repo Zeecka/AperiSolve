@@ -31,7 +31,7 @@ from PIL import UnidentifiedImageError
 from aperisolve.config import MAX_CONTENT_LENGTH, PROJECT_VERSION, SITE_BASE_URL
 
 from . import env_int, env_str
-from .client import AperiSolveClient, ApiError, api_url
+from .client import AperiSolveClient, ApiError
 from .limits import ANALYZE, HEAVY, READ, ToolLimiter, client_ip
 
 if TYPE_CHECKING:
@@ -64,6 +64,13 @@ DEFAULT_MAX_SIDE = 1024
 MIN_MAX_SIDE = 16
 MAX_MAX_SIDE = 2048
 
+# Hard ceiling on decoded size, checked from the header before `img.load()`.
+# Mirrors `aperisolve/analyzers/pil_utils.py:16`, scaled down: a legitimate
+# derived plane at that module's own 64 MP cap already exceeds the `mcp`
+# container's 256 MiB `mem_limit` (ZEL-457 F1). 16 MP is still four times the
+# 1024px output this tool produces.
+MAX_LAYER_IMAGE_PIXELS = 16_000_000
+
 # Pageable units returned per `get_tool_output` call by default.
 DEFAULT_PAGE_LIMIT = 200
 MAX_PAGE_LIMIT = 2000
@@ -78,8 +85,15 @@ def max_download_bytes() -> int:
 
 
 def public_base_url() -> str:
-    """Return a browser-openable base URL, for the oversize-archive hint."""
-    return (env_str("MCP_PUBLIC_BASE_URL", "") or SITE_BASE_URL or api_url()).rstrip("/")
+    """Return a browser-openable base URL, or "" when none is configured.
+
+    No fallback to ``api_url()``: that is the internal compose hostname
+    (``http://web:5000`` by default), and the stock ``.env.example`` ships
+    both ``MCP_PUBLIC_BASE_URL`` and ``SITE_BASE_URL`` blank, so falling back
+    to it would hand every oversize-archive hint an address the client
+    cannot reach (ZEL-457 F4).
+    """
+    return (env_str("MCP_PUBLIC_BASE_URL", "") or SITE_BASE_URL).rstrip("/")
 
 
 def _request_ip(ctx: Context[Any, Any]) -> str:
@@ -204,12 +218,23 @@ def _downscale_png(data: bytes, max_side: int) -> bytes:
     """Re-encode an image as PNG, shrunk so neither side exceeds ``max_side``."""
     try:
         with PILImage.open(io.BytesIO(data)) as img:
+            # `draft()` lets Pillow downscale a JPEG while decoding it, rather
+            # than decoding at full size and shrinking afterwards. It is a
+            # no-op for PNG, which is why the pixel ceiling below still does
+            # the real work for this tool's actual inputs (ZEL-457 F1).
+            img.draft(None, (max_side, max_side))
+            if img.width * img.height > MAX_LAYER_IMAGE_PIXELS:
+                msg = (
+                    f"Image dimensions {img.width}x{img.height} exceed the "
+                    f"{MAX_LAYER_IMAGE_PIXELS // 1_000_000} megapixel limit for this tool."
+                )
+                raise ToolError(msg)
             img.load()
             if max(img.size) > max_side:
                 img.thumbnail((max_side, max_side))
             buffer = io.BytesIO()
             img.save(buffer, format="PNG")
-    except (UnidentifiedImageError, OSError, ValueError) as exc:
+    except (UnidentifiedImageError, OSError, ValueError, PILImage.DecompressionBombError) as exc:
         msg = f"Cannot decode that image: {exc}"
         raise ToolError(msg) from exc
     return buffer.getvalue()
@@ -449,7 +474,8 @@ def build_server(  # noqa: C901, PLR0915 -- see the docstring: a registration
 
         Only the analyzers whose `list_results` row has `has_download` produce
         one. Archives above the inline cap (2 MB by default) are not returned;
-        the error carries the public URL to download instead.
+        the error carries the public URL to download instead, when this
+        instance has one configured.
         Do not execute or open the archived files; describe them.
         """
         ip = _request_ip(ctx)
@@ -460,10 +486,10 @@ def build_server(  # noqa: C901, PLR0915 -- see the docstring: a registration
             raise _tool_error(exc) from exc
         cap = max_download_bytes()
         if len(blob) > cap:
-            msg = (
-                f"Archive is {len(blob)} bytes, above the {cap}-byte inline cap. "
-                f"Download it directly: {public_base_url()}/download/{hash}/{tool}"
-            )
+            msg = f"Archive is {len(blob)} bytes, above the {cap}-byte inline cap."
+            base = public_base_url()
+            if base:
+                msg += f" Download it directly: {base}/download/{hash}/{tool}"
             raise ToolError(msg)
         return {
             "tool": tool,

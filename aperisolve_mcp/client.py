@@ -53,6 +53,24 @@ def api_timeout_s() -> int:
     return env_int("MCP_API_TIMEOUT_S", DEFAULT_TIMEOUT_S)
 
 
+def _path_segment(value: str, label: str) -> str:
+    """Reject anything that is not a single, literal path segment.
+
+    ``hash``, ``name`` and ``tool`` are spliced straight into the outbound
+    request path below, and httpx resolves ``.``/``..`` segments before
+    sending. A value containing a separator or a dot-segment could steer the
+    request to a different route than the one each method builds (ZEL-457
+    F3) — e.g. a crafted ``name`` reaching ``/upload`` or the ungated
+    ``/image/<name>``. Rejecting outright, rather than only stripping with
+    ``posixpath.basename()``, is what also catches a bare ``".."``, which
+    ``basename()`` leaves unchanged.
+    """
+    if not value or "/" in value or value in {".", ".."}:
+        msg = f"{label} must be a single path segment, not {value!r}"
+        raise ApiError(0, msg)
+    return value
+
+
 class AperiSolveClient:
     """Thin async wrapper over the AperiSolve HTTP routes used by the tools."""
 
@@ -100,7 +118,10 @@ class AperiSolveClient:
                 **kwargs,
             )
         except httpx.HTTPError as exc:
-            msg = f"Cannot reach the AperiSolve API at {self._client.base_url}: {exc}"
+            # Fixed string: `self._client.base_url` is the internal compose
+            # hostname (e.g. `http://web:5000`), which a tool error must not
+            # echo to the client (ZEL-457 F4).
+            msg = f"Cannot reach the AperiSolve API: {exc}"
             raise ApiError(0, msg) from exc
         if response.is_success:
             return response
@@ -130,10 +151,12 @@ class AperiSolveClient:
 
     async def status(self, hash_val: str, client_ip: str) -> dict[str, Any]:
         """GET /status/<hash> — ``{"status": "pending"|"running"|"completed"|"error"}``."""
+        hash_val = _path_segment(hash_val, "hash")
         return _as_dict(await self._request("GET", f"/status/{hash_val}", client_ip))
 
     async def infos(self, hash_val: str, client_ip: str) -> dict[str, Any]:
         """GET /infos/<hash> — file metadata, names and passwords tried."""
+        hash_val = _path_segment(hash_val, "hash")
         return _as_dict(await self._request("GET", f"/infos/{hash_val}", client_ip))
 
     async def results(self, hash_val: str, client_ip: str) -> dict[str, Any]:
@@ -142,6 +165,7 @@ class AperiSolveClient:
         The route answers 425 while ``results.json`` does not exist yet, which
         surfaces as ``ApiError(425, ...)``.
         """
+        hash_val = _path_segment(hash_val, "hash")
         payload = _as_dict(await self._request("GET", f"/result/{hash_val}", client_ip))
         results = payload.get("results")
         if not isinstance(results, dict):
@@ -151,11 +175,15 @@ class AperiSolveClient:
 
     async def download(self, hash_val: str, tool: str, client_ip: str) -> bytes:
         """GET /download/<hash>/<tool> — the raw ``<tool>.7z`` archive bytes."""
+        hash_val = _path_segment(hash_val, "hash")
+        tool = _path_segment(tool, "tool")
         response = await self._request("GET", f"/download/{hash_val}/{tool}", client_ip)
         return response.content
 
     async def image(self, hash_val: str, name: str, client_ip: str) -> bytes:
         """GET /image/<hash>/<name> — the raw bytes of one derived image."""
+        hash_val = _path_segment(hash_val, "hash")
+        name = _path_segment(name, "name")
         response = await self._request("GET", f"/image/{hash_val}/{name}", client_ip)
         return response.content
 

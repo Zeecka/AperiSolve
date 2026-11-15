@@ -101,6 +101,15 @@ ignore = ["CPY001", "D203", "D213"]
 # Dev-only generator scripts: print output, layout magic numbers, and lighter
 # annotation/docstring requirements are fine for standalone tooling.
 "scripts/*" = ["T201", "INP001", "PLR2004", "PLR0913", "PLR0917", "ANN", "D", "COM812"]
+# Security-review probes (docs/security/*-probe.py): standalone attack scripts
+# kept next to the review that cites their output. Same shape as scripts/, plus
+# the rules a probe exists to break -- it prints findings, subprocesses itself to
+# measure memory, catches bare Exception to report whatever escapes a handler,
+# and builds deliberately hostile inputs.
+"docs/security/*" = [
+    "T201", "INP001", "PLR2004", "PLR0913", "PLR0917", "ANN", "D", "COM812",
+    "S101", "S603", "BLE001", "E501", "E402", "PLR0915", "C901", "PERF203",
+]
 
 [tool.ty.rules]
 # `to_ihdr_bytes` casts three SmallInteger columns to int before handing them to

@@ -17,6 +17,8 @@ import asyncio
 import base64
 import io
 import json
+import struct
+import zlib
 from pathlib import Path
 from types import SimpleNamespace
 from typing import TYPE_CHECKING, Any, cast
@@ -103,6 +105,32 @@ def _png(width: int, height: int) -> bytes:
     buffer = io.BytesIO()
     PILImage.new("RGB", (width, height), (1, 2, 3)).save(buffer, format="PNG")
     return buffer.getvalue()
+
+
+def _png_with_declared_size(width: int, height: int) -> bytes:
+    """Build a tiny PNG whose header declares a huge size; the IDAT is junk.
+
+    Mirrors `tests/test_hardening.py`'s helper of the same purpose: Pillow
+    reads dimensions from the header before decoding any pixel data, so this
+    is enough to drive the pixel-ceiling and decompression-bomb guards
+    without actually allocating the declared size.
+    """
+
+    def chunk(tag: bytes, data: bytes) -> bytes:
+        return (
+            struct.pack(">I", len(data))
+            + tag
+            + data
+            + struct.pack(">I", zlib.crc32(tag + data) & 0xFFFFFFFF)
+        )
+
+    ihdr = struct.pack(">II5B", width, height, 8, 2, 0, 0, 0)
+    return (
+        b"\x89PNG\r\n\x1a\n"
+        + chunk(b"IHDR", ihdr)
+        + chunk(b"IDAT", zlib.compress(b"\x00"))
+        + chunk(b"IEND", b"")
+    )
 
 
 def ctx(forwarded_for: str | None = None, peer: str | None = None) -> Context[Any, Any]:
@@ -758,8 +786,11 @@ def test_download_extracted_returns_the_archive_as_base64() -> None:
     assert payload["size_bytes"] == len(b"PK-not-really-but-bytes")
 
 
-def test_download_extracted_refuses_an_oversize_archive_and_gives_the_url() -> None:
-    """Above the cap the agent gets a URL, not megabytes of base64."""
+def test_download_extracted_refuses_an_oversize_archive_and_gives_the_url(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """Above the cap, with a public base URL configured, the agent gets one."""
+    monkeypatch.setenv("MCP_PUBLIC_BASE_URL", "https://aperisolve.example")
     oversize = b"\x00" * (3 * 1024 * 1024)
 
     async def go() -> CallToolResult:
@@ -775,6 +806,28 @@ def test_download_extracted_refuses_an_oversize_archive_and_gives_the_url() -> N
 
     message = failure(go)
     assert f"{public_base_url()}/download/{HASH}/foremost" in message
+    assert str(len(oversize)) in message
+
+
+def test_download_extracted_oversize_omits_the_hint_with_no_public_base_url() -> None:
+    """Stock .env.example (no public base URL): no internal hostname leaks."""
+    assert public_base_url() == ""
+    oversize = b"\x00" * (3 * 1024 * 1024)
+
+    async def go() -> CallToolResult:
+        server, _, client = build(Recorder(archive=oversize))
+        try:
+            return await server.call_tool(
+                "download_extracted",
+                {"hash": HASH, "tool": "foremost"},
+                context=ctx("1.2.3.4"),
+            )
+        finally:
+            await client.aclose()
+
+    message = failure(go)
+    assert "web:5000" not in message
+    assert "Download it directly" not in message
     assert str(len(oversize)) in message
 
 
@@ -837,6 +890,82 @@ def test_get_layer_image_rejects_bytes_that_are_not_an_image() -> None:
             await client.aclose()
 
     assert "cannot decode" in failure(go).lower()
+
+
+def test_get_layer_image_rejects_an_image_above_the_pixel_ceiling() -> None:
+    """A legitimate-looking 36 MP plane must be refused, not decoded (ZEL-457 F1).
+
+    36 MP is under the analyzers' own 64 MP cap (a real derived image could be
+    this large) and under Pillow's own decompression-bomb threshold, so only
+    `_downscale_png`'s own ceiling can be what stops it.
+    """
+
+    async def go() -> CallToolResult:
+        server, _, client = build(Recorder(image=_png_with_declared_size(6000, 6000)))
+        try:
+            return await server.call_tool(
+                "get_layer_image",
+                {"hash": HASH, "name": "Red_bit_0.png"},
+                context=ctx("1.2.3.4"),
+            )
+        finally:
+            await client.aclose()
+
+    assert "megapixel" in failure(go).lower()
+
+
+def test_get_layer_image_rejects_a_decompression_bomb_cleanly() -> None:
+    """Above Pillow's hard threshold it must not escape as `UnexpectedToolError` (F2)."""
+
+    async def go() -> CallToolResult:
+        server, _, client = build(Recorder(image=_png_with_declared_size(20_000, 20_000)))
+        try:
+            return await server.call_tool(
+                "get_layer_image",
+                {"hash": HASH, "name": "Red_bit_0.png"},
+                context=ctx("1.2.3.4"),
+            )
+        finally:
+            await client.aclose()
+
+    assert "cannot decode" in failure(go).lower()
+
+
+# --------------------------------------------------------------------------- #
+# Path traversal in tool arguments (ZEL-457 F3)
+# --------------------------------------------------------------------------- #
+
+
+def test_path_traversal_in_hash_or_name_never_reaches_the_api() -> None:
+    """`..` in `hash`/`name`/`tool` must not steer the outbound request path.
+
+    httpx resolves dot-segments before sending, so without a guard these
+    would reach `/upload`, `/infos` or the ungated single-segment
+    `/image/<name>` instead of the route each method builds.
+    """
+    cases = [
+        ("get_layer_image", {"hash": HASH, "name": "../deadbeefcafe.png"}),
+        ("get_layer_image", {"hash": HASH, "name": "../../upload"}),
+        ("get_status", {"hash": "../../infos/" + HASH}),
+        ("download_extracted", {"hash": "..", "tool": "../../result/" + HASH}),
+        ("get_layer_image", {"hash": "a/b", "name": "x.png"}),
+    ]
+    for tool, args in cases:
+        recorder = Recorder()
+
+        async def go(
+            tool: str = tool,
+            args: dict[str, str] = args,
+            recorder: Recorder = recorder,
+        ) -> CallToolResult:
+            server, _, client = build(recorder)
+            try:
+                return await server.call_tool(tool, args, context=ctx("1.2.3.4"))
+            finally:
+                await client.aclose()
+
+        failure(go)
+        assert recorder.requests == [], (tool, args)
 
 
 # --------------------------------------------------------------------------- #
