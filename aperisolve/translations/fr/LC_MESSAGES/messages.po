@@ -152,6 +152,14 @@ msgid "Alpha"
 msgstr "Alpha"
 
 #: aperisolve/i18n.py:90
+msgid "Transforms"
+msgstr "Transformations"
+
+#: aperisolve/i18n.py:91
+msgid "Frames"
+msgstr "Images de l'animation"
+
+#: aperisolve/i18n.py:90
 msgid "Spectrogram"
 msgstr "Spectrogramme"
 

@@ -148,6 +148,14 @@ msgid "Alpha"
 msgstr "透明通道"
 
 #: aperisolve/i18n.py:90
+msgid "Transforms"
+msgstr "图像变换"
+
+#: aperisolve/i18n.py:91
+msgid "Frames"
+msgstr "帧"
+
+#: aperisolve/i18n.py:90
 msgid "Spectrogram"
 msgstr "频谱图"
 

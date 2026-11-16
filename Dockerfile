@@ -75,6 +75,27 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     && gem install zsteg -v 0.2.14 \
     && rm -rf /var/lib/apt/lists/*
 
+# StegoVeritas in an isolated venv so its pip-pulled `binwalk` dependency never
+# shadows the apt `binwalk` binary used by the binwalk analyzer. The venv is
+# intentionally NOT on PATH; the analyzer calls /opt/stegoveritas-venv/bin/python
+# by absolute path. Nine pinned packages, installed from hashes with no
+# dependency resolution (docker/stegoveritas-requirements.txt): no unpinned
+# `pip install`, and no `stegoveritas_install_deps` (it only apt-installs
+# exiftool, 7z and foremost, already installed above).
+COPY docker/stegoveritas-requirements.txt /tmp/stegoveritas-requirements.txt
+RUN UV_PYTHON_DOWNLOADS=never uv venv --python /usr/local/bin/python3 /opt/stegoveritas-venv \
+    && uv pip install --python /opt/stegoveritas-venv/bin/python \
+        --no-deps --require-hashes -r /tmp/stegoveritas-requirements.txt \
+    && rm /tmp/stegoveritas-requirements.txt
+
+# The driver calls StegoVeritas' per-operation functions (never its CLI, which
+# would recompute the bit planes in an unbounded pool). The self-test builds
+# tiny RGB, palette, RGBA and gray images plus GIF and APNG animations and
+# asserts the outputs: a StegoVeritas or Pillow release that breaks the driver
+# fails the build here instead of at the first deep submission.
+COPY docker/stegoveritas_driver.py /opt/stegoveritas/driver.py
+RUN /opt/stegoveritas-venv/bin/python -I /opt/stegoveritas/driver.py --selftest
+
 # Install OpenStego
 COPY --from=builder /tmp/openstego.deb /tmp/openstego.deb
 RUN dpkg -i /tmp/openstego.deb || apt-get install -f -y --no-install-recommends \
