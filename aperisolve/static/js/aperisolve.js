@@ -5,6 +5,7 @@ const TOOL_ORDER = window.TOOL_ORDER || [
   "spectrogram",
   "color_remapping",
   "stegoveritas",
+  "stegoveritas_frames",
   "file",
   "pdfinfo",
   "pdfid",

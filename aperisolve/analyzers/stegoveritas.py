@@ -1,4 +1,4 @@
-"""Partial StegoVeritas: image transforms (deep only) for every image.
+"""Partial StegoVeritas: image transforms (deep only) and animated-GIF/APNG frames.
 
 StegoVeritas' CLI is not used: it would redo the bit planes (Decomposer's job)
 in an unbounded process pool, and brute-LSB, carving, steghide and exif (other
@@ -17,6 +17,9 @@ from .pil_utils import MAX_IMAGE_PIXELS, PALETTE_NOTE
 # pip-pulled `binwalk` cannot shadow the apt binary of the binwalk analyzer.
 VENV_PYTHON = Path("/opt/stegoveritas-venv/bin/python")
 DRIVER = Path("/opt/stegoveritas/driver.py")
+
+# Each frame is written at full size, so the count is capped before extraction.
+MAX_FRAMES = 100
 
 
 class _DriverAnalyzer(SubprocessAnalyzer):
@@ -94,3 +97,18 @@ class StegoveritasAnalyzer(_DriverAnalyzer):
     deep_only = True
     accepts = frozenset({"image"})
     driver_mode = "transforms"
+
+
+class StegoveritasFramesAnalyzer(_DriverAnalyzer):
+    """Every frame of an animated GIF or APNG, as images and as a 7z."""
+
+    name = "stegoveritas_frames"
+    register = True
+    display_order = 26
+    has_archive = True
+    accepts = frozenset({"animated"})
+    driver_mode = "frames"
+
+    def extra_args(self) -> list[str]:
+        """Frame cap: StegoVeritas' extraction loop cannot be bounded from outside."""
+        return [str(MAX_FRAMES)]

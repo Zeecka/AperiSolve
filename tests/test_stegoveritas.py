@@ -9,6 +9,7 @@ import importlib.util
 import json
 import os
 import re
+import shutil
 import subprocess
 import sys
 from pathlib import Path
@@ -22,7 +23,11 @@ from PIL import Image
 from aperisolve.analyzers import stegoveritas
 from aperisolve.analyzers.base_analyzer import SubprocessAnalyzer
 from aperisolve.analyzers.pil_utils import MAX_IMAGE_PIXELS, PALETTE_NOTE
-from aperisolve.analyzers.stegoveritas import StegoveritasAnalyzer
+from aperisolve.analyzers.stegoveritas import (
+    MAX_FRAMES,
+    StegoveritasAnalyzer,
+    StegoveritasFramesAnalyzer,
+)
 
 DRIVER_PATH = Path(__file__).resolve().parent.parent / "docker" / "stegoveritas_driver.py"
 BIT_PLANE_RE = re.compile(r"_(Red|Green|Blue|Alpha)_[0-9]")
@@ -130,6 +135,35 @@ def test_wrapper_errors(
     """Bad JSON, a crash (last traceback line only) and a driver error all become error results."""
     _fake_run(monkeypatch, tmp_path, **kwargs)
     assert _run(tmp_path) == {"status": "error", "error": expected}
+
+
+def test_frames_wrapper_passes_the_cap_and_links_the_archive(
+    monkeypatch: pytest.MonkeyPatch,
+    tmp_path: Path,
+) -> None:
+    """The frame cap travels in argv; frames get image URLs and a 7z of the frames folder."""
+    payload = {"status": "ok", "images": {"Frames": ["stegoveritas_frames_a_frame_0.gif"]}}
+    calls = _fake_run(monkeypatch, tmp_path, returncode=0, stdout=json.dumps(payload), stderr="")
+    out = tmp_path / "sub"
+    (out / "stegoveritas_frames").mkdir(parents=True)
+    (out / "stegoveritas_frames" / "a_frame_0.gif").touch()
+    archived: list[Path] = []
+    monkeypatch.setattr(
+        StegoveritasFramesAnalyzer,
+        "generate_archive",
+        lambda _self, extracted_dir=None: archived.append(extracted_dir) or "",
+    )
+    result = StegoveritasFramesAnalyzer(tmp_path / "img.gif", out).get_results()
+    assert result["images"] == {"Frames": ["/image/sub/stegoveritas_frames_a_frame_0.gif"]}
+    assert result["download"] == "/download/sub/stegoveritas_frames"
+    assert archived == [out / "stegoveritas_frames"]
+    assert calls[0][3:] == [
+        "frames",
+        str(tmp_path / "img.gif"),
+        str(out),
+        str(MAX_IMAGE_PIXELS),
+        str(MAX_FRAMES),
+    ]
 
 
 def test_wrapper_reports_missing_venv(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
@@ -317,3 +351,30 @@ def test_analyzer_end_to_end_with_the_real_driver(
     assert len(entry["images"]["Transforms"]) >= 14
     assert "download" not in entry
     assert not (out / "stegoveritas.7z").exists()
+
+
+@pytest.mark.skipif(shutil.which("7z") is None, reason="7z not installed")
+def test_frames_analyzer_end_to_end_with_the_real_driver(
+    driver: ModuleType,
+    monkeypatch: pytest.MonkeyPatch,
+    tmp_path: Path,
+) -> None:
+    """A 3-frame GIF yields 3 images and a 7z; the temporary folder is gone."""
+    _ = driver
+    python = _venv_python()
+    if python is None:
+        pytest.skip("no isolated stegoveritas interpreter (set STEGOVERITAS_PYTHON)")
+    monkeypatch.setattr(stegoveritas, "VENV_PYTHON", python)
+    monkeypatch.setattr(stegoveritas, "DRIVER", DRIVER_PATH)
+    src = tmp_path / "anim.gif"
+    _animation(src, "GIF", 3)
+    out = tmp_path / "sub"
+    out.mkdir()
+    StegoveritasFramesAnalyzer.execute(src, out)
+    entry = json.loads((out / "results.json").read_text(encoding="utf-8"))["stegoveritas_frames"]
+    assert entry["status"] == "ok"
+    assert len(entry["images"]["Frames"]) == 3
+    assert entry["download"] == f"/download/{out.name}/stegoveritas_frames"
+    assert (out / "stegoveritas_frames.7z").is_file()
+    assert not (out / "stegoveritas_frames").exists()
+    assert all((out / Path(url).name).is_file() for url in entry["images"]["Frames"])

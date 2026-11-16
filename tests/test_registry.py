@@ -13,6 +13,7 @@ EXPECTED_TOOL_ORDER = [
     "spectrogram",
     "color_remapping",
     "stegoveritas",
+    "stegoveritas_frames",
     "file",
     "pdfinfo",
     "pdfid",
@@ -35,6 +36,7 @@ EXPECTED_ARCHIVE_TOOLS = {
     "binwalk",
     "foremost",
     "steghide",
+    "stegoveritas_frames",
     "openstego",
     "pcrt",
     "jpseek",
@@ -52,6 +54,7 @@ PNG_ONLY_TOOLS = {"pngcheck", "pcrt", "zsteg"}
 JPEG_ONLY_TOOLS = {"jsteg", "jpseek", "outguess"}
 AUDIO_ONLY_TOOLS = {"spectrogram"}
 PDF_ONLY_TOOLS = {"pdfinfo", "pdfid"}
+ANIMATED_ONLY_TOOLS = {"stegoveritas_frames"}
 
 
 def test_discovery_finds_all_analyzers() -> None:
@@ -138,3 +141,21 @@ def test_tags_none_matches_legacy() -> None:
         gated = [cls.name for cls in get_analyzers(deep=deep, tags=None)]
         legacy = [cls.name for cls in get_analyzers(deep=deep)]
         assert gated == legacy
+
+
+def test_frames_analyzer_runs_only_for_animated_uploads() -> None:
+    """A still PNG never spawns the frames analyzer; an animated GIF/APNG does, deep or not."""
+    still = {cls.name for cls in get_analyzers(deep=True, tags=frozenset({"png", "image"}))}
+    assert still.isdisjoint(ANIMATED_ONLY_TOOLS)
+    for deep in (False, True):
+        for fmt in ("gif", "png"):
+            tags = frozenset({fmt, "image", "animated"})
+            names = {cls.name for cls in get_analyzers(deep=deep, tags=tags)}
+            assert names >= ANIMATED_ONLY_TOOLS
+            assert ("stegoveritas" in names) is deep
+
+
+def test_transforms_analyzer_is_deep_only() -> None:
+    """Default uploads pay nothing for StegoVeritas' transforms."""
+    names = {cls.name for cls in get_analyzers(deep=False, tags=frozenset({"png", "image"}))}
+    assert "stegoveritas" not in names

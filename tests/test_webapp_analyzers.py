@@ -78,6 +78,7 @@ JSTEG = Upload(FIXTURES / "jsteg.jpg")
 OPENSTEGO = Upload(FIXTURES / "openstego.png", password=STEGO_PASSWORD)
 JPSEEK = Upload(FIXTURES / "jphide.jpg", password=STEGO_PASSWORD)
 OUTGUESS = Upload(FIXTURES / "outguess.jpg", password=STEGO_PASSWORD, deep=True)
+ANIMATED_GIF = Upload(FIXTURES / "animated.gif")
 TONE_WAV = Upload(FIXTURES / "tone.wav")
 SAMPLE_PDF = Upload(FIXTURES / "sample.pdf")
 
@@ -106,6 +107,7 @@ CASES = [
     AnalyzerCase("foremost", POLYGLOT, expect_download=True),
     AnalyzerCase("steghide", STEGHIDE, expect_download=True),
     AnalyzerCase("stegoveritas", PLAIN_DEEP),
+    AnalyzerCase("stegoveritas_frames", ANIMATED_GIF, expect_download=True),
     AnalyzerCase("jsteg", JSTEG),
     AnalyzerCase("openstego", OPENSTEGO, expect_download=True),
     AnalyzerCase("jpseek", JPSEEK, expect_download=True),
