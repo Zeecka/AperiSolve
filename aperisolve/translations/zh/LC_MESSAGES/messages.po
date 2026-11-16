@@ -217,9 +217,11 @@ msgstr "询问 AI"
 
 #: aperisolve/i18n.py:119
 msgid ""
-"Analyzer outputs and any passwords already tried (which may include "
-"content extracted from your file) are sent to the provider you selected."
-msgstr "分析器输出以及已尝试过的密码（可能包含从你的文件中提取的内容）会发送给你选择的服务商。"
+"Analyzer outputs, the uploaded image, the images computed from it and any "
+"passwords already tried (which may include content extracted from your "
+"file) are sent to the provider you selected."
+msgstr ""
+"分析器输出、上传的图片、由其计算得到的图片以及已尝试过的密码（可能包含从你的文件中提取的内容）会发送给你选择的服务商。"
 
 #: aperisolve/i18n.py:125
 msgid ""
@@ -513,3 +515,11 @@ msgstr "搜索 Wiki"
 msgid "Page navigation"
 msgstr "页面导航"
 
+#: aperisolve/i18n.py
+msgid "Preparing the images…"
+msgstr "正在准备图片…"
+
+#: aperisolve/i18n.py
+msgid ""
+"The model did not accept the images; asking again with text only…"
+msgstr "模型未接受图片；正在仅用文本重新提问…"

@@ -227,12 +227,11 @@ msgstr "KI fragen"
 
 #: aperisolve/i18n.py:119
 msgid ""
-"Analyzer outputs and any passwords already tried (which may include "
-"content extracted from your file) are sent to the provider you selected."
+"Analyzer outputs, the uploaded image, the images computed from it and any "
+"passwords already tried (which may include content extracted from your "
+"file) are sent to the provider you selected."
 msgstr ""
-"Die Ausgaben der Analysatoren und alle bereits versuchten Passwörter (die"
-" aus Ihrer Datei extrahierte Inhalte enthalten können) werden an den von "
-"Ihnen gewählten Anbieter gesendet."
+"Die Ausgaben der Analysatoren, das hochgeladene Bild, die daraus berechneten Bilder und alle bereits versuchten Passwörter (die aus Ihrer Datei extrahierte Inhalte enthalten können) werden an den von Ihnen gewählten Anbieter gesendet."
 
 #: aperisolve/i18n.py:125
 msgid ""
@@ -546,3 +545,11 @@ msgstr "Wiki durchsuchen"
 msgid "Page navigation"
 msgstr "Seitennavigation"
 
+#: aperisolve/i18n.py
+msgid "Preparing the images…"
+msgstr "Bilder werden vorbereitet…"
+
+#: aperisolve/i18n.py
+msgid ""
+"The model did not accept the images; asking again with text only…"
+msgstr "Das Modell hat die Bilder nicht akzeptiert; erneute Anfrage nur mit Text…"

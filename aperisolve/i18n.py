@@ -113,12 +113,16 @@ def js_catalog() -> dict[str, str]:
         # deliberately English-only and lives in the JS; only the UI around it
         # is translated.
         "Ask AI": _("Ask AI"),
-        "Analyzer outputs and any passwords already tried (which may include "
-        "content extracted from your file) are sent to the provider you "
-        "selected.": _(
-            "Analyzer outputs and any passwords already tried (which may include "
-            "content extracted from your file) are sent to the provider you "
-            "selected.",
+        "Analyzer outputs, the uploaded image, the images computed from it and any "
+        "passwords already tried (which may include content extracted from your "
+        "file) are sent to the provider you selected.": _(
+            "Analyzer outputs, the uploaded image, the images computed from it and any "
+            "passwords already tried (which may include content extracted from your "
+            "file) are sent to the provider you selected.",
+        ),
+        "Preparing the images…": _("Preparing the images…"),
+        "The model did not accept the images; asking again with text only…": _(
+            "The model did not accept the images; asking again with text only…",
         ),
         "Answers are advisory. Tool output comes from a file an attacker may have "
         "crafted: read any command it suggests before you run it.": _(

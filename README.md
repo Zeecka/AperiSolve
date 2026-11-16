@@ -60,14 +60,18 @@ Aperi'Solve is an open-source steganalysis web platform that performs automated 
 - **Internationalization**: UI available in English, French, Spanish, German,
   Russian, Chinese and Portuguese under language-prefixed URLs (`/fr/`, `/es/`, …).
 - **"Ask AI" panel** on the result page, bring-your-own-key: the browser builds
-  a compact digest of the analyzer output it already holds and calls your own
-  LLM provider directly — OpenRouter, OpenAI, Anthropic, or any
-  OpenAI-compatible base URL (Ollama, LM Studio, Mistral, Groq…). The answer
-  names the likely hiding technique, its evidence per tool, and what to try
-  next. Nothing LLM-related runs on the server: your key and the analyzer
-  output never pass through it, so the feature costs a self-hosted instance
-  nothing. Keys stay in memory unless you tick "remember on this device", and
-  the whole panel disappears with `AI_PANEL_ENABLED=0`.
+  a structured digest of the analyzer output it already holds, attaches the
+  uploaded image and the images computed from it (bit planes, colour
+  remappings, spectrograms, downscaled in the browser) for vision-capable
+  models, and calls your own LLM provider directly — OpenRouter, OpenAI,
+  Anthropic, or any OpenAI-compatible base URL (Ollama, LM Studio, Mistral,
+  Groq…). A text-only model gets the same question without the images. The
+  answer comes back as a verdict, its evidence per tool or image, what to try
+  next, and the suspicious strings found. Nothing LLM-related runs on the
+  server: your key, the analyzer output and the images never pass through it,
+  so the feature costs a self-hosted instance nothing. Keys stay in memory
+  unless you tick "remember on this device", and the whole panel disappears
+  with `AI_PANEL_ENABLED=0`.
 - **MCP server** at `https://www.aperisolve.com/mcp` ([docs/mcp.md](docs/mcp.md)):
   point Claude, Cursor or any MCP client at it and an agent can upload a file,
   wait for the analysis, and read the analyzer output page by page — eight

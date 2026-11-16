@@ -224,12 +224,11 @@ msgstr "Спросить ИИ"
 
 #: aperisolve/i18n.py:119
 msgid ""
-"Analyzer outputs and any passwords already tried (which may include "
-"content extracted from your file) are sent to the provider you selected."
+"Analyzer outputs, the uploaded image, the images computed from it and any "
+"passwords already tried (which may include content extracted from your "
+"file) are sent to the provider you selected."
 msgstr ""
-"Вывод анализаторов и уже опробованные пароли (которые могут содержать "
-"данные, извлечённые из вашего файла) отправляются выбранному вами "
-"провайдеру."
+"Вывод анализаторов, загруженное изображение, вычисленные из него изображения и уже опробованные пароли (которые могут содержать данные, извлечённые из вашего файла) отправляются выбранному вами провайдеру."
 
 #: aperisolve/i18n.py:125
 msgid ""
@@ -540,3 +539,11 @@ msgstr "Поиск по вики"
 msgid "Page navigation"
 msgstr "Навигация по страницам"
 
+#: aperisolve/i18n.py
+msgid "Preparing the images…"
+msgstr "Подготовка изображений…"
+
+#: aperisolve/i18n.py
+msgid ""
+"The model did not accept the images; asking again with text only…"
+msgstr "Модель не приняла изображения; повторный запрос только с текстом…"

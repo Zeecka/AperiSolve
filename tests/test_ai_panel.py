@@ -164,9 +164,24 @@ def test_key_never_reaches_a_url_a_log_or_the_server() -> None:
 
 
 def test_model_output_is_never_written_as_markup() -> None:
-    """Streamed model text goes through textContent only."""
+    """Model text reaches the DOM through textContent/createTextNode only.
+
+    The Markdown renderer builds elements with createElement and fills them
+    with textContent; it never parses model text as HTML, and it never emits
+    a link or an image element from it.
+    """
     source = PANEL_JS.read_text(encoding="utf-8")
-    assert "answerEl.textContent" in source
+    renderer = source[source.index("function appendInline") : source.index("key store */")]
+    assert "textContent" in renderer
+    assert "createTextNode" in renderer
+    for forbidden in (
+        "innerHTML",
+        "outerHTML",
+        "insertAdjacentHTML",
+        'createElement("a")',
+        'createElement("img")',
+    ):
+        assert forbidden not in renderer, forbidden
     assert "answerEl.innerHTML" not in source
     # The only innerHTML writes are the panel's own static shell and the
     # provider/model option lists.
@@ -224,18 +239,75 @@ def test_oversized_tool_output_is_truncated_head_and_tail(probe_facts: dict) -> 
     assert re.fullmatch(r"\[\.\.\. \d+ bytes omitted \.\.\.\]", facts["singleLineMarker"])
 
 
-def test_digest_stays_inside_its_budget_and_sends_no_image(probe_facts: dict) -> None:
-    """The digest is capped, labelled untrusted, and lists images by name only."""
+def test_digest_is_structured_capped_and_labelled_untrusted(probe_facts: dict) -> None:
+    """Fixed sections in a fixed order, fenced outputs, the question last."""
     facts = probe_facts["digest"]
     assert facts["withinTotalBudget"]
     assert facts["saysUntrusted"]
     assert facts["hasFileName"]
-    assert facts["listsImageNameOnly"]
     assert facts["keepsEveryOrderedTool"]
     assert facts["skipsUnorderedTool"]
     assert facts["reportsToolError"]
     assert facts["truncatesBigTool"]
     assert facts["stringsHeadAndTail"]
+    assert facts["sections"] == [
+        "## FILE",
+        "## IMAGES ATTACHED",
+        "## ANALYZER OUTPUT",
+        "## QUESTION",
+    ]
+    assert facts["questionIsLast"]
+    assert facts["customQuestionUsed"]
+    # Tool output lives inside a code fence it cannot close.
+    assert facts["zstegFenceIsLonger"]
+    # Without an encoder (node, jsdom) nothing is attached and the digest says
+    # so, listing the images by name only — never by URL.
+    assert facts["noImageAttachedIsSaid"]
+    assert facts["listsImageNameOnly"]
+
+
+def test_every_displayed_image_is_collected_original_first(probe_facts: dict) -> None:
+    """The original, then every derived image in page order, under a hard cap."""
+    facts = probe_facts["images"]
+    assert facts["firstIsOriginal"]
+    assert facts["originalUrl"] == "image/abc.png"  # the same relative path the <img> uses
+    # 1 original + 40 decomposer planes + 8 remappings + 1 repaired PNG.
+    assert facts["count"] == 50
+    assert facts["secondLabel"] == "decomposer / Superimposed / superimposed_bit_0.png"
+    assert facts["lastLabel"] == "pcrt / repaired.png"
+    assert facts["everyDerivedFlagged"]
+    assert facts["skipsFailedTool"]
+    assert facts["dropped"] == 0
+    assert facts["audioHasNoOriginalButKeepsSpectrogram"]
+    assert facts["maxImages"] == 64
+    assert facts["capped"]
+
+
+def test_first_turn_carries_images_in_each_provider_shape(probe_facts: dict) -> None:
+    """Text, then labelled images, then outputs and question — per provider API."""
+    facts = probe_facts["firstTurn"]
+    assert facts["digestListsAttached"]
+    assert facts["digestNamesFailed"]
+    assert facts["attachedImageNotRepeatedPerTool"]
+    assert facts["partTypes"] == ["text", "text", "image", "text", "image", "text"]
+    assert facts["imagesSitBetweenHeadAndBody"]
+    assert facts["labelsPrecedeImages"]
+    assert facts["anthropicImageBlock"] == {
+        "type": "image",
+        "source": {"type": "base64", "media_type": "image/png", "data": "AAAA"},
+    }
+    assert facts["anthropicTypes"] == ["text", "text", "image", "text", "image", "text"]
+    assert facts["openaiImageBlock"] == {
+        "type": "image_url",
+        "image_url": {"url": "data:image/png;base64,AAAA", "detail": "auto"},
+    }
+    assert facts["openaiDerivedDetail"] == "low"
+    assert facts["openaiTypes"] == ["text", "text", "image_url", "text", "image_url", "text"]
+    # The text-only fallback keeps everything but the pixels.
+    assert facts["textOnlyKeepsQuestion"]
+    assert facts["textOnlyHasNoBase64"]
+    assert facts["plainStringWhenNoImage"]
+    assert facts["plainStringTurnUntouched"]
 
 
 def test_provider_requests_match_each_api(probe_facts: dict) -> None:
@@ -262,8 +334,17 @@ def test_provider_requests_match_each_api(probe_facts: dict) -> None:
     assert facts["customEndpointRejectsNonLoopbackHttp"] == ""
     assert facts["customEndpointRejectsOtherScheme"] == ""
     assert facts["customEndpointAllowsLoopbackIp"] == "http://127.0.0.1:11434/v1/chat/completions"
-    assert facts["promptVersion"] >= 1
+    assert facts["promptVersion"] >= 2
     assert facts["promptForbidsFollowingData"]
+    # The prompt names the sections the digest is built from and fixes the
+    # shape of the answer the renderer expects.
+    assert facts["promptNamesTheInputSections"]
+    assert facts["promptHeadings"] == [
+        "## Verdict",
+        "## Evidence",
+        "## Next steps",
+        "## Suspicious strings",
+    ]
 
 
 def test_streams_survive_frames_split_across_reads(probe_facts: dict) -> None:
@@ -394,6 +475,11 @@ def test_the_only_request_goes_to_the_provider_with_the_key_in_a_header(
     assert request["keyIsHeaderOnly"]
     assert request["credentialsOmitted"]
     assert request["systemPromptFirst"]
+    # jsdom has no canvas, so no image is attached: the turn is a plain
+    # string, and the digest says that nothing was attached rather than
+    # letting the model assume it saw the file.
+    assert request["digestIsPlainString"]
+    assert request["digestSaysNoImageAttached"]
     assert request["digestSaysUntrusted"]
     # The crafted EXIF comment travels as data inside the digest, which the
     # system prompt frames as untrusted — it is never acted on.
@@ -401,13 +487,49 @@ def test_the_only_request_goes_to_the_provider_with_the_key_in_a_header(
 
 
 def test_streamed_answer_lands_as_text_nodes(dom_facts: dict) -> None:
-    """The answer is visible, complete, and contains no parsed markup."""
+    """The answer is visible, complete, and a plain answer is one paragraph."""
     assert dom_facts["answerBoxVisible"]
     assert dom_facts["answerRendered"] == (
         "Likely: LSB in the blue channel.\nEvidence: zsteg b1,rgb,lsb,xy"
     )
-    assert dom_facts["answerHasNoChildNodes"]
+    assert dom_facts["answerIsOneParagraph"]
     assert dom_facts["resetOfferedAfterAnswer"]
+
+
+def test_markdown_answer_is_rendered_without_links_or_markup(dom_facts: dict) -> None:
+    """Headings, lists, bold and code render; tags and links stay literal text."""
+    facts = dom_facts["markdown"]
+    assert facts["headings"] == ["Verdict", "Evidence", "Next steps", "Suspicious strings"]
+    assert facts["bulletCount"] == 2
+    assert facts["numberedCount"] == 2
+    assert facts["strongText"] == ["hidden"]
+    assert facts["inlineCode"] == ["blue", "b1,rgb,lsb,xy", "aperisolve"]
+    assert facts["fencedCode"] == ["flag{x}"]
+    assert facts["forbiddenElements"] == 0
+    assert facts["eventHandlerAttributes"] == 0
+    assert facts["hostileKeptAsText"]
+
+
+def test_images_travel_in_the_first_turn_and_fall_back_to_text(dom_facts: dict) -> None:
+    """Original + derived images attached once; a 400 retries text-only, once."""
+    facts = dom_facts["images"]
+    assert facts["requests"] == 3  # with images, text-only retry, follow-up
+    assert facts["firstTurnIsArray"]
+    assert facts["labels"] == [
+        "Image 1: original / secret.png",
+        "Image 2: decomposer / Red / Red_bit_0.png",
+        "Image 3: decomposer / Red / Red_bit_1.png",
+    ]
+    assert [part["url"] for part in facts["imageParts"]] == ["data:image/png;base64,QUJD"] * 3
+    assert [part["detail"] for part in facts["imageParts"]] == ["auto", "low", "low"]
+    assert facts["digestListsThree"]
+    assert facts["originalDownscaled"]
+    assert facts["keyNeverInBody"]
+    assert facts["retryIsPlainText"]
+    assert facts["retrySaysWhy"]
+    assert facts["retryKeepsDigest"]
+    assert facts["answerAfterRetry"] == "text-only answer"
+    assert facts["historyStaysTextOnlyForFollowUps"]
 
 
 def test_the_checkbox_alone_decides_whether_the_key_is_stored(dom_facts: dict) -> None:

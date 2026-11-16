@@ -2143,14 +2143,78 @@ footer::before {
     color: var(--text-dim);
 }
 
-/* The answer streams in as plain text, so keep the wrapping readable. */
-#ai-answer-box pre {
-    max-height: 30rem;
+/* The answer is the model's Markdown rendered as real headings, lists and code
+   (ai_panel.js renderMarkdown, textContent-only nodes), in the body font. */
+.ai-answer-box {
+    max-height: 40rem;
+    overflow: auto;
+    padding: var(--spacing-md) var(--spacing-lg);
+    background-color: var(--surface-2, var(--surface-1));
+    border: 1px solid var(--border-neutral);
+    border-radius: var(--border-radius);
 }
 
-#ai-answer {
-    white-space: pre-wrap;
+.ai-answer-box:hover .copy-icon {
+    display: block;
+}
+
+.ai-answer {
+    font-size: 0.95rem;
+    line-height: 1.5;
     word-break: break-word;
+}
+
+.ai-answer h3,
+.ai-answer h4 {
+    margin: var(--spacing-md) 0 var(--spacing-xs);
+    font-size: 1rem;
+    color: var(--theme-green);
+}
+
+.ai-answer h3:first-child,
+.ai-answer h4:first-child {
+    margin-top: 0;
+}
+
+.ai-answer p,
+.ai-answer ul,
+.ai-answer ol {
+    margin: 0 0 var(--spacing-sm);
+    white-space: pre-wrap;
+}
+
+.ai-answer ul,
+.ai-answer ol {
+    padding-left: 1.5rem;
+}
+
+.ai-answer li {
+    margin-bottom: var(--spacing-xs);
+}
+
+.ai-answer code {
+    padding: 0 0.3em;
+    font-size: 0.9em;
+    background-color: rgba(159, 239, 0, 0.08);
+    border-radius: 0.25rem;
+}
+
+.ai-answer pre {
+    margin: 0 0 var(--spacing-sm);
+    padding: var(--spacing-sm);
+    overflow-x: auto;
+    white-space: pre-wrap;
+}
+
+.ai-answer pre code {
+    padding: 0;
+    background: none;
+}
+
+.ai-answer hr {
+    margin: var(--spacing-md) 0;
+    border: 0;
+    border-top: 1px solid var(--border-neutral);
 }
 
 .ai-jump-row {
