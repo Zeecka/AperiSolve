@@ -2060,7 +2060,16 @@ footer::before {
 
 /* ======== "Ask AI" panel (BYOK) ======== */
 
-/* Sits on .analyzer, so the panel reads as one more result block. */
+/* A raised card, so the panel stands apart from the analyzer outputs around it. */
+.analyzer.ai-panel {
+    padding: var(--spacing-lg);
+    background-color: var(--surface-1);
+    background-image: linear-gradient(180deg, rgba(159, 239, 0, 0.03), rgba(0, 0, 0, 0) 40%);
+    border: 1px solid var(--green-line);
+    border-radius: var(--border-radius);
+    box-shadow: var(--shadow-card);
+}
+
 .ai-panel .ai-note,
 .ai-panel .ai-warning {
     font-size: 0.85rem;
@@ -2071,8 +2080,13 @@ footer::before {
     color: var(--text-dim);
 }
 
+/* Amber edge, neutral text: still noticed, without a paragraph of yellow. */
 .ai-panel .ai-warning {
-    color: #ffd24d;
+    padding: var(--spacing-sm) var(--spacing-md);
+    color: var(--text);
+    background-color: rgba(255, 210, 77, 0.06);
+    border-left: 3px solid #ffd24d;
+    border-radius: 0.35rem;
 }
 
 .ai-grid {
@@ -2126,7 +2140,7 @@ footer::before {
     margin-bottom: 0;
     min-height: 1.2rem;
     font-size: 0.9rem;
-    color: var(--theme-green);
+    color: var(--text-dim);
 }
 
 /* The answer streams in as plain text, so keep the wrapping readable. */
@@ -2145,19 +2159,31 @@ footer::before {
     margin-bottom: var(--spacing-md);
 }
 
-/* Outlined, so neither competes with the upload/ask buttons. */
-.ai-jump.btn,
-.ai-panel .btn-secondary {
+/* Outlined, so it does not compete with the upload button. */
+.ai-jump.btn {
     background: transparent;
     color: var(--theme-green);
     border: 1px solid var(--theme-green);
     box-shadow: none;
 }
 
-.ai-jump.btn:hover,
+.ai-jump.btn:hover {
+    background: var(--green-tint);
+    color: var(--theme-green);
+}
+
+/* Neutral until hovered: "Ask" stays the one green call to action. */
+.ai-panel .btn-secondary {
+    background: transparent;
+    color: var(--text);
+    border: 1px solid var(--border-neutral);
+    box-shadow: none;
+}
+
 .ai-panel .btn-secondary:hover {
     background: var(--green-tint);
     color: var(--theme-green);
+    border-color: var(--green-line);
 }
 
 .ai-label-row {
@@ -2168,6 +2194,10 @@ footer::before {
 
 .ai-key-link {
     font-size: 0.8rem;
+    color: var(--text-dim);
+}
+
+.ai-key-link:hover {
     color: var(--theme-green);
 }
 
@@ -2188,6 +2218,10 @@ footer::before {
 /* Three narrow columns truncate the model name and halve the key field on a
    phone: stack the fields instead. */
 @media screen and (max-width: 36rem) {
+    .analyzer.ai-panel {
+        padding: var(--spacing-md);
+    }
+
     .ai-grid {
         grid-template-columns: 1fr;
     }
