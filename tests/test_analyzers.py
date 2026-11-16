@@ -204,6 +204,53 @@ def test_detect_file_type_png() -> None:
     assert "image" in ft.tags
 
 
+def _animation(path: Path, fmt: str, count: int) -> None:
+    """Write a ``count``-frame animation (GIF or APNG) with Pillow."""
+    frames = [Image.new("RGB", (8, 8), (i * 40, 0, 0)) for i in range(count)]
+    frames[0].save(path, format=fmt, save_all=True, append_images=frames[1:])
+
+
+@pytest.mark.parametrize(("fmt", "ext"), [("GIF", "gif"), ("PNG", "png")])
+@pytest.mark.parametrize(("count", "animated"), [(1, False), (3, True)])
+def test_animated_tag_needs_more_than_one_frame(
+    tmp_path: Path,
+    fmt: str,
+    ext: str,
+    count: int,
+    *,
+    animated: bool,
+) -> None:
+    """Only a multi-frame GIF or APNG is tagged ``animated``; stills never reach the frames tool."""
+    path = tmp_path / f"anim.{ext}"
+    _animation(path, fmt, count)
+    ft = detect_file_type(path)
+    assert ft.kind == "image"
+    assert ext in ft.tags
+    assert ("animated" in ft.tags) is animated
+
+
+def test_animated_tag_ignores_webp(tmp_path: Path) -> None:
+    """A multi-frame WebP is not splittable by StegoVeritas: no ``animated`` tag."""
+    webp = tmp_path / "anim.webp"
+    frames = [Image.new("RGB", (8, 8), (i * 40, 0, 0)) for i in range(3)]
+    frames[0].save(webp, save_all=True, append_images=frames[1:])
+    assert "animated" not in detect_file_type(webp).tags
+
+
+def test_animated_tag_skips_oversized_canvases(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """Counting GIF frames decodes them, so a canvas over the pixel limit is not probed."""
+    gif = tmp_path / "anim.gif"
+    _animation(gif, "GIF", 3)
+    assert "animated" in detect_file_type(gif).tags
+    monkeypatch.setattr("aperisolve.filetype.MAX_IMAGE_PIXELS", 10)
+    gif_big = tmp_path / "anim2.gif"
+    _animation(gif_big, "GIF", 3)
+    assert "animated" not in detect_file_type(gif_big).tags
+
+
 def test_detect_file_type_wav() -> None:
     """The tone WAV fixture classifies as audio."""
     ft = detect_file_type(FIXTURES / "tone.wav")

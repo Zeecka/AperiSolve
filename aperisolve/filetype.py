@@ -16,11 +16,12 @@ Detection order (first confident hit wins):
 
 import functools
 import subprocess
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 from pathlib import Path
 
 from PIL import Image, UnidentifiedImageError
 
+from aperisolve.analyzers.pil_utils import MAX_IMAGE_PIXELS
 from aperisolve.config import IMAGE_EXTENSIONS
 
 # Wall clock for the libmagic CLI probe; short because the worker inlines it.
@@ -95,6 +96,10 @@ _MIME_FORMAT_TAGS: dict[str, str] = {
     "video/mp2t": "ts",
     "application/pdf": "pdf",
 }
+
+# Formats whose animations the ``animated`` tag covers: the only ones the
+# frames analyzer (StegoVeritas' extract_frames) can split.
+_ANIMATED_FORMATS = frozenset({"gif", "png"})
 
 # Kind -> the tag added alongside the format tag. ``other`` contributes none.
 _KIND_TAG: dict[str, str] = {
@@ -198,6 +203,21 @@ def _classify(mime: str) -> FileType:
     return FileType(mime=mime or "application/octet-stream", kind=kind, tags=tags)
 
 
+def _is_animated(path: Path) -> bool:
+    """Whether a GIF/PNG holds more than one frame; ``False`` on any decode trouble.
+
+    Oversized canvases are not probed: counting GIF frames decodes them, and
+    the image analyzers refuse such files anyway.
+    """
+    try:
+        with Image.open(path) as img:
+            if img.width * img.height > MAX_IMAGE_PIXELS:
+                return False
+            return getattr(img, "n_frames", 1) > 1
+    except (OSError, SyntaxError, ValueError, EOFError, Image.DecompressionBombError):
+        return False
+
+
 def _mime_from_file_cmd(path: Path) -> str:
     """Probe libmagic via the ``file`` CLI; empty string on any failure."""
     try:
@@ -269,7 +289,10 @@ def detect_file_type_uncached(path: Path) -> FileType:
         mime = _detect_mime(path)
     except Exception:  # noqa: BLE001
         mime = "application/octet-stream"
-    return _classify(mime)
+    file_type = _classify(mime)
+    if file_type.tags & _ANIMATED_FORMATS and _is_animated(path):
+        return replace(file_type, tags=file_type.tags | {"animated"})
+    return file_type
 
 
 @functools.lru_cache(maxsize=_CACHE_SIZE)
