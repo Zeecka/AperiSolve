@@ -119,11 +119,14 @@ def transforms(path: Path, out: Path, max_pixels: int) -> dict[str, Any]:
     except (OSError, SyntaxError, ValueError, Image.DecompressionBombError) as exc:
         return _open_error(exc)
 
+    # Other analyzers write into ``out`` at the same time, so the files are produced in a
+    # private folder and moved over: the names reported are exactly ours.
     # The upstream functions only read ``.file`` and ``.veritas.{results_directory,file_name}``;
     # the file name is the output prefix.
+    scratch = Path(tempfile.mkdtemp(prefix=f".{PREFIX}-", dir=out))
     image = SimpleNamespace(
         file=img,
-        veritas=SimpleNamespace(results_directory=str(out), file_name=PREFIX),
+        veritas=SimpleNamespace(results_directory=str(scratch), file_name=PREFIX),
     )
     bands = img.getbands()
     # Same trick as upstream: the filters work on the image with a fully opaque alpha.
@@ -133,7 +136,6 @@ def transforms(path: Path, out: Path, max_pixels: int) -> dict[str, Any]:
         arr[:, :, bands.index("A")] = 0xFF
         flat = Image.fromarray(arr)
 
-    before = set(os.listdir(out))
     ops: list[tuple[str, Any]] = [(f.name, lambda f=f: filters.run_filter(image, flat, f)) for f in _FILTERS]
     if len(bands) >= _RGB_BANDS:
         ops += [
@@ -151,7 +153,10 @@ def transforms(path: Path, out: Path, max_pixels: int) -> dict[str, Any]:
             except OSError as exc:  # Pillow refuses some ops on some modes (e.g. RGBA)
                 print(f"{name}: {exc}", file=sys.stderr)
                 skipped.append(name)
-    names = sorted(set(os.listdir(out)) - before)
+    names = sorted(os.listdir(scratch))
+    for name in names:
+        (scratch / name).replace(out / name)
+    scratch.rmdir()
     return {"status": "ok", "images": {"Transforms": names}, "palette": palette, "skipped": skipped}
 
 

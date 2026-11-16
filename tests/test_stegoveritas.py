@@ -220,6 +220,28 @@ def test_driver_transforms_every_mode_without_bit_planes(
     assert any("red_plane" in n for n in names) is (mode != "L")
 
 
+def test_driver_reports_only_its_own_files_among_concurrent_writers(
+    driver: ModuleType,
+    tmp_path: Path,
+) -> None:
+    """Analyzers share the submission folder: files already there are neither listed nor touched."""
+    src = tmp_path / "in.png"
+    _noise("RGB").save(src)
+    out = tmp_path / "out"
+    out.mkdir()
+    for neighbour in ("Red_bit_0.png", "stegoveritas_frames_a_frame_0.gif", "results.json"):
+        (out / neighbour).write_bytes(b"x")
+    result = driver.transforms(src, out, 1_000_000)
+    names = result["images"]["Transforms"]
+    assert "Red_bit_0.png" not in names
+    assert not any(n.startswith("stegoveritas_frames") for n in names)
+    assert {p.name for p in out.iterdir()} == set(names) | {
+        "Red_bit_0.png",
+        "stegoveritas_frames_a_frame_0.gif",
+        "results.json",
+    }
+
+
 def test_driver_skips_ops_pillow_refuses_instead_of_crashing(
     driver: ModuleType,
     tmp_path: Path,
