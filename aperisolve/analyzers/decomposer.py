@@ -8,7 +8,7 @@ from typing import Any, cast
 import numpy as np
 from PIL import Image
 
-from .base_analyzer import SubprocessAnalyzer
+from .base_analyzer import SubprocessAnalyzer, python_subprocess_error
 from .pil_utils import PALETTE_NOTE, load_image_array
 
 RGB_CHANNEL_THRESHOLD = 3
@@ -34,7 +34,10 @@ class DecomposerAnalyzer(SubprocessAnalyzer):
         ]
         data = self.run_command(cmd, cwd=self.output_dir)
         if data.returncode != 0:
-            return {"status": "error", "error": data.stderr.strip() or "decomposer failed"}
+            return {
+                "status": "error",
+                "error": python_subprocess_error(data.stderr, "decomposer failed"),
+            }
         try:
             return cast("dict[str, Any]", json.loads(data.stdout))
         except json.JSONDecodeError:

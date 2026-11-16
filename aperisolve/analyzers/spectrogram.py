@@ -31,7 +31,7 @@ from typing import Any, NamedTuple, cast
 import numpy as np
 from PIL import Image, ImageDraw, ImageFont
 
-from .base_analyzer import SubprocessAnalyzer
+from .base_analyzer import SubprocessAnalyzer, python_subprocess_error
 
 # --- Decoding -------------------------------------------------------------
 # Extensions the stdlib ``wave`` reader can open directly (fast path).
@@ -636,7 +636,10 @@ class SpectrogramAnalyzer(SubprocessAnalyzer):
         ]
         data = self.run_command(cmd, cwd=self.output_dir)
         if data.returncode != 0:
-            return {"status": "error", "error": data.stderr.strip() or "spectrogram failed"}
+            return {
+                "status": "error",
+                "error": python_subprocess_error(data.stderr, "spectrogram failed"),
+            }
         try:
             return cast("dict[str, Any]", json.loads(data.stdout))
         except json.JSONDecodeError:

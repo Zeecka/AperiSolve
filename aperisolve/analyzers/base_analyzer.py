@@ -35,6 +35,18 @@ SUBPROCESS_ENV = {
 # adversarial tool output from ballooning memory and results.json.
 MAX_CAPTURED_OUTPUT = 1_000_000
 
+
+def python_subprocess_error(stderr: str, fallback: str) -> str:
+    """User-facing error for a crashed ``python -m aperisolve.analyzers.*`` child.
+
+    An uncaught exception leaves a full traceback on stderr (source paths,
+    venv layout) that would be stored in results.json and rendered on the
+    result page. Only its last line — ``ExceptionType: message`` — is kept.
+    """
+    lines = [line for line in stderr.splitlines() if line.strip()]
+    return lines[-1].strip() if lines else fallback
+
+
 # All concrete analyzer classes, registered automatically on class creation.
 # Use aperisolve.analyzers.registry to consume this (it imports every module).
 REGISTRY: list[type["SubprocessAnalyzer"]] = []
