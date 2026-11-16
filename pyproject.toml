@@ -71,6 +71,14 @@ build-backend = "setuptools.build_meta"
 [tool.setuptools.packages.find]
 include = ["aperisolve*", "aperisolve_mcp*"]
 
+[tool.uv]
+# Every virtualenv release that fixes its open advisories (>=21.14.9, pulled in
+# by pre-commit) requires packaging>=26.3, but every coredis 5.x (the newest
+# limits[async-redis] allows, coredis<6) caps packaging<26 as a precaution.
+# Without this override the lock cannot leave the vulnerable virtualenv
+# 21.14.5. Drop it once limits accepts coredis 6 (which allows packaging<27).
+override-dependencies = ["packaging>=26.3"]
+
 [tool.ruff]
 line-length = 100
 target-version = "py312"
