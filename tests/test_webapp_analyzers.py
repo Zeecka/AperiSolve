@@ -70,6 +70,7 @@ class Upload:
 # One Upload per distinct (image, password, deep). Several analyzers share the
 # plain image; the password/extraction tools each get their own stego fixture.
 PLAIN = Upload(PLAIN_IMAGE)
+PLAIN_DEEP = Upload(PLAIN_IMAGE, deep=True)
 ZSTEG = Upload(FIXTURES / "zsteg_lsb.png")
 POLYGLOT = Upload(FIXTURES / "polyglot_zip.png")
 STEGHIDE = Upload(FIXTURES / "steghide.jpg", password=STEGO_PASSWORD)
@@ -104,7 +105,7 @@ CASES = [
     AnalyzerCase("binwalk", POLYGLOT, expect_download=True),
     AnalyzerCase("foremost", POLYGLOT, expect_download=True),
     AnalyzerCase("steghide", STEGHIDE, expect_download=True),
-    AnalyzerCase("stegoveritas", PLAIN, expect_download=True),
+    AnalyzerCase("stegoveritas", PLAIN_DEEP),
     AnalyzerCase("jsteg", JSTEG),
     AnalyzerCase("openstego", OPENSTEGO, expect_download=True),
     AnalyzerCase("jpseek", JPSEEK, expect_download=True),

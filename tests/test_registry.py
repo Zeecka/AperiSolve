@@ -12,6 +12,7 @@ EXPECTED_TOOL_ORDER = [
     "decomposer",
     "spectrogram",
     "color_remapping",
+    "stegoveritas",
     "file",
     "pdfinfo",
     "pdfid",
@@ -23,7 +24,6 @@ EXPECTED_TOOL_ORDER = [
     "pcrt",
     "identify",
     "steghide",
-    "stegoveritas",
     "jpseek",
     "jsteg",
     "openstego",
@@ -35,7 +35,6 @@ EXPECTED_ARCHIVE_TOOLS = {
     "binwalk",
     "foremost",
     "steghide",
-    "stegoveritas",
     "openstego",
     "pcrt",
     "jpseek",
@@ -44,7 +43,7 @@ EXPECTED_ARCHIVE_TOOLS = {
 
 EXPECTED_PASSWORD_TOOLS = {"steghide", "openstego", "jpseek", "outguess"}
 
-EXPECTED_DEEP_ONLY_TOOLS = {"outguess"}
+EXPECTED_DEEP_ONLY_TOOLS = {"outguess", "stegoveritas"}
 
 # Analyzers grouped by their ``accepts`` gate (see aperisolve.filetype tags).
 AGNOSTIC_TOOLS = {"file", "exiftool", "binwalk", "foremost", "strings"}

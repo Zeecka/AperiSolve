@@ -87,6 +87,8 @@ def js_catalog() -> dict[str, str]:
         "Green": _("Green"),
         "Blue": _("Blue"),
         "Alpha": _("Alpha"),
+        "Transforms": _("Transforms"),
+        "Frames": _("Frames"),
         "Spectrogram": _("Spectrogram"),
         "Waveform": _("Waveform"),
         "❌ Error during the analysis.": _("❌ Error during the analysis."),
