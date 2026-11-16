@@ -104,6 +104,7 @@ CASES = [
     AnalyzerCase("binwalk", POLYGLOT, expect_download=True),
     AnalyzerCase("foremost", POLYGLOT, expect_download=True),
     AnalyzerCase("steghide", STEGHIDE, expect_download=True),
+    AnalyzerCase("stegoveritas", PLAIN, expect_download=True),
     AnalyzerCase("jsteg", JSTEG),
     AnalyzerCase("openstego", OPENSTEGO, expect_download=True),
     AnalyzerCase("jpseek", JPSEEK, expect_download=True),
