@@ -134,20 +134,6 @@ def js_catalog() -> dict[str, str]:
         "Base URL": _("Base URL"),
         "API key": _("API key"),
         "Remember this key on this device": _("Remember this key on this device"),
-        "A stored key can be read by any script running on this page, including "
-        "the ads script, and a strict CSP is not in place yet. Prefer a key with "
-        "a spend cap.": _(
-            "A stored key can be read by any script running on this page, including "
-            "the ads script, and a strict CSP is not in place yet. Prefer a key with "
-            "a spend cap.",
-        ),
-        "Anthropic only accepts a browser request carrying the "
-        "anthropic-dangerous-direct-browser-access header, which this panel "
-        "sends. Your key still goes to Anthropic and nowhere else.": _(
-            "Anthropic only accepts a browser request carrying the "
-            "anthropic-dangerous-direct-browser-access header, which this panel "
-            "sends. Your key still goes to Anthropic and nowhere else.",
-        ),
         "Your question (optional)": _("Your question (optional)"),
         "Ask": _("Ask"),
         "Reset conversation": _("Reset conversation"),

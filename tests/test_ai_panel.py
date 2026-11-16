@@ -451,10 +451,8 @@ def test_panel_renders_on_the_served_page(dom_facts: dict) -> None:
     assert dom_facts["keyFieldIsPassword"]
     assert dom_facts["keyFieldStartsEmpty"]
     assert dom_facts["rememberStartsUnchecked"]
-    assert dom_facts["storageWarningHiddenUntilTicked"]
     assert dom_facts["keyLinkPointsToProvider"] == "https://openrouter.ai/keys"
     assert dom_facts["jumpLinkTargetsPanel"]
-    assert dom_facts["anthropicWarningHiddenForOpenRouter"]
     assert dom_facts["toolsPublishedToThePanel"] == len(LIVE_RESULTS)
 
 
@@ -537,14 +535,6 @@ def test_the_checkbox_alone_decides_whether_the_key_is_stored(dom_facts: dict) -
     assert dom_facts["storedWhileUnchecked"] is None
     assert dom_facts["storedAfterTicking"]
     assert dom_facts["storedAfterUnticking"] is None
-
-
-def test_the_storage_warning_shows_exactly_when_the_key_would_be_stored(
-    dom_facts: dict,
-) -> None:
-    """The warning is about a stored key, so it follows the checkbox."""
-    assert dom_facts["storageWarningShownWhenTicked"]
-    assert dom_facts["storageWarningHiddenWhenUnticked"]
 
 
 def test_a_remembered_key_comes_back_with_its_provider(dom_facts: dict) -> None:

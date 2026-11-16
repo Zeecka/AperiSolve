@@ -749,12 +749,6 @@ const AperiSolveAI = (function buildAiPanel() {
       `<input type="checkbox" id="ai-remember">` +
       `<label for="ai-remember">${tr("Remember this key on this device")}</label>` +
       `</div>` +
-      `<p class="ai-warning" id="ai-storage-warning" hidden>${tr(
-        "A stored key can be read by any script running on this page, including the ads script, and a strict CSP is not in place yet. Prefer a key with a spend cap.",
-      )}</p>` +
-      `<p class="ai-warning" id="ai-anthropic-warning" hidden>${tr(
-        "Anthropic only accepts a browser request carrying the anthropic-dangerous-direct-browser-access header, which this panel sends. Your key still goes to Anthropic and nowhere else.",
-      )}</p>` +
       `<label for="ai-question">${tr("Your question (optional)")}` +
       `<textarea id="ai-question" class="ai-input" rows="2"></textarea></label>` +
       `<div class="ai-actions">` +
@@ -811,8 +805,6 @@ const AperiSolveAI = (function buildAiPanel() {
     const keyInput = document.getElementById("ai-key");
     const keyLink = document.getElementById("ai-key-link");
     const rememberBox = document.getElementById("ai-remember");
-    const storageWarning = document.getElementById("ai-storage-warning");
-    const anthropicWarning = document.getElementById("ai-anthropic-warning");
     const questionInput = document.getElementById("ai-question");
     const askButton = document.getElementById("ai-ask");
     const resetButton = document.getElementById("ai-reset");
@@ -834,7 +826,6 @@ const AperiSolveAI = (function buildAiPanel() {
         .join("");
       modelInput.value = provider.models[0];
       baseUrlRow.hidden = !provider.needsBaseUrl;
-      anthropicWarning.hidden = provider.kind !== "anthropic";
       keyLink.hidden = !provider.keyUrl;
       if (provider.keyUrl) keyLink.href = provider.keyUrl;
     }
@@ -876,11 +867,9 @@ const AperiSolveAI = (function buildAiPanel() {
       if (prefs.model) modelInput.value = String(prefs.model);
       if (prefs.baseUrl) baseUrlInput.value = String(prefs.baseUrl);
     }
-    storageWarning.hidden = !rememberBox.checked;
     providerSelect.addEventListener("change", applyProvider);
 
     rememberBox.addEventListener("change", () => {
-      storageWarning.hidden = !rememberBox.checked;
       if (rememberBox.checked) {
         if (keyInput.value) rememberSettings(keyInput.value);
       } else {

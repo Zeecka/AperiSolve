@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2026-11-16 11:54+0100\n"
+"POT-Creation-Date: 2026-11-16 22:23+0100\n"
 "PO-Revision-Date: 2026-07-05 13:23+0000\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language: pt\n"
@@ -221,13 +221,23 @@ msgstr "Perguntar à IA"
 
 #: aperisolve/i18n.py:119
 msgid ""
-"Analyzer outputs, the uploaded image, the images computed from it and any "
-"passwords already tried (which may include content extracted from your "
+"Analyzer outputs, the uploaded image, the images computed from it and any"
+" passwords already tried (which may include content extracted from your "
 "file) are sent to the provider you selected."
 msgstr ""
-"As saídas dos analisadores, a imagem enviada, as imagens calculadas a partir dela e as senhas já testadas (que podem incluir conteúdo extraído do seu arquivo) são enviadas ao provedor que você escolheu."
+"As saídas dos analisadores, a imagem enviada, as imagens calculadas a "
+"partir dela e as senhas já testadas (que podem incluir conteúdo extraído "
+"do seu arquivo) são enviadas ao provedor que você escolheu."
+
+#: aperisolve/i18n.py:123
+msgid "Preparing the images…"
+msgstr "Preparando as imagens…"
 
 #: aperisolve/i18n.py:125
+msgid "The model did not accept the images; asking again with text only…"
+msgstr "O modelo não aceitou as imagens; perguntando novamente apenas com texto…"
+
+#: aperisolve/i18n.py:129
 msgid ""
 "Answers are advisory. Tool output comes from a file an attacker may have "
 "crafted: read any command it suggests before you run it."
@@ -236,103 +246,83 @@ msgstr ""
 "arquivo que um atacante pode ter criado: leia qualquer comando sugerido "
 "antes de executá-lo."
 
-#: aperisolve/i18n.py:128
+#: aperisolve/i18n.py:132
 msgid "Provider"
 msgstr "Provedor"
 
-#: aperisolve/i18n.py:129
+#: aperisolve/i18n.py:133
 msgid "Model"
 msgstr "Modelo"
 
-#: aperisolve/i18n.py:130
+#: aperisolve/i18n.py:134
 msgid "Base URL"
 msgstr "URL base"
 
-#: aperisolve/i18n.py:131
+#: aperisolve/i18n.py:135
 msgid "API key"
 msgstr "Chave de API"
 
-#: aperisolve/i18n.py:132
+#: aperisolve/i18n.py:136
 msgid "Remember this key on this device"
 msgstr "Lembrar esta chave neste dispositivo"
 
-#: aperisolve/i18n.py:136
-msgid ""
-"A stored key can be read by any script running on this page, including "
-"the ads script, and a strict CSP is not in place yet. Prefer a key with a"
-" spend cap."
-msgstr ""
-"Uma chave armazenada pode ser lida por qualquer script desta página, "
-"incluindo o script de anúncios, e ainda não existe uma CSP estrita. "
-"Prefira uma chave com limite de gastos."
-
-#: aperisolve/i18n.py:143
-msgid ""
-"Anthropic only accepts a browser request carrying the anthropic-"
-"dangerous-direct-browser-access header, which this panel sends. Your key "
-"still goes to Anthropic and nowhere else."
-msgstr ""
-"A Anthropic só aceita uma requisição do navegador com o cabeçalho "
-"anthropic-dangerous-direct-browser-access, que este painel envia. Sua "
-"chave vai apenas para a Anthropic."
-
-#: aperisolve/i18n.py:147
+#: aperisolve/i18n.py:137
 msgid "Your question (optional)"
 msgstr "Sua pergunta (opcional)"
 
-#: aperisolve/i18n.py:148
+#: aperisolve/i18n.py:138
 msgid "Ask"
 msgstr "Perguntar"
 
-#: aperisolve/i18n.py:149
+#: aperisolve/i18n.py:139
 msgid "Reset conversation"
 msgstr "Reiniciar a conversa"
 
-#: aperisolve/i18n.py:150
+#: aperisolve/i18n.py:140
 msgid "Enter your API key."
 msgstr "Digite sua chave de API."
 
-#: aperisolve/i18n.py:152
+#: aperisolve/i18n.py:142
 msgid "Enter the base URL of your OpenAI-compatible endpoint."
 msgstr "Digite a URL base do seu endpoint compatível com OpenAI."
 
-#: aperisolve/i18n.py:155
+#: aperisolve/i18n.py:145
 msgid "Analyzer results are not available yet."
 msgstr "Os resultados dos analisadores ainda não estão disponíveis."
 
-#: aperisolve/i18n.py:157
+#: aperisolve/i18n.py:147
 msgid "Ask a follow-up question."
 msgstr "Faça uma pergunta de acompanhamento."
 
-#: aperisolve/i18n.py:158
+#: aperisolve/i18n.py:148
 msgid "Waiting for the model…"
 msgstr "Aguardando o modelo…"
 
-#: aperisolve/i18n.py:159
+#: aperisolve/i18n.py:149
 msgid "The model is answering…"
 msgstr "O modelo está respondendo…"
 
-#: aperisolve/i18n.py:160
+#: aperisolve/i18n.py:150
 msgid "Stop"
 msgstr "Parar"
 
-#: aperisolve/i18n.py:161
+#: aperisolve/i18n.py:151
 msgid "Stopped."
 msgstr "Interrompido."
 
-#: aperisolve/i18n.py:162
+#: aperisolve/i18n.py:152
 msgid "Get a key"
 msgstr "Obter uma chave"
 
-#: aperisolve/i18n.py:163
+#: aperisolve/i18n.py:153
 msgid "Ctrl+Enter to send"
 msgstr "Ctrl+Enter para enviar"
 
-#: aperisolve/i18n.py:164
+#: aperisolve/i18n.py:154
 msgid "Ask AI about these results"
 msgstr "Perguntar à IA sobre estes resultados"
 
-#: aperisolve/i18n.py:167
+#: aperisolve/i18n.py:157
 msgid ""
 "Bring your own key: your browser calls the provider directly, Aperi'Solve"
 " never sees the key."
@@ -340,7 +330,7 @@ msgstr ""
 "Traga sua própria chave: seu navegador chama o provedor diretamente, o "
 "Aperi'Solve nunca vê a chave."
 
-#: aperisolve/i18n.py:172
+#: aperisolve/i18n.py:162
 msgid "What is hidden in this file, and what should I try next on Aperi'Solve?"
 msgstr ""
 "O que está escondido neste arquivo e o que devo tentar em seguida no "
@@ -537,11 +527,3 @@ msgstr "Pesquisar na wiki"
 msgid "Page navigation"
 msgstr "Navegação de páginas"
 
-#: aperisolve/i18n.py
-msgid "Preparing the images…"
-msgstr "Preparando as imagens…"
-
-#: aperisolve/i18n.py
-msgid ""
-"The model did not accept the images; asking again with text only…"
-msgstr "O modelo não aceitou as imagens; perguntando novamente apenas com texto…"

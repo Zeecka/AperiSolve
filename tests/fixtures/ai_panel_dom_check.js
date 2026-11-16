@@ -98,7 +98,6 @@ const facts = {
   keyFieldIsPassword: byId("ai-key").type === "password",
   keyFieldStartsEmpty: byId("ai-key").value === "",
   rememberStartsUnchecked: byId("ai-remember").checked === false,
-  storageWarningHiddenUntilTicked: byId("ai-storage-warning").hidden,
   keyLinkPointsToProvider: byId("ai-key-link").href,
   jumpLinkTargetsPanel: (() => {
     const jump = doc.querySelector(".ai-jump");
@@ -109,7 +108,6 @@ const facts = {
           window.Node.DOCUMENT_POSITION_FOLLOWING,
     );
   })(),
-  anthropicWarningHiddenForOpenRouter: byId("ai-anthropic-warning").hidden,
 };
 
 byId("ai-ask").click();
@@ -154,11 +152,9 @@ facts.noRequestWithoutKey = sent === null;
   byId("ai-remember").checked = true;
   byId("ai-remember").dispatchEvent(new window.Event("change"));
   facts.storedAfterTicking = window.localStorage.getItem(storageKey) === KEY;
-  facts.storageWarningShownWhenTicked = !byId("ai-storage-warning").hidden;
   byId("ai-remember").checked = false;
   byId("ai-remember").dispatchEvent(new window.Event("change"));
   facts.storedAfterUnticking = window.localStorage.getItem(storageKey);
-  facts.storageWarningHiddenWhenUnticked = byId("ai-storage-warning").hidden;
 
   const bodyBefore = sent.options.body;
   byId("ai-ask").click();
