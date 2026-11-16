@@ -156,4 +156,19 @@ def js_catalog() -> dict[str, str]:
         ),
         "Ask a follow-up question.": _("Ask a follow-up question."),
         "Waiting for the model…": _("Waiting for the model…"),
+        "The model is answering…": _("The model is answering…"),
+        "Stop": _("Stop"),
+        "Stopped.": _("Stopped."),
+        "Get a key": _("Get a key"),
+        "Ctrl+Enter to send": _("Ctrl+Enter to send"),
+        "Ask AI about these results": _("Ask AI about these results"),
+        "Bring your own key: your browser calls the provider directly, "
+        "Aperi'Solve never sees the key.": _(
+            "Bring your own key: your browser calls the provider directly, "
+            "Aperi'Solve never sees the key.",
+        ),
+        # Placeholder only: an empty question still sends the English one.
+        "What is hidden in this file, and what should I try next on Aperi'Solve?": _(
+            "What is hidden in this file, and what should I try next on Aperi'Solve?",
+        ),
     }

@@ -59,6 +59,7 @@ const AperiSolveAI = (function buildAiPanel() {
       label: "OpenRouter",
       kind: "openai",
       endpoint: "https://openrouter.ai/api/v1/chat/completions",
+      keyUrl: "https://openrouter.ai/keys",
       // Suggestions only — the model field is free text, because any catalogue
       // hardcoded here is stale by the next release.
       models: [
@@ -72,12 +73,14 @@ const AperiSolveAI = (function buildAiPanel() {
       label: "OpenAI",
       kind: "openai",
       endpoint: "https://api.openai.com/v1/chat/completions",
+      keyUrl: "https://platform.openai.com/api-keys",
       models: ["gpt-4o-mini", "gpt-4o", "o4-mini"],
     },
     anthropic: {
       label: "Anthropic",
       kind: "anthropic",
       endpoint: "https://api.anthropic.com/v1/messages",
+      keyUrl: "https://console.anthropic.com/settings/keys",
       models: ["claude-sonnet-5", "claude-opus-5", "claude-haiku-4-5"],
     },
     custom: {
@@ -90,6 +93,9 @@ const AperiSolveAI = (function buildAiPanel() {
   };
 
   const KEY_STORAGE = "aperisolve.ai_key";
+  // Provider, model and base URL, so a remembered key comes back with the
+  // provider it belongs to. Stored and forgotten together with the key.
+  const PREFS_STORAGE = "aperisolve.ai_prefs";
 
   /* ---------------------------------------------------------------- digest */
 
@@ -332,27 +338,35 @@ const AperiSolveAI = (function buildAiPanel() {
 
   // localStorage throws outright in some privacy modes, so every access is
   // guarded; losing a remembered key is fine, breaking the panel is not.
-  function readStoredKey() {
+  function readStored(name) {
     try {
-      return window.localStorage.getItem(KEY_STORAGE) || "";
+      return window.localStorage.getItem(name) || "";
     } catch (error) {
       return "";
     }
   }
 
-  function writeStoredKey(value) {
+  function writeStored(name, value) {
     try {
-      window.localStorage.setItem(KEY_STORAGE, value);
+      window.localStorage.setItem(name, value);
     } catch (error) {
       /* storage unavailable: the key just stays in memory */
     }
   }
 
-  function forgetStoredKey() {
+  function forgetStored(name) {
     try {
-      window.localStorage.removeItem(KEY_STORAGE);
+      window.localStorage.removeItem(name);
     } catch (error) {
       /* nothing to forget */
+    }
+  }
+
+  function readStoredPrefs() {
+    try {
+      return JSON.parse(readStored(PREFS_STORAGE) || "{}") || {};
+    } catch (error) {
+      return {};
     }
   }
 
@@ -366,13 +380,12 @@ const AperiSolveAI = (function buildAiPanel() {
       `<div class="analyzer ai-panel">` +
       `<div class="analyzer-header">` +
       `<h2><i class="fa-solid fa-wand-magic-sparkles"></i> ${tr("Ask AI")}</h2>` +
-      `<span class="analyzer-badge badge-empty">BYOK</span>` +
+      `<span class="analyzer-badge badge-empty" title="${tr(
+        "Bring your own key: your browser calls the provider directly, Aperi'Solve never sees the key.",
+      )}">BYOK</span>` +
       `</div>` +
       `<p class="ai-note">${tr(
         "Analyzer outputs and any passwords already tried (which may include content extracted from your file) are sent to the provider you selected.",
-      )}</p>` +
-      `<p class="ai-note">${tr(
-        "Answers are advisory. Tool output comes from a file an attacker may have crafted: read any command it suggests before you run it.",
       )}</p>` +
       `<div class="ai-grid">` +
       `<label for="ai-provider">${tr("Provider")}` +
@@ -382,14 +395,15 @@ const AperiSolveAI = (function buildAiPanel() {
       `<datalist id="ai-models"></datalist>` +
       `<label for="ai-base-url" id="ai-base-url-row" hidden>${tr("Base URL")}` +
       `<input id="ai-base-url" class="ai-input" placeholder="http://localhost:11434/v1" autocomplete="off" spellcheck="false"></label>` +
-      `<label for="ai-key">${tr("API key")}` +
+      `<label for="ai-key"><span class="ai-label-row">${tr("API key")}` +
+      `<a id="ai-key-link" class="ai-key-link" target="_blank" rel="noopener noreferrer">${tr("Get a key")} <i class="fa-solid fa-arrow-up-right-from-square"></i></a></span>` +
       `<input id="ai-key" class="ai-input" type="password" autocomplete="off" spellcheck="false"></label>` +
       `</div>` +
       `<div class="ai-remember">` +
       `<input type="checkbox" id="ai-remember">` +
       `<label for="ai-remember">${tr("Remember this key on this device")}</label>` +
       `</div>` +
-      `<p class="ai-warning">${tr(
+      `<p class="ai-warning" id="ai-storage-warning" hidden>${tr(
         "A stored key can be read by any script running on this page, including the ads script, and a strict CSP is not in place yet. Prefer a key with a spend cap.",
       )}</p>` +
       `<p class="ai-warning" id="ai-anthropic-warning" hidden>${tr(
@@ -400,20 +414,48 @@ const AperiSolveAI = (function buildAiPanel() {
       `<div class="ai-actions">` +
       `<button type="button" id="ai-ask" class="btn btn-primary">${tr("Ask")}</button>` +
       `<button type="button" id="ai-reset" class="btn btn-secondary" hidden>${tr("Reset conversation")}</button>` +
+      `<span class="ai-hint">${tr("Ctrl+Enter to send")}</span>` +
       `</div>` +
       `<p id="ai-status" class="ai-status" role="status" aria-live="polite"></p>` +
       `<div class="code-container position-relative mb-2" id="ai-answer-box" hidden>` +
       `<pre class="mb-0"><code id="ai-answer"></code></pre>` +
       `<i class="fas fa-copy copy-icon"></i>` +
       `</div>` +
+      `<p class="ai-note" id="ai-advisory" hidden>${tr(
+        "Answers are advisory. Tool output comes from a file an attacker may have crafted: read any command it suggests before you run it.",
+      )}</p>` +
       `</div>`
     );
+  }
+
+  // The panel sits under every analyzer, thousands of pixels down on a big
+  // result page; this link at the top is how a visitor learns it exists.
+  function addJumpLink(mount) {
+    const anchor = document.getElementById("result-analyzers");
+    if (!anchor || !anchor.parentNode) return;
+    const row = document.createElement("div");
+    row.className = "ai-jump-row";
+    const link = document.createElement("a");
+    link.href = "#result-ai";
+    link.className = "btn btn-secondary ai-jump";
+    const icon = document.createElement("i");
+    icon.className = "fa-solid fa-wand-magic-sparkles";
+    link.append(icon, ` ${tr("Ask AI about these results")}`);
+    link.addEventListener("click", (event) => {
+      event.preventDefault();
+      mount.scrollIntoView({ behavior: "smooth", block: "start" });
+      const key = document.getElementById("ai-key");
+      if (key) key.focus({ preventScroll: true });
+    });
+    row.appendChild(link);
+    anchor.parentNode.insertBefore(row, anchor);
   }
 
   function init() {
     const mount = document.getElementById("result-ai");
     if (!mount || !window.AI_PANEL_ENABLED) return;
     mount.innerHTML = panelMarkup();
+    addJumpLink(mount);
 
     const providerSelect = document.getElementById("ai-provider");
     const modelInput = document.getElementById("ai-model");
@@ -421,7 +463,9 @@ const AperiSolveAI = (function buildAiPanel() {
     const baseUrlRow = document.getElementById("ai-base-url-row");
     const baseUrlInput = document.getElementById("ai-base-url");
     const keyInput = document.getElementById("ai-key");
+    const keyLink = document.getElementById("ai-key-link");
     const rememberBox = document.getElementById("ai-remember");
+    const storageWarning = document.getElementById("ai-storage-warning");
     const anthropicWarning = document.getElementById("ai-anthropic-warning");
     const questionInput = document.getElementById("ai-question");
     const askButton = document.getElementById("ai-ask");
@@ -429,9 +473,11 @@ const AperiSolveAI = (function buildAiPanel() {
     const statusLine = document.getElementById("ai-status");
     const answerBox = document.getElementById("ai-answer-box");
     const answerEl = document.getElementById("ai-answer");
+    const advisory = document.getElementById("ai-advisory");
 
-    questionInput.placeholder = DEFAULT_QUESTION;
+    questionInput.placeholder = tr(DEFAULT_QUESTION);
     let history = []; // the digest lives in the first user turn; follow-ups reuse it
+    let inFlight = null; // AbortController of the running request, if any
 
     function applyProvider() {
       const provider = PROVIDERS[providerSelect.value];
@@ -441,43 +487,88 @@ const AperiSolveAI = (function buildAiPanel() {
       modelInput.value = provider.models[0];
       baseUrlRow.hidden = !provider.needsBaseUrl;
       anthropicWarning.hidden = provider.kind !== "anthropic";
+      keyLink.hidden = !provider.keyUrl;
+      if (provider.keyUrl) keyLink.href = provider.keyUrl;
     }
 
-    const storedKey = readStoredKey();
+    function showAnswer(visible) {
+      answerBox.hidden = !visible;
+      advisory.hidden = !visible;
+    }
+
+    function rememberSettings(key) {
+      writeStored(KEY_STORAGE, key);
+      writeStored(
+        PREFS_STORAGE,
+        JSON.stringify({
+          provider: providerSelect.value,
+          model: modelInput.value.trim(),
+          baseUrl: baseUrlInput.value.trim(),
+        }),
+      );
+    }
+
+    function forgetSettings() {
+      forgetStored(KEY_STORAGE);
+      forgetStored(PREFS_STORAGE);
+    }
+
+    const storedKey = readStored(KEY_STORAGE);
+    const prefs = storedKey ? readStoredPrefs() : {};
+    if (PROVIDERS[prefs.provider]) providerSelect.value = prefs.provider;
+    applyProvider();
     if (storedKey) {
       keyInput.value = storedKey;
       rememberBox.checked = true;
+      if (prefs.model) modelInput.value = String(prefs.model);
+      if (prefs.baseUrl) baseUrlInput.value = String(prefs.baseUrl);
     }
-    applyProvider();
+    storageWarning.hidden = !rememberBox.checked;
     providerSelect.addEventListener("change", applyProvider);
 
     rememberBox.addEventListener("change", () => {
+      storageWarning.hidden = !rememberBox.checked;
       if (rememberBox.checked) {
-        if (keyInput.value) writeStoredKey(keyInput.value);
+        if (keyInput.value) rememberSettings(keyInput.value);
       } else {
-        forgetStoredKey();
+        forgetSettings();
+      }
+    });
+
+    questionInput.addEventListener("keydown", (event) => {
+      if (event.key === "Enter" && (event.ctrlKey || event.metaKey)) {
+        event.preventDefault();
+        if (!inFlight) askButton.click();
       }
     });
 
     resetButton.addEventListener("click", () => {
       history = [];
       answerEl.textContent = "";
-      answerBox.hidden = true;
+      showAnswer(false);
       resetButton.hidden = true;
       statusLine.textContent = "";
     });
 
     askButton.addEventListener("click", async () => {
+      // While a request runs the button reads "Stop": a paid model that
+      // rambles should not have to be left running to the end.
+      if (inFlight) {
+        inFlight.abort();
+        return;
+      }
       const providerId = providerSelect.value;
       const key = keyInput.value.trim();
       if (!key) {
         statusLine.textContent = tr("Enter your API key.");
+        keyInput.focus();
         return;
       }
       if (!endpointFor(providerId, baseUrlInput.value)) {
         statusLine.textContent = tr(
           "Enter the base URL of your OpenAI-compatible endpoint.",
         );
+        baseUrlInput.focus();
         return;
       }
       const results = window.APERISOLVE_RESULTS;
@@ -488,15 +579,16 @@ const AperiSolveAI = (function buildAiPanel() {
       const question = questionInput.value.trim();
       if (history.length && !question) {
         statusLine.textContent = tr("Ask a follow-up question.");
+        questionInput.focus();
         return;
       }
 
       // Re-decide storage on every ask, so unticking the box takes effect
       // without a reload.
       if (rememberBox.checked) {
-        writeStoredKey(key);
+        rememberSettings(key);
       } else {
-        forgetStoredKey();
+        forgetSettings();
       }
 
       const turn = history.length
@@ -504,7 +596,8 @@ const AperiSolveAI = (function buildAiPanel() {
         : `${buildDigest(results, window.APERISOLVE_INFO)}\n\n${question || DEFAULT_QUESTION}`;
       history.push({ role: "user", content: turn });
 
-      askButton.disabled = true;
+      inFlight = new AbortController();
+      askButton.textContent = tr("Stop");
       statusLine.textContent = tr("Waiting for the model…");
       // A failed turn must leave the panel exactly as it was, and must not
       // leave its unanswered user turn in the conversation history.
@@ -512,11 +605,18 @@ const AperiSolveAI = (function buildAiPanel() {
       const restore = (message) => {
         history.pop();
         answerEl.textContent = previousAnswer;
-        answerBox.hidden = !previousAnswer;
+        showAnswer(Boolean(previousAnswer));
         statusLine.textContent = message;
       };
+      const keep = (answer) => {
+        history.push({ role: "assistant", content: answer });
+        questionInput.value = "";
+        questionInput.placeholder = tr("Ask a follow-up question.");
+        resetButton.hidden = false;
+      };
       if (previousAnswer) answerEl.textContent = `${previousAnswer}\n\n`;
-      answerBox.hidden = false;
+      showAnswer(true);
+      let streamed = "";
 
       try {
         const request = buildRequest(
@@ -533,32 +633,44 @@ const AperiSolveAI = (function buildAiPanel() {
           // Never send this origin's cookies to the provider, same-origin or
           // not: the key already travels in the Authorization header.
           credentials: "omit",
+          signal: inFlight.signal,
         });
         if (!response.ok) {
           const detail = (await response.text()).slice(0, 300);
           throw new Error(`HTTP ${response.status} ${detail}`);
         }
-        statusLine.textContent = "";
+        statusLine.textContent = tr("The model is answering…");
         const answer = await readAnswer(
           PROVIDERS[providerId].kind,
           response,
           // textContent, never innerHTML: the model text is influenced by an
           // untrusted file and is rendered as text, not markup.
           (delta) => {
+            streamed += delta;
             answerEl.textContent += delta;
           },
         );
         if (answer) {
-          history.push({ role: "assistant", content: answer });
-          questionInput.value = "";
-          resetButton.hidden = false;
+          keep(answer);
+          statusLine.textContent = "";
         } else {
           restore(tr("No result"));
         }
       } catch (error) {
-        restore(`${tr("Error:")} ${error.message}`);
+        if (error && error.name === "AbortError") {
+          // Keep whatever already arrived: it was paid for.
+          if (streamed) {
+            keep(streamed);
+            statusLine.textContent = tr("Stopped.");
+          } else {
+            restore(tr("Stopped."));
+          }
+        } else {
+          restore(`${tr("Error:")} ${error.message}`);
+        }
       } finally {
-        askButton.disabled = false;
+        inFlight = null;
+        askButton.textContent = tr("Ask");
       }
     });
   }

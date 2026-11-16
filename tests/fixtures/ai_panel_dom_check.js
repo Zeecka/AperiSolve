@@ -85,8 +85,17 @@ const facts = {
   keyFieldIsPassword: byId("ai-key").type === "password",
   keyFieldStartsEmpty: byId("ai-key").value === "",
   rememberStartsUnchecked: byId("ai-remember").checked === false,
-  storageWarningVisible:
-    [...doc.querySelectorAll(".ai-panel .ai-warning")].filter((p) => !p.hidden).length === 1,
+  storageWarningHiddenUntilTicked: byId("ai-storage-warning").hidden,
+  keyLinkPointsToProvider: byId("ai-key-link").href,
+  jumpLinkTargetsPanel: (() => {
+    const jump = doc.querySelector(".ai-jump");
+    return Boolean(
+      jump &&
+        jump.getAttribute("href") === "#result-ai" &&
+        jump.compareDocumentPosition(byId("result-analyzers")) &
+          window.Node.DOCUMENT_POSITION_FOLLOWING,
+    );
+  })(),
   anthropicWarningHiddenForOpenRouter: byId("ai-anthropic-warning").hidden,
 };
 
@@ -126,14 +135,79 @@ facts.noRequestWithoutKey = sent === null;
   byId("ai-remember").checked = true;
   byId("ai-remember").dispatchEvent(new window.Event("change"));
   facts.storedAfterTicking = window.localStorage.getItem(storageKey) === KEY;
+  facts.storageWarningShownWhenTicked = !byId("ai-storage-warning").hidden;
   byId("ai-remember").checked = false;
   byId("ai-remember").dispatchEvent(new window.Event("change"));
   facts.storedAfterUnticking = window.localStorage.getItem(storageKey);
+  facts.storageWarningHiddenWhenUnticked = byId("ai-storage-warning").hidden;
 
   const bodyBefore = sent.options.body;
   byId("ai-ask").click();
   facts.statusOnEmptyFollowUp = byId("ai-status").textContent;
   facts.emptyFollowUpSentNothing = sent.options.body === bodyBefore;
+
+  // Stop: one token arrives, then the stream hangs until the signal aborts it,
+  // the way a browser rejects a pending read on abort.
+  let signal = null;
+  window.fetch = (url, options) => {
+    signal = options.signal;
+    let first = true;
+    return Promise.resolve({
+      ok: true,
+      status: 200,
+      headers: { get: () => "text/event-stream" },
+      body: {
+        getReader: () => ({
+          read: () => {
+            if (first) {
+              first = false;
+              return Promise.resolve({
+                done: false,
+                value: new TextEncoder().encode(
+                  'data: {"choices":[{"delta":{"content":"partial"}}]}\n\n',
+                ),
+              });
+            }
+            return new Promise((resolve, reject) => {
+              signal.addEventListener("abort", () => {
+                const error = new Error("aborted");
+                error.name = "AbortError";
+                reject(error);
+              });
+            });
+          },
+        }),
+      },
+    });
+  };
+  byId("ai-question").value = "And the red channel?";
+  byId("ai-ask").click();
+  await new Promise((resolve) => setTimeout(resolve, 100));
+  facts.stop = { buttonWhileStreaming: byId("ai-ask").textContent };
+  byId("ai-ask").click();
+  await new Promise((resolve) => setTimeout(resolve, 100));
+  facts.stop.signalAborted = Boolean(signal && signal.aborted);
+  facts.stop.status = byId("ai-status").textContent;
+  facts.stop.partialKept = byId("ai-answer").textContent.endsWith("partial");
+  facts.stop.buttonAfter = byId("ai-ask").textContent;
+
+  // Remembering a key also remembers which provider it belongs to.
+  byId("ai-provider").value = "anthropic";
+  byId("ai-provider").dispatchEvent(new window.Event("change"));
+  byId("ai-model").value = "claude-haiku-4-5";
+  byId("ai-remember").checked = true;
+  byId("ai-remember").dispatchEvent(new window.Event("change"));
+  facts.prefsStoredWithKey = JSON.parse(window.localStorage.getItem("aperisolve.ai_prefs"));
+  window.AperiSolveAI.init(); // what a reload does
+  facts.reloaded = {
+    provider: byId("ai-provider").value,
+    model: byId("ai-model").value,
+    key: byId("ai-key").value,
+    remember: byId("ai-remember").checked,
+  };
+  byId("ai-remember").checked = false;
+  byId("ai-remember").dispatchEvent(new window.Event("change"));
+  facts.prefsForgottenWithKey = window.localStorage.getItem("aperisolve.ai_prefs");
 
   process.stdout.write(JSON.stringify(facts, null, 1));
 })().catch((error) => {

@@ -1,8 +1,14 @@
 """Tests for internationalized routing, locale selection and wiki fallback."""
 
+from pathlib import Path
+
+from babel.messages.pofile import read_po
+from flask import Flask
 from flask.testing import FlaskClient
 
-from aperisolve.i18n import SUPPORTED_LANGS
+from aperisolve.i18n import PREFIX_LANGS, SUPPORTED_LANGS, js_catalog
+
+TRANSLATIONS = Path(__file__).resolve().parent.parent / "aperisolve" / "translations"
 
 
 def test_language_prefixes_render_translated(client: FlaskClient) -> None:
@@ -77,3 +83,22 @@ def test_js_catalog_injected(client: FlaskClient) -> None:
     html = client.get("/fr/").get_data(as_text=True)
     assert "window.I18N" in html
     assert "Premier envoi" in html
+
+
+def test_every_client_string_is_translated_in_every_catalog(app: Flask) -> None:
+    """Rewording a js_catalog() string without refreshing the .po files ships English.
+
+    That is how the AI panel consent note ended up untranslated in every
+    language: the msgid changed, the catalogs kept the old one.
+    """
+    with app.test_request_context("/"):
+        keys = list(js_catalog())
+    for lang in PREFIX_LANGS:
+        with (TRANSLATIONS / lang / "LC_MESSAGES" / "messages.po").open("rb") as handle:
+            catalog = read_po(handle)
+        missing = [
+            key
+            for key in keys
+            if catalog[key] is None or not catalog[key].string or catalog[key].fuzzy
+        ]
+        assert missing == [], (lang, missing)

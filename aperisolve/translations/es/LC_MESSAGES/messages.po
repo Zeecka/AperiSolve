@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2026-11-14 14:49+0100\n"
+"POT-Creation-Date: 2026-11-16 11:54+0100\n"
 "PO-Revision-Date: 2026-07-05 13:23+0000\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language: es\n"
@@ -18,55 +18,51 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Generated-By: Babel 2.18.0\n"
 
-#: aperisolve/app.py:187
+#: aperisolve/app.py:217
 msgid "Image size exceeded"
 msgstr "Tamaño de imagen excedido"
 
-#: aperisolve/app.py:192
+#: aperisolve/app.py:222
 msgid "Resource not found"
 msgstr "Recurso no encontrado"
 
-#: aperisolve/app.py:197
+#: aperisolve/app.py:227
 msgid "Too many requests, please slow down."
 msgstr "Demasiadas solicitudes, por favor reduzca el ritmo."
 
-#: aperisolve/app.py:370 aperisolve/app.py:377
+#: aperisolve/app.py:400 aperisolve/app.py:407
 msgid "No image provided"
 msgstr "No se proporcionó ninguna imagen"
 
-#: aperisolve/app.py:382
-msgid "Unsupported file type"
-msgstr "Tipo de archivo no compatible"
-
-#: aperisolve/app.py:485 aperisolve/app.py:493
+#: aperisolve/app.py:515 aperisolve/app.py:523
 msgid "Results not ready yet..."
 msgstr "Los resultados aún no están listos..."
 
-#: aperisolve/app.py:615
+#: aperisolve/app.py:645
 #, python-format
 msgid "Image must be at least %(min)d seconds old. Current age: %(age)ds"
 msgstr ""
 "La imagen debe tener al menos %(min)d segundos. Antigüedad actual: "
 "%(age)ds"
 
-#: aperisolve/app.py:631
+#: aperisolve/app.py:661
 msgid "Image uploaded from multiple IP addresses. Removal is not allowed."
 msgstr "Imagen subida desde varias direcciones IP. No se permite la eliminación."
 
-#: aperisolve/app.py:647
+#: aperisolve/app.py:677
 msgid "Failed to remove image"
 msgstr "Error al eliminar la imagen"
 
-#: aperisolve/app.py:658
+#: aperisolve/app.py:688
 msgid "No password to remove"
 msgstr "No hay contraseña que eliminar"
 
-#: aperisolve/app.py:666
+#: aperisolve/app.py:696
 #, python-format
 msgid "Submission must be at least %(min)d seconds old. Current age: %(age)ds"
 msgstr "El envío debe tener al menos %(min)d segundos. Antigüedad actual: %(age)ds"
 
-#: aperisolve/app.py:683
+#: aperisolve/app.py:713
 msgid ""
 "Submission uploaded from multiple IP addresses. Password removal is not "
 "allowed."
@@ -74,7 +70,7 @@ msgstr ""
 "Envío subido desde varias direcciones IP. No se permite eliminar la "
 "contraseña."
 
-#: aperisolve/app.py:698
+#: aperisolve/app.py:728
 msgid "Failed to remove password"
 msgstr "Error al eliminar la contraseña"
 
@@ -225,15 +221,16 @@ msgstr "Archivo analizado"
 msgid "Ask AI"
 msgstr "Preguntar a la IA"
 
-#: aperisolve/i18n.py:118
+#: aperisolve/i18n.py:119
 msgid ""
-"Analyzer outputs (which may include content extracted from your file) are"
-" sent to the provider you selected."
+"Analyzer outputs and any passwords already tried (which may include "
+"content extracted from your file) are sent to the provider you selected."
 msgstr ""
-"Las salidas de los analizadores (que pueden incluir contenido extraído de"
-" tu archivo) se envían al proveedor que has seleccionado."
+"Las salidas de los analizadores y las contraseñas ya probadas (que pueden"
+" incluir contenido extraído de tu archivo) se envían al proveedor que "
+"elegiste."
 
-#: aperisolve/i18n.py:123
+#: aperisolve/i18n.py:125
 msgid ""
 "Answers are advisory. Tool output comes from a file an attacker may have "
 "crafted: read any command it suggests before you run it."
@@ -242,27 +239,27 @@ msgstr ""
 "de un archivo que un atacante puede haber manipulado: lee cualquier "
 "comando sugerido antes de ejecutarlo."
 
-#: aperisolve/i18n.py:126
+#: aperisolve/i18n.py:128
 msgid "Provider"
 msgstr "Proveedor"
 
-#: aperisolve/i18n.py:127
+#: aperisolve/i18n.py:129
 msgid "Model"
 msgstr "Modelo"
 
-#: aperisolve/i18n.py:128
+#: aperisolve/i18n.py:130
 msgid "Base URL"
 msgstr "URL base"
 
-#: aperisolve/i18n.py:129
+#: aperisolve/i18n.py:131
 msgid "API key"
 msgstr "Clave de API"
 
-#: aperisolve/i18n.py:130
+#: aperisolve/i18n.py:132
 msgid "Remember this key on this device"
 msgstr "Recordar esta clave en este dispositivo"
 
-#: aperisolve/i18n.py:134
+#: aperisolve/i18n.py:136
 msgid ""
 "A stored key can be read by any script running on this page, including "
 "the ads script, and a strict CSP is not in place yet. Prefer a key with a"
@@ -272,7 +269,7 @@ msgstr ""
 "incluido el script de anuncios, y todavía no hay una CSP estricta. Es "
 "preferible una clave con límite de gasto."
 
-#: aperisolve/i18n.py:141
+#: aperisolve/i18n.py:143
 msgid ""
 "Anthropic only accepts a browser request carrying the anthropic-"
 "dangerous-direct-browser-access header, which this panel sends. Your key "
@@ -282,37 +279,75 @@ msgstr ""
 "cabecera anthropic-dangerous-direct-browser-access, que este panel envía."
 " Tu clave solo se envía a Anthropic."
 
-#: aperisolve/i18n.py:145
+#: aperisolve/i18n.py:147
 msgid "Your question (optional)"
 msgstr "Tu pregunta (opcional)"
 
-#: aperisolve/i18n.py:146
+#: aperisolve/i18n.py:148
 msgid "Ask"
 msgstr "Preguntar"
 
-#: aperisolve/i18n.py:147
+#: aperisolve/i18n.py:149
 msgid "Reset conversation"
 msgstr "Reiniciar la conversación"
 
-#: aperisolve/i18n.py:148
+#: aperisolve/i18n.py:150
 msgid "Enter your API key."
 msgstr "Introduce tu clave de API."
 
-#: aperisolve/i18n.py:150
+#: aperisolve/i18n.py:152
 msgid "Enter the base URL of your OpenAI-compatible endpoint."
 msgstr "Introduce la URL base de tu endpoint compatible con OpenAI."
 
-#: aperisolve/i18n.py:153
+#: aperisolve/i18n.py:155
 msgid "Analyzer results are not available yet."
 msgstr "Los resultados de los analizadores aún no están disponibles."
 
-#: aperisolve/i18n.py:155
+#: aperisolve/i18n.py:157
 msgid "Ask a follow-up question."
 msgstr "Haz una pregunta de seguimiento."
 
-#: aperisolve/i18n.py:156
+#: aperisolve/i18n.py:158
 msgid "Waiting for the model…"
 msgstr "Esperando al modelo…"
+
+#: aperisolve/i18n.py:159
+msgid "The model is answering…"
+msgstr "El modelo está respondiendo…"
+
+#: aperisolve/i18n.py:160
+msgid "Stop"
+msgstr "Detener"
+
+#: aperisolve/i18n.py:161
+msgid "Stopped."
+msgstr "Detenido."
+
+#: aperisolve/i18n.py:162
+msgid "Get a key"
+msgstr "Obtener una clave"
+
+#: aperisolve/i18n.py:163
+msgid "Ctrl+Enter to send"
+msgstr "Ctrl+Intro para enviar"
+
+#: aperisolve/i18n.py:164
+msgid "Ask AI about these results"
+msgstr "Preguntar a la IA sobre estos resultados"
+
+#: aperisolve/i18n.py:167
+msgid ""
+"Bring your own key: your browser calls the provider directly, Aperi'Solve"
+" never sees the key."
+msgstr ""
+"Trae tu propia clave: tu navegador llama directamente al proveedor, "
+"Aperi'Solve nunca ve la clave."
+
+#: aperisolve/i18n.py:172
+msgid "What is hidden in this file, and what should I try next on Aperi'Solve?"
+msgstr ""
+"¿Qué hay oculto en este archivo y qué debería probar a continuación en "
+"Aperi'Solve?"
 
 #: aperisolve/templates/base.html:64 aperisolve/templates/footer.html:39
 #: aperisolve/templates/wiki.html:65 aperisolve/wiki.py:239

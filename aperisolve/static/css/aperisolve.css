@@ -2138,3 +2138,61 @@ footer::before {
     white-space: pre-wrap;
     word-break: break-word;
 }
+
+.ai-jump-row {
+    display: flex;
+    justify-content: flex-end;
+    margin-bottom: var(--spacing-md);
+}
+
+/* Outlined, so neither competes with the upload/ask buttons. */
+.ai-jump.btn,
+.ai-panel .btn-secondary {
+    background: transparent;
+    color: var(--theme-green);
+    border: 1px solid var(--theme-green);
+    box-shadow: none;
+}
+
+.ai-jump.btn:hover,
+.ai-panel .btn-secondary:hover {
+    background: var(--green-tint);
+    color: var(--theme-green);
+}
+
+.ai-label-row {
+    display: flex;
+    justify-content: space-between;
+    gap: var(--spacing-sm);
+}
+
+.ai-key-link {
+    font-size: 0.8rem;
+    color: var(--theme-green);
+}
+
+.ai-key-link[hidden] {
+    display: none;
+}
+
+.ai-hint {
+    align-self: center;
+    font-size: 0.8rem;
+    color: var(--text-dim);
+}
+
+.ai-panel #ai-advisory {
+    margin-top: var(--spacing-sm);
+}
+
+/* Three narrow columns truncate the model name and halve the key field on a
+   phone: stack the fields instead. */
+@media screen and (max-width: 36rem) {
+    .ai-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .ai-hint {
+        display: none;
+    }
+}

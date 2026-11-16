@@ -139,11 +139,15 @@ def test_key_is_only_persisted_behind_the_remember_checkbox() -> None:
     assert source.count("localStorage.removeItem") == 1
     # Both branches present: ticked stores, unticked forgets.
     assert re.search(
-        r"if \(rememberBox\.checked\) \{\s*\n\s*writeStoredKey\(key\);\s*\n\s*\} else \{"
-        r"\s*\n\s*forgetStoredKey\(\);",
+        r"if \(rememberBox\.checked\) \{\s*\n\s*rememberSettings\(key\);\s*\n\s*\} else \{"
+        r"\s*\n\s*forgetSettings\(\);",
         source,
     ), "the ask handler must re-decide storage from the checkbox"
-    assert "readStoredKey()" in source
+    # The only writers are rememberSettings() and forgetSettings(), and the
+    # provider preferences travel with the key, never on their own.
+    assert source.count("writeStored(") == 3  # definition + key + prefs
+    assert source.count("forgetStored(") == 3  # definition + key + prefs
+    assert "readStored(KEY_STORAGE)" in source
     # A stored key pre-fills the field and re-ticks the box on reload.
     assert "rememberBox.checked = true" in source
 
@@ -366,7 +370,9 @@ def test_panel_renders_on_the_served_page(dom_facts: dict) -> None:
     assert dom_facts["keyFieldIsPassword"]
     assert dom_facts["keyFieldStartsEmpty"]
     assert dom_facts["rememberStartsUnchecked"]
-    assert dom_facts["storageWarningVisible"]
+    assert dom_facts["storageWarningHiddenUntilTicked"]
+    assert dom_facts["keyLinkPointsToProvider"] == "https://openrouter.ai/keys"
+    assert dom_facts["jumpLinkTargetsPanel"]
     assert dom_facts["anthropicWarningHiddenForOpenRouter"]
     assert dom_facts["toolsPublishedToThePanel"] == len(LIVE_RESULTS)
 
@@ -409,6 +415,40 @@ def test_the_checkbox_alone_decides_whether_the_key_is_stored(dom_facts: dict) -
     assert dom_facts["storedWhileUnchecked"] is None
     assert dom_facts["storedAfterTicking"]
     assert dom_facts["storedAfterUnticking"] is None
+
+
+def test_the_storage_warning_shows_exactly_when_the_key_would_be_stored(
+    dom_facts: dict,
+) -> None:
+    """The warning is about a stored key, so it follows the checkbox."""
+    assert dom_facts["storageWarningShownWhenTicked"]
+    assert dom_facts["storageWarningHiddenWhenUnticked"]
+
+
+def test_a_remembered_key_comes_back_with_its_provider(dom_facts: dict) -> None:
+    """A stored Anthropic key must not reload under the OpenRouter default."""
+    assert dom_facts["prefsStoredWithKey"] == {
+        "provider": "anthropic",
+        "model": "claude-haiku-4-5",
+        "baseUrl": "",
+    }
+    assert dom_facts["prefsForgottenWithKey"] is None
+    assert dom_facts["reloaded"] == {
+        "provider": "anthropic",
+        "model": "claude-haiku-4-5",
+        "key": "sk-live-test-key",
+        "remember": True,
+    }
+
+
+def test_stop_keeps_the_partial_answer_and_frees_the_button(dom_facts: dict) -> None:
+    """Stopping a stream keeps what arrived and hands the button back."""
+    stop = dom_facts["stop"]
+    assert stop["buttonWhileStreaming"] == "Stop"
+    assert stop["signalAborted"]
+    assert stop["status"] == "Stopped."
+    assert stop["partialKept"]
+    assert stop["buttonAfter"] == "Ask"
 
 
 def test_an_empty_follow_up_is_refused(dom_facts: dict) -> None:
