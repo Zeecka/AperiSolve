@@ -51,10 +51,14 @@ git fetch origin main '+refs/heads/dependabot/*:refs/remotes/origin/dependabot/*
 git switch -c "deps/$(date -u +%F)" origin/main
 git cherry-pick origin/main..origin/<dependabot-ref>   # once per selected PR
 ```
+If your harness pins the worktree's branch (no `git switch`), fast-forward it
+instead (`git merge --ff-only origin/main`, works when the branch is already
+merged), cherry-pick on it, and push with `git push origin HEAD:deps/<date>`.
+
 On a `uv.lock` conflict: `git checkout origin/main -- uv.lock`,
 `uv lock --upgrade-package <pkg>==<ver>` (plus the PR's `pyproject.toml` side if
-it conflicts too), `git add`, `git cherry-pick --continue`. Then run the same
-install CI runs, to prove the lock resolves: `uv sync --frozen --extra mcp --extra dev`.
+it conflicts too), `git add`, `git cherry-pick --continue`. Then
+`uv lock --check` must pass: CI installs with `--frozen` and fails on a stale lock.
 
 ## 4. Gate in CI
 Push the branch and open one PR (`POST /pulls`, base `main`) titled
@@ -74,6 +78,9 @@ then `PATCH /pulls/<pr>` `{"state":"closed"}`).
 Follow the `release` skill with argument `patch`, from an up-to-date `main`,
 with these substitutions:
 - Its step 4 confirmation is already given (see top).
+- Pinned branch: instead of checking out `main`, fast-forward to
+  `origin/main` after the merge, commit the bump there and
+  `git push origin HEAD:main`, then tag that commit.
 - Commit trailers: follow the rules of your environment, not the skill's
   default.
 - If `gh` is missing, create the Release with
