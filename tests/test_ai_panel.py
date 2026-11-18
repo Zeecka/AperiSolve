@@ -356,8 +356,7 @@ def test_pixel_values_are_printed_at_native_resolution_in_raster_order(
     """Two-value images print 0/1, others hex, and the header says which."""
     facts = probe_facts["pixels"]
     assert facts["plane"] == (
-        "### decomposer / Red_bit_0.png (4x2, bits 0=000000 1=ffffff)\n"
-        "```text\n0101\n1001\n```\n"
+        "### decomposer / Red_bit_0.png (4x2, bits 0=000000 1=ffffff)\n```text\n0101\n1001\n```\n"
     )
     assert facts["colour"] == (
         "### original / a.png (2x2, hex RRGGBB)\n```text\nff0000 00ff00\n0000ff 010203\n```\n"
@@ -649,7 +648,7 @@ def test_the_matrix_alone_serves_a_text_only_model(dom_facts: dict) -> None:
 
 
 def test_pixels_are_decoded_raw_from_a_same_origin_re_read(dom_facts: dict) -> None:
-    """createImageBitmap without alpha premultiplication or colour conversion."""
+    """Decode with createImageBitmap, without alpha premultiplication or colour conversion."""
     facts = dom_facts["bitmapPath"]
     assert facts["decodedWithoutPremultiply"]
     assert facts["rereadsAreRelative"]
