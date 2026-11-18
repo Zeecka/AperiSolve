@@ -62,7 +62,12 @@ Aperi'Solve is an open-source steganalysis web platform that performs automated 
   Russian, Chinese and Portuguese under language-prefixed URLs (`/fr/`, `/es/`, …).
 - **"Ask AI" panel** on the result page: send the analysis results and images
   straight from your browser to your own LLM provider (bring your own key) for a
-  verdict on what is hidden and what to try next.
+  verdict on what is hidden and what to try next. Two checkboxes pick what the
+  model gets: the images (on by default) and a text matrix of every image's
+  pixel values (off by default; native resolution, so text-only models can read
+  LSB data too). The matrix is exact for opaque PNG/BMP/GIF; it comes from the
+  browser's image decoder, so the RGB under a fully transparent pixel can read
+  0 and JPEG depends on the decoder.
 - **MCP server** at `https://www.aperisolve.com/mcp` ([docs/mcp.md](docs/mcp.md)):
   lets Claude, Cursor or any MCP client upload a file and read its analysis.
 - Worker queue architecture for offloading heavy/slow analyzers (Redis + background workers).
