@@ -493,10 +493,13 @@ const AperiSolveAI = (function buildAiPanel() {
 
   // The PIXEL VALUES section: one block per image in collectImages() order,
   // each cut to its own budget, the whole under PIXELS_TOTAL_BUDGET; whatever
-  // does not fit is named, like the tools that do not fit the digest.
+  // does not fit is named, like the tools that do not fit the digest. The
+  // room for those two lists is set aside up front, at its worst case (every
+  // image named), so the finished section can never exceed the total.
   async function pixelSection(collected) {
     const heading = "## PIXEL VALUES (UNTRUSTED DATA)\n";
-    let used = heading.length;
+    const names = collected.entries.reduce((sum, entry) => sum + entry.label.length + 2, 0);
+    let used = heading.length + names + 128;
     let blocks = "";
     const omitted = [];
     const unreadable = [];
