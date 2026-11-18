@@ -123,6 +123,9 @@ def js_catalog() -> dict[str, str]:
             "file) are sent to the provider you selected.",
         ),
         "Preparing the images…": _("Preparing the images…"),
+        "Reading pixel values…": _("Reading pixel values…"),
+        "Send images to the model": _("Send images to the model"),
+        "Send pixel values as text": _("Send pixel values as text"),
         "The model did not accept the images; asking again with text only…": _(
             "The model did not accept the images; asking again with text only…",
         ),
