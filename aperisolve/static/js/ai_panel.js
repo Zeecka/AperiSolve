@@ -453,8 +453,10 @@ const AperiSolveAI = (function buildAiPanel() {
   // Native-resolution RGBA of the first rows of one image. The bitmap is
   // decoded without alpha premultiplication or colour conversion, so what the
   // canvas hands back is what the file holds. Known limit, browser decoding:
-  // exact for opaque PNG/BMP/GIF; the RGB under alpha 0 can come back as 0;
-  // JPEG depends on the decoder.
+  // exact for opaque PNG/BMP/GIF pixels; the 2D canvas stores premultiplied
+  // alpha, so a semi-transparent pixel can be off by one in a channel and the
+  // RGB under alpha 0 comes back as 0 (measured in Chromium); JPEG depends on
+  // the decoder.
   async function readPixels(url, budget) {
     let source = null;
     try {

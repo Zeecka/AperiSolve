@@ -65,9 +65,10 @@ Aperi'Solve is an open-source steganalysis web platform that performs automated 
   verdict on what is hidden and what to try next. Two checkboxes pick what the
   model gets: the images (on by default) and a text matrix of every image's
   pixel values (off by default; native resolution, so text-only models can read
-  LSB data too). The matrix is exact for opaque PNG/BMP/GIF; it comes from the
-  browser's image decoder, so the RGB under a fully transparent pixel can read
-  0 and JPEG depends on the decoder.
+  LSB data too). The matrix comes from the browser's image decoder: it is exact
+  for opaque pixels of a PNG/BMP/GIF, but a semi-transparent pixel can be off
+  by one in a colour channel (the canvas stores premultiplied alpha), the RGB
+  under a fully transparent pixel reads 0, and JPEG depends on the decoder.
 - **MCP server** at `https://www.aperisolve.com/mcp` ([docs/mcp.md](docs/mcp.md)):
   lets Claude, Cursor or any MCP client upload a file and read its analysis.
 - Worker queue architecture for offloading heavy/slow analyzers (Redis + background workers).
