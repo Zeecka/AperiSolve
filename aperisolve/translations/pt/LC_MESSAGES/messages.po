@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2026-11-16 22:23+0100\n"
+"POT-Creation-Date: 2026-11-18 08:16+0100\n"
 "PO-Revision-Date: 2026-07-05 13:23+0000\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language: pt\n"
@@ -157,77 +157,77 @@ msgstr "Transformações"
 msgid "Frames"
 msgstr "Quadros"
 
-#: aperisolve/i18n.py:90
+#: aperisolve/i18n.py:92
 msgid "Spectrogram"
 msgstr "Espectrograma"
 
-#: aperisolve/i18n.py:91
+#: aperisolve/i18n.py:93
 msgid "Waveform"
 msgstr "Forma de onda"
 
-#: aperisolve/i18n.py:92
+#: aperisolve/i18n.py:94
 msgid "❌ Error during the analysis."
 msgstr "❌ Erro durante a análise."
 
-#: aperisolve/i18n.py:93
+#: aperisolve/i18n.py:95
 msgid "Please select a file."
 msgstr "Por favor, selecione um arquivo."
 
-#: aperisolve/i18n.py:95
+#: aperisolve/i18n.py:97
 msgid "❌ Invalid server response: missing submission_hash."
 msgstr "❌ Resposta do servidor inválida: submission_hash ausente."
 
-#: aperisolve/i18n.py:97
+#: aperisolve/i18n.py:99
 msgid "❌ Invalid server response."
 msgstr "❌ Resposta do servidor inválida."
 
-#: aperisolve/i18n.py:99
+#: aperisolve/i18n.py:101
 msgid "❌ File too large. Please upload a smaller file."
 msgstr "❌ Arquivo muito grande. Envie um arquivo menor."
 
-#: aperisolve/i18n.py:101
+#: aperisolve/i18n.py:103
 msgid "Upload complete"
 msgstr "Envio concluído"
 
-#: aperisolve/i18n.py:102
+#: aperisolve/i18n.py:104
 msgid "❌ An error occurred during the transfer"
 msgstr "❌ Ocorreu um erro durante a transferência"
 
-#: aperisolve/i18n.py:103
+#: aperisolve/i18n.py:105
 msgid "Analyzing your file…"
 msgstr "Analisando seu arquivo…"
 
-#: aperisolve/i18n.py:104
+#: aperisolve/i18n.py:106
 msgid "Success"
 msgstr "Sucesso"
 
-#: aperisolve/i18n.py:105
+#: aperisolve/i18n.py:107
 msgid "No result"
 msgstr "Sem resultados"
 
-#: aperisolve/i18n.py:106
+#: aperisolve/i18n.py:108
 msgid "Learn more"
 msgstr "Saiba mais"
 
-#: aperisolve/i18n.py:107
+#: aperisolve/i18n.py:109
 msgid "❌ HTTP error"
 msgstr "❌ Erro HTTP"
 
-#: aperisolve/i18n.py:109
+#: aperisolve/i18n.py:111
 msgid "❌ The analysis is taking too long. Please reload the page to check again."
 msgstr ""
 "❌ A análise está demorando demais. Recarregue a página para verificar "
 "novamente."
 
-#: aperisolve/i18n.py:111
+#: aperisolve/i18n.py:113
 msgid "Analyzed file"
 msgstr "Arquivo analisado"
 
-#: aperisolve/i18n.py:115
+#: aperisolve/i18n.py:117
 msgid "Ask AI"
 msgstr "Perguntar à IA"
 
-#: aperisolve/i18n.py:119
+#: aperisolve/i18n.py:121
 msgid ""
 "Analyzer outputs, the uploaded image, the images computed from it and any"
 " passwords already tried (which may include content extracted from your "
@@ -237,15 +237,27 @@ msgstr ""
 "partir dela e as senhas já testadas (que podem incluir conteúdo extraído "
 "do seu arquivo) são enviadas ao provedor que você escolheu."
 
-#: aperisolve/i18n.py:123
+#: aperisolve/i18n.py:125
 msgid "Preparing the images…"
 msgstr "Preparando as imagens…"
 
-#: aperisolve/i18n.py:125
+#: aperisolve/i18n.py:126
+msgid "Reading pixel values…"
+msgstr "A ler os valores dos píxeis…"
+
+#: aperisolve/i18n.py:127
+msgid "Send images to the model"
+msgstr "Enviar as imagens ao modelo"
+
+#: aperisolve/i18n.py:128
+msgid "Send pixel values as text"
+msgstr "Enviar os valores dos píxeis como texto"
+
+#: aperisolve/i18n.py:130
 msgid "The model did not accept the images; asking again with text only…"
 msgstr "O modelo não aceitou as imagens; perguntando novamente apenas com texto…"
 
-#: aperisolve/i18n.py:129
+#: aperisolve/i18n.py:134
 msgid ""
 "Answers are advisory. Tool output comes from a file an attacker may have "
 "crafted: read any command it suggests before you run it."
@@ -254,83 +266,83 @@ msgstr ""
 "arquivo que um atacante pode ter criado: leia qualquer comando sugerido "
 "antes de executá-lo."
 
-#: aperisolve/i18n.py:132
+#: aperisolve/i18n.py:137
 msgid "Provider"
 msgstr "Provedor"
 
-#: aperisolve/i18n.py:133
+#: aperisolve/i18n.py:138
 msgid "Model"
 msgstr "Modelo"
 
-#: aperisolve/i18n.py:134
+#: aperisolve/i18n.py:139
 msgid "Base URL"
 msgstr "URL base"
 
-#: aperisolve/i18n.py:135
+#: aperisolve/i18n.py:140
 msgid "API key"
 msgstr "Chave de API"
 
-#: aperisolve/i18n.py:136
+#: aperisolve/i18n.py:141
 msgid "Remember this key on this device"
 msgstr "Lembrar esta chave neste dispositivo"
 
-#: aperisolve/i18n.py:137
+#: aperisolve/i18n.py:142
 msgid "Your question (optional)"
 msgstr "Sua pergunta (opcional)"
 
-#: aperisolve/i18n.py:138
+#: aperisolve/i18n.py:143
 msgid "Ask"
 msgstr "Perguntar"
 
-#: aperisolve/i18n.py:139
+#: aperisolve/i18n.py:144
 msgid "Reset conversation"
 msgstr "Reiniciar a conversa"
 
-#: aperisolve/i18n.py:140
+#: aperisolve/i18n.py:145
 msgid "Enter your API key."
 msgstr "Digite sua chave de API."
 
-#: aperisolve/i18n.py:142
+#: aperisolve/i18n.py:147
 msgid "Enter the base URL of your OpenAI-compatible endpoint."
 msgstr "Digite a URL base do seu endpoint compatível com OpenAI."
 
-#: aperisolve/i18n.py:145
+#: aperisolve/i18n.py:150
 msgid "Analyzer results are not available yet."
 msgstr "Os resultados dos analisadores ainda não estão disponíveis."
 
-#: aperisolve/i18n.py:147
+#: aperisolve/i18n.py:152
 msgid "Ask a follow-up question."
 msgstr "Faça uma pergunta de acompanhamento."
 
-#: aperisolve/i18n.py:148
+#: aperisolve/i18n.py:153
 msgid "Waiting for the model…"
 msgstr "Aguardando o modelo…"
 
-#: aperisolve/i18n.py:149
+#: aperisolve/i18n.py:154
 msgid "The model is answering…"
 msgstr "O modelo está respondendo…"
 
-#: aperisolve/i18n.py:150
+#: aperisolve/i18n.py:155
 msgid "Stop"
 msgstr "Parar"
 
-#: aperisolve/i18n.py:151
+#: aperisolve/i18n.py:156
 msgid "Stopped."
 msgstr "Interrompido."
 
-#: aperisolve/i18n.py:152
+#: aperisolve/i18n.py:157
 msgid "Get a key"
 msgstr "Obter uma chave"
 
-#: aperisolve/i18n.py:153
+#: aperisolve/i18n.py:158
 msgid "Ctrl+Enter to send"
 msgstr "Ctrl+Enter para enviar"
 
-#: aperisolve/i18n.py:154
+#: aperisolve/i18n.py:159
 msgid "Ask AI about these results"
 msgstr "Perguntar à IA sobre estes resultados"
 
-#: aperisolve/i18n.py:157
+#: aperisolve/i18n.py:162
 msgid ""
 "Bring your own key: your browser calls the provider directly, Aperi'Solve"
 " never sees the key."
@@ -338,7 +350,7 @@ msgstr ""
 "Traga sua própria chave: seu navegador chama o provedor diretamente, o "
 "Aperi'Solve nunca vê a chave."
 
-#: aperisolve/i18n.py:162
+#: aperisolve/i18n.py:167
 msgid "What is hidden in this file, and what should I try next on Aperi'Solve?"
 msgstr ""
 "O que está escondido neste arquivo e o que devo tentar em seguida no "

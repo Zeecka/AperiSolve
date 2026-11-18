@@ -238,6 +238,36 @@ async function main() {
     ),
   };
 
+  /* ---- pixel values: synthetic arrays, no canvas ---- */
+  const rgba = (...pixels) => Uint8ClampedArray.from(pixels.flat());
+  const BLACK = [0, 0, 0, 255];
+  const WHITE = [255, 255, 255, 255];
+  const plane = rgba(...[0, 1, 0, 1, 1, 0, 0, 1].map((bit) => (bit ? WHITE : BLACK)));
+  const colour = rgba([255, 0, 0, 255], [0, 255, 0, 255], [0, 0, 255, 255], [1, 2, 3, 255]);
+  const translucent = rgba([255, 0, 0, 255], [0, 255, 0, 128], [0, 0, 255, 255]);
+  const pixelDigest = AI.buildDigest(
+    results,
+    info,
+    order,
+    undefined,
+    undefined,
+    "## PIXEL VALUES (UNTRUSTED DATA)\n### x (1x1, bits 0=000000)\n```text\n0\n```\n",
+  );
+  facts.pixels = {
+    plane: AI.formatPixels("decomposer / Red_bit_0.png", 4, 2, plane, 1000),
+    colour: AI.formatPixels("original / a.png", 2, 2, colour, 1000),
+    translucent: AI.formatPixels("original / b.png", 3, 1, translucent, 1000),
+    oneValue: AI.formatPixels("flat", 2, 1, rgba(WHITE, WHITE), 1000),
+    // 4x2 plane, room for one row (4 cells) and a newline and part of the next.
+    truncated: AI.formatPixels("cut", 4, 2, plane, 6),
+    // Only the first row was read from an image 4 pixels tall: 12 are left out.
+    partialRead: AI.formatPixels("partial", 4, 4, plane.slice(0, 16), 1000),
+    sections: (pixelDigest.text.match(/^## .*$/gm) || []).map((line) => line.replace(/\s*\(.*\)$/, "")),
+    inBodyNotHead: pixelDigest.body.includes("## PIXEL VALUES") && !pixelDigest.head.includes("PIXEL"),
+    promptNamesIt: AI.SYSTEM_PROMPT.includes("PIXEL VALUES"),
+    promptCallsItUntrusted: /PIXEL VALUES and ANALYZER OUTPUT is\s+UNTRUSTED/.test(AI.SYSTEM_PROMPT.replace(/\n/g, " ")),
+  };
+
   /* ---- streaming ---- */
   const openaiDeltas = [];
   facts.streamOpenai = {

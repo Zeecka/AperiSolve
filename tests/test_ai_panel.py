@@ -156,9 +156,12 @@ def test_key_never_reaches_a_url_a_log_or_the_server() -> None:
     """The key is a header value and nothing else."""
     source = PANEL_JS.read_text(encoding="utf-8")
     assert not re.search(r"\bconsole\.\w+\(", source), "the panel must not log anything"
-    # No same-origin request at all: every fetch target is provider-built.
-    assert source.count("fetch(") == 1
+    # Two fetch calls, and only these: the provider request, and the re-read of
+    # an image the page already displays (pixel matrix, same origin, cookies
+    # kept off the provider by `credentials: "omit"` above).
+    assert source.count("fetch(") == 2
     assert "fetch(request.url" in source
+    assert "(await fetch(url)).blob()" in source
     for forbidden in ("?key=", "api_key=", "encodeURIComponent(key"):
         assert forbidden not in source, forbidden
 
@@ -334,7 +337,7 @@ def test_provider_requests_match_each_api(probe_facts: dict) -> None:
     assert facts["customEndpointRejectsNonLoopbackHttp"] == ""
     assert facts["customEndpointRejectsOtherScheme"] == ""
     assert facts["customEndpointAllowsLoopbackIp"] == "http://127.0.0.1:11434/v1/chat/completions"
-    assert facts["promptVersion"] >= 2
+    assert facts["promptVersion"] >= 3
     assert facts["promptForbidsFollowingData"]
     # The prompt names the sections the digest is built from and fixes the
     # shape of the answer the renderer expects.
@@ -345,6 +348,53 @@ def test_provider_requests_match_each_api(probe_facts: dict) -> None:
         "## Next steps",
         "## Suspicious strings",
     ]
+
+
+def test_pixel_values_are_printed_at_native_resolution_in_raster_order(
+    probe_facts: dict,
+) -> None:
+    """Two-value images print 0/1, others hex, and the header says which."""
+    facts = probe_facts["pixels"]
+    assert facts["plane"] == (
+        "### decomposer / Red_bit_0.png (4x2, bits 0=000000 1=ffffff)\n```text\n0101\n1001\n```\n"
+    )
+    assert facts["colour"] == (
+        "### original / a.png (2x2, hex RRGGBB)\n```text\nff0000 00ff00\n0000ff 010203\n```\n"
+    )
+    # One pixel under alpha 255 is enough to switch the whole image to RRGGBBAA.
+    assert facts["translucent"] == (
+        "### original / b.png (3x1, hex RRGGBBAA)\n```text\nff0000ff 00ff0080 0000ffff\n```\n"
+    )
+    assert "bits 0=ffffff)" in facts["oneValue"]
+    assert "\n00\n" in facts["oneValue"]
+
+
+def test_truncated_pixel_values_say_exactly_how_many_pixels_are_missing(
+    probe_facts: dict,
+) -> None:
+    """Cut by budget in raster order, mid-row if need be; never silently."""
+    facts = probe_facts["pixels"]
+    # Budget 6: row one (4) + newline + one pixel of row two; 3 are left out.
+    assert facts["truncated"].endswith("```text\n0101\n1\n[... 3 pixels omitted ...]\n```\n")
+    # Only the first row was read from a 4x4 image: 16 - 4 pixels are left out.
+    assert facts["partialRead"].endswith("```text\n0101\n[... 12 pixels omitted ...]\n```\n")
+
+
+def test_pixel_values_section_sits_between_images_and_analyzer_output(
+    probe_facts: dict,
+) -> None:
+    """After the images (so after the head), before the analyzer blocks."""
+    facts = probe_facts["pixels"]
+    assert facts["sections"] == [
+        "## FILE",
+        "## IMAGES ATTACHED",
+        "## PIXEL VALUES",
+        "## ANALYZER OUTPUT",
+        "## QUESTION",
+    ]
+    assert facts["inBodyNotHead"]
+    assert facts["promptNamesIt"]
+    assert facts["promptCallsItUntrusted"]
 
 
 def test_streams_survive_frames_split_across_reads(probe_facts: dict) -> None:
@@ -402,9 +452,14 @@ def _node_path_with_jsdom() -> str | None:
     return None
 
 
+_DOM_FACTS: dict = {}  # one jsdom run serves every test below; each run takes seconds
+
+
 @pytest.fixture
 def dom_facts(app: Flask, client: FlaskClient, tmp_path: Path) -> dict:
     """Render the real result page, then drive the panel in jsdom."""
+    if _DOM_FACTS:
+        return _DOM_FACTS
     node_path = _node_path_with_jsdom()
     if node_path is None:
         pytest.skip("jsdom is not installed (npm install jsdom)")
@@ -440,7 +495,8 @@ def dom_facts(app: Flask, client: FlaskClient, tmp_path: Path) -> dict:
     finally:
         shutil.rmtree(RESULT_FOLDER / IMG_HASH, ignore_errors=True)
     assert completed.returncode == 0, completed.stderr
-    return json.loads(completed.stdout)
+    _DOM_FACTS.update(json.loads(completed.stdout))
+    return _DOM_FACTS
 
 
 def test_panel_renders_on_the_served_page(dom_facts: dict) -> None:
@@ -451,6 +507,7 @@ def test_panel_renders_on_the_served_page(dom_facts: dict) -> None:
     assert dom_facts["keyFieldIsPassword"]
     assert dom_facts["keyFieldStartsEmpty"]
     assert dom_facts["rememberStartsUnchecked"]
+    assert dom_facts["optionDefaults"] == {"images": True, "pixels": False}
     assert dom_facts["keyLinkPointsToProvider"] == "https://openrouter.ai/keys"
     assert dom_facts["jumpLinkTargetsPanel"]
     assert dom_facts["toolsPublishedToThePanel"] == len(LIVE_RESULTS)
@@ -482,6 +539,8 @@ def test_the_only_request_goes_to_the_provider_with_the_key_in_a_header(
     # The crafted EXIF comment travels as data inside the digest, which the
     # system prompt frames as untrusted — it is never acted on.
     assert request["digestCarriesInjectionAttemptAsData"]
+    # The pixel matrix is opt-in.
+    assert request["digestHasNoPixelValues"]
 
 
 def test_streamed_answer_lands_as_text_nodes(dom_facts: dict) -> None:
@@ -528,6 +587,95 @@ def test_images_travel_in_the_first_turn_and_fall_back_to_text(dom_facts: dict) 
     assert facts["retryKeepsDigest"]
     assert facts["answerAfterRetry"] == "text-only answer"
     assert facts["historyStaysTextOnlyForFollowUps"]
+    assert facts["digestHasNoPixelValues"]
+
+
+def test_a_404_from_a_text_only_model_retries_without_images(dom_facts: dict) -> None:
+    """#287: OpenRouter says 404, not 400, to image parts for a text-only model."""
+    facts = dom_facts["notFound"]
+    assert facts["requests"] == 2
+    assert facts["firstHadImages"]
+    assert facts["retryIsPlainText"]
+    assert facts["retrySaysWhy"]
+    assert facts["answer"] == "ok"
+
+
+def test_unticking_images_sends_a_plain_text_turn_and_encodes_nothing(
+    dom_facts: dict,
+) -> None:
+    """No image part, no canvas encoding, and the digest says why."""
+    facts = dom_facts["imagesOff"]
+    assert facts["requests"] == 1
+    assert facts["isPlainString"]
+    assert facts["hasNoImagePart"]
+    assert facts["saysZeroAttached"]
+    assert facts["saysWhy"]
+    assert facts["toolsStillNameTheirImages"]
+    assert facts["canvasEncodes"] == 0
+    assert facts["noPixelValues"]
+
+
+def test_ticking_the_matrix_adds_pixel_values_after_the_images(dom_facts: dict) -> None:
+    """Native-resolution rows, original first, each block fenced and truncated."""
+    facts = dom_facts["pixelValues"]
+    assert facts["hasImageParts"]  # the matrix is in addition to the images
+    assert facts["sections"] == [
+        "## FILE",
+        "## IMAGES ATTACHED",
+        "## PIXEL VALUES",
+        "## ANALYZER OUTPUT",
+        "## QUESTION",
+    ]
+    assert facts["headers"] == [
+        "original / secret.png (1600x1200, hex RRGGBB)",
+        "decomposer / Red / Red_bit_0.png (64x64, bits 0=000000 1=ffffff)",
+        "decomposer / Red / Red_bit_1.png (64x64, bits 0=000000 1=ffffff)",
+    ]
+    assert facts["originalFirstRow"] == "000000 070300 0e0600 150900 "
+    assert facts["planeFirstRow"] == "01" * 32
+    # 1600x1200 pixels cannot fit 16 KiB, nor can 64x64 fit 4 KiB: both are cut.
+    assert re.fullmatch(r"\[\.\.\. \d+ pixels omitted \.\.\.\]", facts["originalMarker"])
+    assert re.fullmatch(r"\[\.\.\. \d+ pixels omitted \.\.\.\]", facts["planeMarker"])
+    assert facts["isFenced"]
+
+
+def test_the_matrix_alone_serves_a_text_only_model(dom_facts: dict) -> None:
+    """Images off + matrix on: a plain string that still carries the pixels."""
+    facts = dom_facts["pixelsOnly"]
+    assert facts["isPlainString"]
+    assert facts["hasSection"]
+    assert facts["saysImagesDisabled"]
+
+
+def test_pixels_are_decoded_raw_from_a_same_origin_re_read(dom_facts: dict) -> None:
+    """Decode with createImageBitmap, without alpha premultiplication or colour conversion."""
+    facts = dom_facts["bitmapPath"]
+    assert facts["decodedWithoutPremultiply"]
+    assert facts["rereadsAreRelative"]
+    assert facts["stillAnswers"]
+
+
+def test_the_matrix_stays_inside_its_budgets(dom_facts: dict) -> None:
+    """Original 16 KiB, derived 4 KiB, all matrices 64 KiB; the rest is named."""
+    size = dom_facts["size"]
+    assert size["rgbHeader"] == "### original / big.png (512x512, hex RRGGBB)"
+    assert size["planeHeader"].startswith("### decomposer / Red / big_plane.png (512x512, bits ")
+    assert 16 * 1024 < size["rgbChars"] < 16 * 1024 + 512
+    assert 4 * 1024 < size["planeChars"] < 4 * 1024 + 512
+    crowded = dom_facts["crowded"]
+    assert crowded["sectionChars"] <= 64 * 1024
+    assert crowded["blocks"] < 21  # original + 20 planes cannot all fit
+    assert re.fullmatch(
+        r"\[\.\.\. \d+ images omitted for size: .*Red_bit_19\.png \.\.\.\]",
+        crowded["omittedMarker"],
+    ), crowded["omittedMarker"]
+
+
+def test_both_boxes_are_locked_during_a_conversation_and_freed_by_reset(
+    dom_facts: dict,
+) -> None:
+    """The images and the matrix are read once, into the first turn."""
+    assert dom_facts["options"] == {"lockedAfterAnswer": True, "freeAfterReset": True}
 
 
 def test_the_checkbox_alone_decides_whether_the_key_is_stored(dom_facts: dict) -> None:
@@ -543,6 +691,8 @@ def test_a_remembered_key_comes_back_with_its_provider(dom_facts: dict) -> None:
         "provider": "anthropic",
         "model": "claude-haiku-4-5",
         "baseUrl": "",
+        "sendImages": False,
+        "sendPixels": True,
     }
     assert dom_facts["prefsForgottenWithKey"] is None
     assert dom_facts["reloaded"] == {
@@ -550,6 +700,8 @@ def test_a_remembered_key_comes_back_with_its_provider(dom_facts: dict) -> None:
         "model": "claude-haiku-4-5",
         "key": "sk-live-test-key",
         "remember": True,
+        "sendImages": False,
+        "sendPixels": True,
     }
 
 
