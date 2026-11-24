@@ -169,9 +169,9 @@ pillow==13.0.0 \
     --hash=sha256:ff3fe9eb621fbb9db4c4be33ab946f6bac5f98ab50ca8d3260503653656c961b \
     --hash=sha256:ffea6b2986a797c84b6d1d27d4f43e0b83c73fc16281a930891cd237cf0d08fe
     # via -r in.txt
-prettytable==3.18.0 \
-    --hash=sha256:439217116152244369caf3d9f1caf2f9fe29b03bd79e88d2928c8e718c95d680 \
-    --hash=sha256:b3346e0e6f79180833aebaac088ae926340586cf6d7d991b9eb125b65f72313a
+prettytable==3.19.0 \
+    --hash=sha256:0ecedd6d9a560b330503bef15791b77954fa46b7123203d91e463330b61959ba \
+    --hash=sha256:66d0eaf75f21198e92ce09e59a12c140be76c78b8a89252e7e87ac8994f96383
     # via -r in.txt
 python-magic==0.4.27 \
     --hash=sha256:c1ba14b08e4a5f5c31a302b7721239695b2f0f058d125bd5ce1ee36b9d9d3c3b \
